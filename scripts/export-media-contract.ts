@@ -38,7 +38,13 @@ const output = await format(
   }),
   { ...(await resolveConfig(fileURLToPath(target))), parser: 'json' },
 );
+
+// Git may materialize this generated file with CRLF on Windows while
+// Prettier emits LF. Compare normalized text so the check validates schema
+// content rather than checkout-specific line endings.
+const normalizeLineEndings = (value: string) => value.replace(/\r\n/g, '\n');
+
 if (process.argv.includes('--check')) {
-  if ((await readFile(target, 'utf8')) !== output)
+  if (normalizeLineEndings(await readFile(target, 'utf8')) !== normalizeLineEndings(output))
     throw new Error('Media schemas are stale. Run pnpm media:contract.');
 } else await writeFile(target, output);
