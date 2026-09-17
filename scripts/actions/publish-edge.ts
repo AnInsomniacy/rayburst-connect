@@ -8,7 +8,6 @@ import {
   isRecord,
   optionalEnv,
   requiredEnv,
-  setOutput,
   stringField,
 } from './workflow-utils';
 
@@ -41,7 +40,6 @@ type EdgePublishOperationDecision = {
 
 type EdgePreflightDecision = {
   action: 'publish' | 'skip';
-  outcome: string;
   reason: string;
 };
 
@@ -101,13 +99,12 @@ export function decideEdgePreflightAction(
   targetVersion: string,
 ): EdgePreflightDecision {
   if (operationVersion !== targetVersion) {
-    return { action: 'publish', outcome: 'published', reason: 'Edge Add-ons can accept upload' };
+    return { action: 'publish', reason: 'Edge Add-ons can accept upload' };
   }
 
   if (operation.status === 'InProgress') {
     return {
       action: 'skip',
-      outcome: 'skipped-in-review',
       reason: `Edge Add-ons already has version ${targetVersion} submitted as InProgress`,
     };
   }
@@ -115,7 +112,6 @@ export function decideEdgePreflightAction(
   if (operation.status === 'Succeeded') {
     return {
       action: 'skip',
-      outcome: 'skipped-version-exists',
       reason: `Edge Add-ons already has version ${targetVersion} submitted`,
     };
   }
@@ -123,12 +119,11 @@ export function decideEdgePreflightAction(
   if (operation.status === 'Failed' && operation.errorCode === 'InProgressSubmission') {
     return {
       action: 'skip',
-      outcome: 'skipped-in-review',
       reason: `Edge Add-ons already has version ${targetVersion} submitted as InProgressSubmission`,
     };
   }
 
-  return { action: 'publish', outcome: 'published', reason: 'Edge Add-ons can accept upload' };
+  return { action: 'publish', reason: 'Edge Add-ons can accept upload' };
 }
 
 async function publishEdgeFromEnv(): Promise<void> {
@@ -157,7 +152,6 @@ async function publishEdgeFromEnv(): Promise<void> {
     );
     if (decision.action === 'skip') {
       console.log(`::notice::${decision.reason}`);
-      setOutput('outcome', decision.outcome);
       return;
     }
   }
@@ -167,7 +161,6 @@ async function publishEdgeFromEnv(): Promise<void> {
   const publishOperationId = await submitForReview({ authHeaders, productId });
   if (!publishOperationId) return;
 
-  setOutput('operation_id', publishOperationId);
   const publishResult = await waitForPublishOperation({
     authHeaders,
     operationId: publishOperationId,
@@ -184,14 +177,12 @@ async function publishEdgeFromEnv(): Promise<void> {
   if (publishResult.decision.action === 'skipped-in-review') {
     console.log('::notice::Edge Add-ons: another submission is currently in review');
     await saveRepositoryVariables(updates);
-    setOutput('outcome', 'skipped-in-review');
     return;
   }
 
   if (publishResult.decision.action === 'skipped-no-updates') {
     console.log('::notice::Edge Add-ons: no publishable draft updates were found');
     await saveRepositoryVariables(updates);
-    setOutput('outcome', 'skipped-no-updates');
     return;
   }
 
@@ -201,21 +192,7 @@ async function publishEdgeFromEnv(): Promise<void> {
     );
   }
 
-  const saved = await saveRepositoryVariables(updates);
-  if (!saved) {
-    setOutput(
-      'outcome',
-      publishResult.decision.action === 'pending'
-        ? 'published-state-pending-not-saved'
-        : 'published-state-not-saved',
-    );
-    return;
-  }
-
-  setOutput(
-    'outcome',
-    publishResult.decision.action === 'pending' ? 'published-state-pending' : 'published',
-  );
+  await saveRepositoryVariables(updates);
 }
 
 async function uploadDraftPackage(input: {
@@ -284,7 +261,6 @@ async function submitForReview(input: {
 
   if (response.status === 404) {
     console.log('::notice::Edge Add-ons: another submission is currently in review');
-    setOutput('outcome', 'skipped-in-review');
     process.exitCode = 0;
     return '';
   }
@@ -390,21 +366,19 @@ function formatEdgeErrors(errors: unknown): string {
   return `errors=${JSON.stringify(errors).slice(0, 500)}`;
 }
 
-async function saveRepositoryVariables(updates: Record<string, string>): Promise<boolean> {
+async function saveRepositoryVariables(updates: Record<string, string>): Promise<void> {
   const repo = optionalEnv('GITHUB_REPOSITORY');
   const token = optionalEnv('REPO_VARIABLES_TOKEN') || optionalEnv('GITHUB_TOKEN');
   if (!repo || !configured(token)) {
     console.log(
       '::warning::Skipping Edge operation state save because repository or token is missing',
     );
-    return false;
+    return;
   }
 
-  let ok = true;
   for (const [name, value] of Object.entries(updates)) {
-    ok = (await upsertRepositoryVariable({ name, repo, token, value })) && ok;
+    await upsertRepositoryVariable({ name, repo, token, value });
   }
-  return ok;
 }
 
 async function upsertRepositoryVariable(input: {
@@ -412,7 +386,7 @@ async function upsertRepositoryVariable(input: {
   repo: string;
   token: string;
   value: string;
-}): Promise<boolean> {
+}): Promise<void> {
   const baseUrl = `https://api.github.com/repos/${input.repo}/actions/variables`;
   const headers = {
     Accept: 'application/vnd.github+json',
@@ -425,14 +399,14 @@ async function upsertRepositoryVariable(input: {
     headers,
     body: JSON.stringify({ name: input.name, value: input.value }),
   });
-  if (updateResponse.ok) return true;
+  if (updateResponse.ok) return;
 
   if (updateResponse.status !== 404) {
     const text = await updateResponse.text();
     console.log(
       `::warning::Failed to update repository variable ${input.name}: HTTP ${updateResponse.status} ${text.slice(0, 160)}`,
     );
-    return false;
+    return;
   }
 
   const createResponse = await fetch(baseUrl, {
@@ -440,13 +414,12 @@ async function upsertRepositoryVariable(input: {
     headers,
     body: JSON.stringify({ name: input.name, value: input.value }),
   });
-  if (createResponse.ok) return true;
+  if (createResponse.ok) return;
 
   const text = await createResponse.text();
   console.log(
     `::warning::Failed to create repository variable ${input.name}: HTTP ${createResponse.status} ${text.slice(0, 160)}`,
   );
-  return false;
 }
 
 function sleep(ms: number): Promise<void> {

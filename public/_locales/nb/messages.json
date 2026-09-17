@@ -586,9 +586,9 @@
     "message": "Bekreft tømming",
     "description": "Second-click confirmation label for clearing diagnostic logs"
   },
-  "media_tab": {
-    "message": "Medier",
-    "description": "Media discovery: tab"
+  "sniffer_tab": {
+    "message": "Oppdaging",
+    "description": "Navigation label for discovering page resources"
   },
   "media_downloads": {
     "message": "Nedlastinger",
@@ -965,7 +965,7 @@
     "message": "Bruk mobil User-Agent"
   },
   "media_settings_title": {
-    "message": "Medieinnstillinger"
+    "message": "Innstillinger for oppdaging"
   },
   "media_settings_any_size": {
     "message": "Alle størrelser"
@@ -1056,5 +1056,17 @@
   },
   "media_settings_close_preview": {
     "message": "Lukk forhåndsvisning"
+  },
+  "sniffer_page_count": {
+    "message": "Ressurser på denne siden: $1",
+    "description": "Resource count for the current browser tab; $1 is the full count"
+  },
+  "sniffer_results": {
+    "message": "Viser $1 av $2 ressurser",
+    "description": "Filtered resources in the selected scope; $1 is visible, $2 is total"
+  },
+  "popup_status_checking": {
+    "message": "Kontrollerer",
+    "description": "Connection status while the desktop check is pending"
   }
 }

@@ -586,9 +586,9 @@
     "message": "Confirma l'esborrat",
     "description": "Second-click confirmation label for clearing diagnostic logs"
   },
-  "media_tab": {
-    "message": "Multimèdia",
-    "description": "Media discovery: tab"
+  "sniffer_tab": {
+    "message": "Detecció",
+    "description": "Navigation label for discovering page resources"
   },
   "media_downloads": {
     "message": "Baixades",
@@ -965,7 +965,7 @@
     "message": "Utilitza un User-Agent mòbil"
   },
   "media_settings_title": {
-    "message": "Configuració de contingut multimèdia"
+    "message": "Configuració de detecció"
   },
   "media_settings_any_size": {
     "message": "Qualsevol mida"
@@ -1056,5 +1056,17 @@
   },
   "media_settings_close_preview": {
     "message": "Tanca la previsualització"
+  },
+  "sniffer_page_count": {
+    "message": "Recursos d’aquesta pàgina: $1",
+    "description": "Resource count for the current browser tab; $1 is the full count"
+  },
+  "sniffer_results": {
+    "message": "Es mostren $1 de $2 recursos",
+    "description": "Filtered resources in the selected scope; $1 is visible, $2 is total"
+  },
+  "popup_status_checking": {
+    "message": "Comprovant",
+    "description": "Connection status while the desktop check is pending"
   }
 }

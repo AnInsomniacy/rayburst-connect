@@ -69,14 +69,14 @@ async function saveSettings(settings: DownloadSettings): Promise<void> {
 }
 
 export async function updateSettings(patch: Partial<DownloadSettings>): Promise<void> {
-  await navigator.locks.request('rayburst-settings', async () => {
+  await navigator.locks.request('settings', async () => {
     await saveSettings({ ...(await loadSettings()), ...patch });
   });
 }
 
 /** Native Web Locks serialize read/modify/write across the popup, options and worker. */
 export async function updateMediaSettings(patch: Partial<MediaSettings>): Promise<void> {
-  await navigator.locks.request('rayburst-settings', async () => {
+  await navigator.locks.request('settings', async () => {
     const settings = await loadSettings();
     await saveSettings({
       ...settings,
@@ -107,7 +107,7 @@ export async function saveDiagnosticEvents(events: DiagnosticEvent[]): Promise<v
 
 export async function saveSnapshot(snapshot: StorageSnapshot): Promise<void> {
   const validated = parseSnapshot(snapshot);
-  await navigator.locks.request('rayburst-settings', () =>
+  await navigator.locks.request('settings', () =>
     storage.setItems(
       SETTINGS_STORAGE_KEYS.map((key) => ({ key: local(key), value: validated[key] })),
     ),

@@ -13,6 +13,7 @@ import { detectMedia, mediaOrigin, type MediaObservation } from './detection';
 import { captureMediaContext } from './request-context';
 import type { MediaCatalog } from './catalog';
 import { selectMedia } from './rules';
+import { countMediaResources } from './resources';
 
 const HTTP_URLS = ['http://*/*', 'https://*/*'];
 const REQUEST_TTL_MS = 2 * 60_000;
@@ -72,11 +73,11 @@ export function startMediaDiscovery(options: {
   }
 
   async function updateBadge(tabId: number) {
-    const count = await catalog.run(
-      (state) =>
-        state.candidates.filter((item) => item.tabId === tabId && item.kind !== 'embedded').length,
-    );
-    await browser.action.setBadgeText({ tabId, text: count ? String(count) : '' });
+    const count = await catalog.run((state) => countMediaResources(state.candidates, tabId));
+    await browser.action.setBadgeText({
+      tabId,
+      text: count ? (count > 99 ? '99+' : String(count)) : '',
+    });
     await browser.action.setBadgeBackgroundColor({ tabId, color: '#7B3ED1' });
   }
 

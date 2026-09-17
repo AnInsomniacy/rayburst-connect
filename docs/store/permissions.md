@@ -36,7 +36,7 @@ inactive local media metadata and request context. It also resumes user-requeste
 
 ### Media discovery and session storage
 
-The Media tab observes response MIME types, media URLs and public media elements.
+The Sniffer tab displays resources discovered from response MIME types, media URLs and public media elements.
 `storage.session` holds a bounded catalogue and operation receipts until expiry or
 browser restart. Cookie/header controls apply to captured context; only user-selected
 media inspection sends that context to the local desktop. Source credentials are not

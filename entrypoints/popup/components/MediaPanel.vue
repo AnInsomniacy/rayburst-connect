@@ -14,7 +14,6 @@ import {
   NDropdown,
   NIcon,
   NTooltip,
-  NTag,
 } from 'naive-ui';
 import {
   sendMediaCommand,
@@ -23,6 +22,7 @@ import {
   type MediaList,
 } from '@/lib/media/messages';
 import { mediaFailureKey, mediaSize } from '@/lib/media/presentation';
+import { countMediaResources, isMediaResource } from '@/lib/media/resources';
 import { useI18n } from '@/shared/i18n/engine';
 import { usePolling } from '@/shared/use-polling';
 import { MEDIA_SESSION_KEY, parseMediaSettings, parseDownloadSettings } from '@/lib/schema';
@@ -46,7 +46,7 @@ import {
 const props = withDefaults(defineProps<{ active?: boolean; expanded?: boolean }>(), {
   active: true,
 });
-const { t, effectiveLocale } = useI18n();
+const { t, tSub, effectiveLocale } = useI18n();
 const state = ref<MediaList | null>(null);
 const tabId = ref<number>();
 const allTabs = ref(false);
@@ -64,11 +64,13 @@ const loading = ref(true);
 const toolsOpen = ref(false);
 const preview = ref<MediaItem>();
 const selected = computed(() => state.value?.items.find((item) => item.id === selectedId.value));
+const resourceCount = computed(() => countMediaResources(state.value?.items ?? []));
+const hasFilter = computed(() => Boolean(query.value.trim()) || kind.value !== 'all');
 const filtered = computed(() => {
-  const needle = query.value.toLowerCase();
+  const needle = query.value.trim().toLowerCase();
   const values = (state.value?.items ?? []).filter(
     (item) =>
-      item.kind !== 'embedded' &&
+      isMediaResource(item) &&
       (kind.value === 'all' || item.kind === kind.value) &&
       `${item.title} ${item.filename} ${item.url} ${item.mime}`.toLowerCase().includes(needle),
   );
@@ -83,20 +85,17 @@ const filtered = computed(() => {
   );
 });
 const kinds = computed(() =>
-  [
-    'all',
-    ...new Set(
-      state.value?.items.filter((item) => item.kind !== 'embedded').map((item) => item.kind),
-    ),
-  ].map((value) => ({
-    value,
-    label:
-      value === 'all'
-        ? t('resources_all')
-        : ['hls', 'dash', 'json'].includes(value)
-          ? value.toUpperCase()
-          : t(`resources_kind_${value}`),
-  })),
+  ['all', ...new Set(state.value?.items.filter(isMediaResource).map((item) => item.kind))].map(
+    (value) => ({
+      value,
+      label:
+        value === 'all'
+          ? t('resources_all')
+          : ['hls', 'dash', 'json'].includes(value)
+            ? value.toUpperCase()
+            : t(`resources_kind_${value}`),
+    }),
+  ),
 );
 const pending = computed(() =>
   Boolean(
@@ -373,9 +372,6 @@ onUnmounted(() => {
           :aria-label="t('media_sources')"
           @update:value="allTabs = $event === 'all'"
         />
-        <NTag size="small" round :bordered="false">{{
-          state?.items.filter((item) => item.kind !== 'embedded').length ?? 0
-        }}</NTag>
         <span class="toolbar-space" />
         <NSwitch
           size="small"
@@ -458,12 +454,15 @@ onUnmounted(() => {
                 :aria-label="t('resources_sort')"
               />
             </div>
+            <p v-if="expanded || allTabs || hasFilter" class="resource-summary">
+              {{ tSub('sniffer_results', [String(filtered.length), String(resourceCount)]) }}
+            </p>
             <div class="resource-list">
               <template v-for="item in filtered" :key="item.id">
                 <article class="resource-row">
                   <NCheckbox
                     :checked="checked.has(item.id)"
-                    :disabled="item.kind === 'embedded' || item.method !== 'GET'"
+                    :disabled="item.method !== 'GET'"
                     :aria-label="item.filename || item.title"
                     @update:checked="toggle(item.id, $event)"
                   />
@@ -497,7 +496,6 @@ onUnmounted(() => {
                       v-else-if="item.sentToDesktop || item.operation?.state === 'submitted'"
                       >{{ t('media_submitted') }}</small
                     >
-                    <small v-else-if="item.kind === 'embedded'">{{ t('media_waiting') }}</small>
                   </button>
                   <div class="row-actions">
                     <NTooltip
@@ -587,6 +585,12 @@ onUnmounted(() => {
   </section>
 </template>
 <style scoped>
+.resource-summary {
+  margin-top: 8px;
+  color: var(--color-on-surface-variant);
+  font-size: 12px;
+}
+
 .resources {
   display: grid;
   gap: 12px;

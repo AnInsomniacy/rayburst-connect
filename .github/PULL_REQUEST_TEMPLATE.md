@@ -52,21 +52,13 @@ If AI was used, specify the tool: <!-- e.g., GitHub Copilot, Claude, ChatGPT -->
 - [ ] PR changes **fewer than 300 lines** of code (excluding tests and generated files)
 - [ ] PR touches **fewer than 10 files**
 - [ ] PR addresses **one concern only** — no mixed features, config tweaks, or unrelated fixes
-- [ ] All commands pass locally:
-  ```
-  pnpm format:check
-  pnpm compile
-  pnpm test
-  pnpm lint
-  pnpm lint:i18n
-  pnpm build
-  ```
+- [ ] I ran checks relevant to this change and listed the results above; required CI passes
 - [ ] Commits follow [Conventional Commits](https://www.conventionalcommits.org/) format
 
 ### If applicable
 
 - [ ] New feature was discussed and approved in an issue before implementation
-- [ ] Tests written **before** implementation (TDD: red → green → refactor)
+- [ ] Tests cover risky behavior or a confirmed regression; omitted tests are explained
 - [ ] i18n keys updated in all supported locales and validated with `pnpm lint:i18n`
 - [ ] Manifest permissions changes are documented in the PR description with justification
 

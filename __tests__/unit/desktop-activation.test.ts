@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { activateDesktop, DesktopActivationError, RAYBURST_NATIVE_HOST } from '@/lib/desktop';
+import { activateDesktop, DesktopActivationError, NATIVE_MESSAGING_HOST } from '@/lib/desktop';
 
 describe('activateDesktop', () => {
   it('sends the exact one-shot activation request', async () => {
@@ -8,7 +8,7 @@ describe('activateDesktop', () => {
     await activateDesktop(sendNativeMessage);
 
     expect(sendNativeMessage).toHaveBeenCalledOnce();
-    expect(sendNativeMessage).toHaveBeenCalledWith(RAYBURST_NATIVE_HOST, {
+    expect(sendNativeMessage).toHaveBeenCalledWith(NATIVE_MESSAGING_HOST, {
       action: 'activate',
     });
   });

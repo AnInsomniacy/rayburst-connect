@@ -586,9 +586,9 @@
     "message": "Confirmer l’effacement",
     "description": "Second-click confirmation label for clearing diagnostic logs"
   },
-  "media_tab": {
-    "message": "Médias",
-    "description": "Media discovery: tab"
+  "sniffer_tab": {
+    "message": "Détection",
+    "description": "Navigation label for discovering page resources"
   },
   "media_downloads": {
     "message": "Téléchargements",
@@ -965,7 +965,7 @@
     "message": "Utiliser un User-Agent mobile"
   },
   "media_settings_title": {
-    "message": "Paramètres des médias"
+    "message": "Paramètres de détection"
   },
   "media_settings_any_size": {
     "message": "Toute taille"
@@ -1056,5 +1056,17 @@
   },
   "media_settings_close_preview": {
     "message": "Fermer l’aperçu"
+  },
+  "sniffer_page_count": {
+    "message": "Ressources sur cette page : $1",
+    "description": "Resource count for the current browser tab; $1 is the full count"
+  },
+  "sniffer_results": {
+    "message": "$1 ressources affichées sur $2",
+    "description": "Filtered resources in the selected scope; $1 is visible, $2 is total"
+  },
+  "popup_status_checking": {
+    "message": "Vérification",
+    "description": "Connection status while the desktop check is pending"
   }
 }

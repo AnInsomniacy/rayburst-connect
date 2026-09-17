@@ -586,9 +586,9 @@
     "message": "Підтвердити очищення",
     "description": "Second-click confirmation label for clearing diagnostic logs"
   },
-  "media_tab": {
-    "message": "Медіа",
-    "description": "Media discovery: tab"
+  "sniffer_tab": {
+    "message": "Перехоплення",
+    "description": "Navigation label for discovering page resources"
   },
   "media_downloads": {
     "message": "Завантаження",
@@ -965,7 +965,7 @@
     "message": "Використовувати мобільний User-Agent"
   },
   "media_settings_title": {
-    "message": "Налаштування медіа"
+    "message": "Налаштування перехоплення"
   },
   "media_settings_any_size": {
     "message": "Будь-який розмір"
@@ -1056,5 +1056,17 @@
   },
   "media_settings_close_preview": {
     "message": "Закрити попередній перегляд"
+  },
+  "sniffer_page_count": {
+    "message": "Ресурсів на цій сторінці: $1",
+    "description": "Resource count for the current browser tab; $1 is the full count"
+  },
+  "sniffer_results": {
+    "message": "Показано $1 із $2 ресурсів",
+    "description": "Filtered resources in the selected scope; $1 is visible, $2 is total"
+  },
+  "popup_status_checking": {
+    "message": "Перевірка",
+    "description": "Connection status while the desktop check is pending"
   }
 }

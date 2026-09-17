@@ -1,20 +1,11 @@
 import { requireStoreIdentity } from './workflow-utils';
 import { createAmoJwt, getFirefoxVersions } from './store-api';
-import { join } from 'node:path';
 
-import { optionalEnv, requiredEnv, runCommand, setOutput, stringField } from './workflow-utils';
+import { requiredEnv, runCommand, stringField } from './workflow-utils';
 
 type FirefoxPublishDecision = {
   action: 'publish' | 'skip';
-  outcome: string;
   reason: string;
-};
-
-type FirefoxSignArgsInput = {
-  apiKey: string;
-  apiSecret: string;
-  sourceCodePath: string;
-  sourceDir: string;
 };
 
 export function decideFirefoxPublishAction(
@@ -25,29 +16,10 @@ export function decideFirefoxPublishAction(
   if (exists) {
     return {
       action: 'skip',
-      outcome: 'skipped-version-exists',
       reason: `Firefox AMO already has version ${targetVersion}`,
     };
   }
-  return { action: 'publish', outcome: 'published', reason: 'Firefox AMO can accept upload' };
-}
-
-export function buildFirefoxSignArgs(input: FirefoxSignArgsInput): string[] {
-  return [
-    'sign',
-    '--source-dir',
-    input.sourceDir,
-    '--channel',
-    'listed',
-    '--api-key',
-    input.apiKey,
-    '--api-secret',
-    input.apiSecret,
-    '--upload-source-code',
-    input.sourceCodePath,
-    '--approval-timeout',
-    '0',
-  ];
+  return { action: 'publish', reason: 'Firefox AMO can accept upload' };
 }
 
 async function publishFirefoxFromEnv(): Promise<void> {
@@ -62,29 +34,28 @@ async function publishFirefoxFromEnv(): Promise<void> {
 
   if (decision.action === 'skip') {
     console.log(`::notice::${decision.reason}`);
-    setOutput('outcome', decision.outcome);
     return;
   }
 
-  const output = runCommand(
-    getWorkflowBinary('web-ext'),
-    buildFirefoxSignArgs({
-      apiKey,
-      apiSecret,
-      sourceDir: '.output/firefox-mv3',
-      sourceCodePath: 'source-code.zip',
-    }),
-  );
+  const output = runCommand('./node_modules/.bin/web-ext', [
+    'sign',
+    '--source-dir',
+    '.output/firefox-mv3',
+    '--channel',
+    'listed',
+    '--api-key',
+    apiKey,
+    '--api-secret',
+    apiSecret,
+    '--upload-source-code',
+    'source-code.zip',
+    '--approval-timeout',
+    '0',
+  ]);
   console.log(output.output);
   if (output.exitCode !== 0) {
     throw new Error(`Firefox AMO signing failed: ${output.output.slice(0, 500)}`);
   }
-  setOutput('outcome', 'published');
-}
-
-function getWorkflowBinary(name: string): string {
-  const runtimeDir = optionalEnv('ACTIONS_RUNTIME_DIR') || '.';
-  return join(runtimeDir, 'node_modules', '.bin', name);
 }
 
 if (process.argv[1]?.endsWith('/publish-firefox.ts')) {

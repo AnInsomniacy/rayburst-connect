@@ -10,13 +10,13 @@ Before you start contributing, make sure you understand [GitHub flow](https://gu
 
 - [Node.js](https://nodejs.org/) 24.16.0 LTS
 - [pnpm](https://pnpm.io/) 10.34.1
-- [Rayburst](https://github.com/AnInsomniacy/motrix-next) desktop app running with its Extension API enabled (for manual testing)
+- [Rayburst](https://github.com/AnInsomniacy/rayburst) desktop app running with its Extension API enabled (for manual testing)
 
 ### Getting Started
 
 ```bash
-git clone https://github.com/AnInsomniacy/motrix-next-extension.git
-cd motrix-next-extension
+git clone https://github.com/AnInsomniacy/rayburst-connect.git
+cd rayburst-connect
 pnpm install
 pnpm dev    # Launch Chrome with the development extension and hot reload
 ```
@@ -40,7 +40,7 @@ To manually test a production build, run `pnpm build`, then:
 
 ## ✅ Code Quality
 
-All checks must pass before PR merge:
+CI runs the source checks below. Run the relevant subset locally:
 
 ```bash
 pnpm format:check    # Prettier formatting
@@ -49,11 +49,10 @@ pnpm test            # Vitest unit and integration tests
 pnpm lint            # ESLint (0 errors, 0 warnings)
 pnpm lint:i18n       # i18n key consistency across locales
 pnpm media:contract:check # Generated desktop media contract
-pnpm build           # Chromium production build
-pnpm build:firefox   # Firefox production build
-pnpm zip             # Chromium store package
-pnpm zip:firefox     # Firefox store package
 ```
+
+For packaging changes, use `pnpm zip:all`; it builds both browsers. Do not run a
+separate build first. Release packaging runs in GitHub Actions.
 
 ## 📐 Code Guidelines
 
@@ -186,7 +185,7 @@ Any PR that adds or modifies manifest permissions must include:
 
 ### Before you push
 
-Run the full check suite locally. PRs that fail any of these will not be reviewed:
+Run checks that cover your changes and report what you verified. Required CI must pass:
 
 ```bash
 pnpm format:check    # Prettier formatting
@@ -194,7 +193,7 @@ pnpm compile         # TypeScript strict mode
 pnpm test            # Vitest unit + integration tests
 pnpm lint            # ESLint
 pnpm lint:i18n       # i18n key consistency
-pnpm build           # Production build
+pnpm build           # Only when verifying bundling or production behavior
 ```
 
 ### AI-assisted development
@@ -206,7 +205,7 @@ Using AI tools (Copilot, Claude, ChatGPT, Cursor, etc.) to assist development is
 1. You must **review and understand every line** you submit, whether you wrote it or an AI did.
 2. You must be able to **explain any change** if asked during review.
 3. Add tests when they protect meaningful behavior. Avoid wrapper tests, copied implementation assertions, and duplicate checks.
-4. All checks must **pass locally** before pushing — not after a chain of fix commits.
+4. Verify the affected behavior before pushing and report the checks performed. Required CI must pass.
 
 **Disclosure:**
 

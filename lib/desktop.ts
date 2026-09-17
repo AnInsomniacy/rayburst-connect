@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 z.config({ jitless: true });
 
-export const RAYBURST_NATIVE_HOST = 'dev.aninsomniacy.rayburst.browser';
+export const NATIVE_MESSAGING_HOST = 'dev.aninsomniacy.rayburst.browser';
 
 const NativeHostErrorCodeSchema = z.enum([
   'untrusted_caller',
@@ -49,7 +49,7 @@ export class DesktopActivationError extends Error {
 export async function activateDesktop(sendNativeMessage: NativeMessageSender): Promise<void> {
   let rawResponse: unknown;
   try {
-    rawResponse = await sendNativeMessage(RAYBURST_NATIVE_HOST, { action: 'activate' });
+    rawResponse = await sendNativeMessage(NATIVE_MESSAGING_HOST, { action: 'activate' });
   } catch (error) {
     throw new DesktopActivationError('host_unavailable', error);
   }

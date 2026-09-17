@@ -10,10 +10,7 @@ import {
   isBlockingChromeSubmissionState,
   readChromeStoreStatus,
 } from '@/scripts/actions/publish-chrome';
-import {
-  buildFirefoxSignArgs,
-  decideFirefoxPublishAction,
-} from '@/scripts/actions/publish-firefox';
+import { decideFirefoxPublishAction } from '@/scripts/actions/publish-firefox';
 import {
   decideEdgePreflightAction,
   classifyEdgePublishOperation,
@@ -44,11 +41,11 @@ describe('release workflow decisions', () => {
 
   it('covers Chrome publish, review, terminal, and existing-version decisions', () => {
     expect(
-      decideChromePublishAction(chromeStatus('1.3.2', 'PUBLISHED', '1.3.2'), '1.3.2').outcome,
-    ).toBe('skipped-version-exists');
-    expect(
-      decideChromePublishAction(chromeStatus('1.3.2', 'PENDING_REVIEW'), '1.3.2').outcome,
-    ).toBe('skipped-pending-review');
+      decideChromePublishAction(chromeStatus('1.3.2', 'PUBLISHED', '1.3.2'), '1.3.2').action,
+    ).toBe('skip');
+    expect(decideChromePublishAction(chromeStatus('1.3.2', 'PENDING_REVIEW'), '1.3.2').action).toBe(
+      'skip',
+    );
     expect(decideChromePublishAction(chromeStatus('1.3.3', 'PENDING_REVIEW'), '1.3.2').action).toBe(
       'skip',
     );
@@ -61,23 +58,13 @@ describe('release workflow decisions', () => {
     expect(isBlockingChromeSubmissionState('PENDING_REVIEW')).toBe(true);
   });
 
-  it('covers Firefox duplicate detection, review states, and signing arguments', () => {
+  it('covers Firefox duplicate detection and review states', () => {
     expect(
       decideFirefoxPublishAction([{ version: '1.3.2', file: { status: 'unreviewed' } }], '1.3.2')
-        .outcome,
-    ).toBe('skipped-version-exists');
+        .action,
+    ).toBe('skip');
     expect(isActiveFirefoxReviewStatus('disabled')).toBe(false);
     expect(isActiveFirefoxReviewStatus('awaiting-review')).toBe(true);
-    expect(
-      buildFirefoxSignArgs({
-        apiKey: 'key',
-        apiSecret: 'secret',
-        sourceDir: '.output/firefox-mv3',
-        sourceCodePath: 'source.zip',
-      }),
-    ).toEqual(
-      expect.arrayContaining(['--channel', 'listed', '--upload-source-code', 'source.zip', '0']),
-    );
   });
 
   it('validates Edge operation identifiers', () => {
@@ -95,8 +82,8 @@ describe('release workflow decisions', () => {
         { status: 'InProgress', message: '', errorCode: '', errors: null },
         '1.3.2',
         '1.3.2',
-      ).outcome,
-    ).toBe('skipped-in-review');
+      ).action,
+    ).toBe('skip');
 
     const fetchMock = vi.fn().mockResolvedValue(new Response('', { status: 404 }));
     vi.stubGlobal('fetch', fetchMock);

@@ -16,6 +16,11 @@ Use Rayburst Connect for the extension and Rayburst for the desktop destination.
 Names are not translated. Use the slogan in promotional material; use direct action
 labels in the interface. Review all project prose with Sepia.
 
+Keep the previous product name in the README migration notice only. Browser IDs
+and Native Messaging names are protocol identities, separate from display copy.
+Internal constants and browser-scoped locks use responsibility names. Keep these
+identities fixed after publication rather than changing them with future branding.
+
 Interface slogans use the existing i18n dictionaries in all 27 supported locales.
 The approved Simplified Chinese slogan is “溯网寻踪，隔空引渡。”
 Use its Traditional Chinese equivalent for zh-TW. Preserve the approved English

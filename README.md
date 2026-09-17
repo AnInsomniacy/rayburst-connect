@@ -1,41 +1,21 @@
 <div align="center">
   <img src="docs/brand/banner.png" alt="Rayburst Connect. Trace the stream, bridge the void." width="800" />
-  <p>Browser extension for <a href="https://github.com/AnInsomniacy/motrix-next">Rayburst</a> — seamless download interception &amp; delegation.</p>
+  <p>Send browser downloads and media to <a href="https://github.com/AnInsomniacy/rayburst">Rayburst</a>.</p>
 
-![Version](https://img.shields.io/github/v/release/AnInsomniacy/motrix-next-extension?label=Version)
-![Build](https://img.shields.io/github/actions/workflow/status/AnInsomniacy/motrix-next-extension/ci.yml?branch=main&label=Build)
+![Version](https://img.shields.io/github/v/release/AnInsomniacy/rayburst-connect?label=Version)
+![Build](https://img.shields.io/github/actions/workflow/status/AnInsomniacy/rayburst-connect/ci.yml?branch=main&label=Build)
 ![Manifest](https://img.shields.io/badge/manifest-v3-blue)
-
-  <p>
-    <a href="https://microsoftedge.microsoft.com/addons/detail/loojjolhejmakcdlbidigoniobfanjlb"><img src="docs/badges/edge-add-ons.png?v=2" alt="Get it from Microsoft Edge" height="58" /></a>
-    &nbsp;&nbsp;
-    <a href="https://chromewebstore.google.com/detail/ofeajdebdjajhkmcmamagokecnbephhl"><img src="docs/badges/chrome-web-store.png?v=2" alt="Available in the Chrome Web Store" height="58" /></a>
-    &nbsp;&nbsp;
-    <a href="https://addons.mozilla.org/firefox/addon/motrix-next-extension/"><img src="docs/badges/firefox-add-ons.svg?v=2" alt="Get the Add-on for Firefox" height="58" /></a>
-  </p>
 
 </div>
 
 > [!IMPORTANT]
-> **Rayburst Connect is the new name of the Motrix Next Extension.** The rebrand is in transition: the GitHub repository and the browser store listings still carry the Motrix Next name until the move completes, so links on this page open `motrix-next-extension`. Rayburst Connect pairs with the Rayburst desktop app; the previous store builds pair with Motrix Next 3.9.x. The upcoming Rayburst Connect release adds media discovery and HLS/DASH track selection. Build from source to try the current code; use GitHub Releases once the new build is published.
+> **Motrix Next Extension is now Rayburst Connect.** This code requires Rayburst 4 or later and uses new browser identities. Previous extension settings are not imported. Browser store publication is managed separately; existing store builds may still target the previous desktop app. Use a Rayburst Connect release or build from source below.
 
 ---
 
-<div align="center">
-  <table><tr>
-    <td><img src="docs/images/popup.png" alt="Popup" width="400" /></td>
-    <td><img src="docs/images/settings.png" alt="Settings" width="400" /></td>
-  </tr><tr>
-    <td align="center"><sub>Popup — Live speed &amp; task dashboard</sub></td>
-    <td align="center"><sub>Settings — Connection, behavior, rules, appearance</sub></td>
-  </tr></table>
-</div>
-
-<p align="center"><sub>Motrix Next interface before rebranding. Rayburst Connect uses the new branding.</sub></p>
-
 ## Features
 
-- **Page media discovery** — Detect HLS/DASH manifests and audio/video sources without interrupting playback. Inspect and choose native tracks from the extension's Media tab, sidebar or full-page workspace through Rayburst's [media API](docs/MEDIA_API.md). See [scope and local testing](docs/MEDIA.md).
+- **Page media discovery** — Detect HLS/DASH manifests and audio/video sources without interrupting playback. Inspect and choose native tracks from the extension's Sniffer tab, sidebar or full-page workspace through Rayburst's [media API](docs/MEDIA_API.md). See [scope and local testing](docs/MEDIA.md).
 
 - **Download interception** — Automatically captures browser downloads and routes them to Rayburst for multi-threaded acceleration
 - **Smart filtering** — Ordered checks for interception settings, extension-owned downloads, URL schemes, site rules, MIME types, file extensions, and minimum file size
@@ -53,25 +33,15 @@
 
 ## Installation
 
-### From Store
-
-The store links currently provide the Motrix Next Extension for Motrix Next 3.9.x. Rayburst Connect requires the new Rayburst desktop app.
-
-| Browser | Link                                                                                               |
-| ------- | -------------------------------------------------------------------------------------------------- |
-| Chrome  | [Chrome Web Store](https://chromewebstore.google.com/detail/ofeajdebdjajhkmcmamagokecnbephhl)      |
-| Edge    | [Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/loojjolhejmakcdlbidigoniobfanjlb) |
-| Firefox | [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/motrix-next-extension/)                 |
-
 ### From GitHub Releases
 
-Once the Rayburst Connect release is published, download `rayburst-connect-x.x.x-chromium-mv3.zip` or `rayburst-connect-x.x.x-firefox-mv3.zip` from [Releases](https://github.com/AnInsomniacy/motrix-next-extension/releases), unpack it, then load it as described under [From Source](#from-source). Until then, build from source below.
+Download `rayburst-connect-x.x.x-chromium-mv3.zip` or `rayburst-connect-x.x.x-firefox-mv3.zip` from [Releases](https://github.com/AnInsomniacy/rayburst-connect/releases), unpack it, then load it as described under [From Source](#from-source). If no Rayburst Connect package is available yet, build from source below.
 
 ### From Source
 
 ```bash
-git clone https://github.com/AnInsomniacy/motrix-next-extension.git
-cd motrix-next-extension
+git clone https://github.com/AnInsomniacy/rayburst-connect.git
+cd rayburst-connect
 pnpm install
 
 # Chrome / Edge
@@ -103,7 +73,7 @@ Then load the unpacked extension:
 
 <br>
 
-[Rayburst](https://github.com/AnInsomniacy/motrix-next) is a full-featured download manager powered by Aria2 Next, built with Tauri 2, Vue 3, and Rust. This extension bridges your browser to the Rayburst desktop app running on your local machine.
+[Rayburst](https://github.com/AnInsomniacy/rayburst) is a full-featured download manager powered by Aria2 Next, built with Tauri 2, Vue 3, and Rust. This extension bridges your browser to the Rayburst desktop app running on your local machine.
 
 </details>
 
@@ -140,7 +110,7 @@ No personal data is sent to the developer or third parties. Settings, diagnostic
 
 - [Node.js](https://nodejs.org/) 24.16.0 LTS
 - [pnpm](https://pnpm.io/) 10.34.1
-- [Rayburst](https://github.com/AnInsomniacy/motrix-next) desktop app running
+- [Rayburst](https://github.com/AnInsomniacy/rayburst) desktop app running
 
 ### Setup
 

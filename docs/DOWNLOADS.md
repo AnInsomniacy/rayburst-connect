@@ -3,7 +3,7 @@
 The desktop provides protocol 2 in `services/downloads/contracts.rs`. This
 repository owns its consumer validators in `lib/download/contracts.ts`; it does
 not import desktop source or run desktop fixtures. The provider's full contract
-is documented in [Download ownership](https://github.com/AnInsomniacy/motrix-next/blob/main/docs/DOWNLOADS.md).
+is documented in [Download ownership](https://github.com/AnInsomniacy/rayburst/blob/main/docs/DOWNLOADS.md).
 
 Before `POST /add`, check authenticated `GET /downloads/capabilities` for
 `protocolVersion: 2` and `filenameHints: true`. An old queued response is not a

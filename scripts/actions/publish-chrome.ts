@@ -13,7 +13,6 @@ import {
   isRecord,
   optionalEnv,
   requiredEnv,
-  setOutput,
   stringField,
 } from './workflow-utils';
 
@@ -25,7 +24,6 @@ type ChromeStoreStatus = {
 
 type ChromePublishDecision = {
   action: 'publish' | 'skip';
-  outcome: string;
   reason: string;
 };
 
@@ -50,7 +48,6 @@ export function decideChromePublishAction(
   if (status.published.version === targetVersion) {
     return {
       action: 'skip',
-      outcome: 'skipped-version-exists',
       reason: `Chrome Web Store already has version ${targetVersion} live`,
     };
   }
@@ -61,7 +58,6 @@ export function decideChromePublishAction(
   if (status.submitted.version === targetVersion && hasBlockingSubmission) {
     return {
       action: 'skip',
-      outcome: 'skipped-pending-review',
       reason: `Chrome Web Store already has version ${targetVersion} submitted as ${status.submitted.state || 'unknown'}`,
     };
   }
@@ -69,12 +65,11 @@ export function decideChromePublishAction(
   if (hasBlockingSubmission) {
     return {
       action: 'skip',
-      outcome: 'skipped-pending-review',
       reason: `Chrome Web Store has version ${status.submitted.version} submitted as ${status.submitted.state || 'unknown'}`,
     };
   }
 
-  return { action: 'publish', outcome: 'published', reason: 'Chrome Web Store can accept upload' };
+  return { action: 'publish', reason: 'Chrome Web Store can accept upload' };
 }
 
 async function publishChromeFromEnv(): Promise<void> {
@@ -94,7 +89,6 @@ async function publishChromeFromEnv(): Promise<void> {
 
   if (decision.action === 'skip') {
     console.log(`::notice::${decision.reason}`);
-    setOutput('outcome', decision.outcome);
     return;
   }
 
@@ -106,10 +100,6 @@ async function publishChromeFromEnv(): Promise<void> {
 
   const publish = await publishChromeItem(config, token);
   console.log(`Chrome Web Store publish state: ${publish.state || 'unknown'}`);
-  setOutput(
-    'outcome',
-    publish.state === 'PENDING_REVIEW' ? 'published-state-pending' : 'published',
-  );
 }
 
 async function fetchChromeStatus(config: ChromeConfig, token: string): Promise<ChromeStoreStatus> {

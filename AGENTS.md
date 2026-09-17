@@ -4,7 +4,7 @@
 > For human contributors, see [README.md](README.md) and [CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
 > [!IMPORTANT]
-> **All changes must meet industrial-grade quality.** Keep the codebase lean: plain functions over classes, one source of truth for every fact, strict TypeScript (no `any`, justify every `as` cast), and full verification (`pnpm compile` + `pnpm test`) before completion.
+> **All changes must meet industrial-grade quality.** Keep the codebase lean: plain functions over classes, one source of truth for every fact, strict TypeScript (no `any`, justify every `as` cast), and verification proportional to the changed behavior.
 
 ---
 
@@ -195,15 +195,15 @@ All code changes must be finalized before starting. Execute in strict order:
 
 4. **User publishes on GitHub** — do **not** check "Set as a pre-release".
    CI automatically:
-   - Runs quality gates and packages `.zip` for Chromium and Firefox
+   - Builds and packages `.zip` for Chromium and Firefox once each
    - Uploads artifacts to the GitHub Release
 
 5. **Publish to stores** — go to Actions → "Publish to Stores" → Run workflow.
    Enter the version number or leave as `latest` to auto-detect. The workflow:
    - Resolves the target tag and checks out the exact release code
-   - Runs the full quality gate against that tag
+   - Downloads the existing packages from that release; no rebuild or repeated quality gate
    - Builds from source and publishes to Chrome Web Store, Firefox AMO, and Edge Add-ons
-   - Generates a summary report showing the status of each store
+   - Reports submission results in each store job
 
 ### Store Publishing Details
 
@@ -238,8 +238,8 @@ This satisfies AMO's source code review requirement without exposing source in t
 job fails, regenerate credentials in Partner Center and update the GitHub Secret.
 
 **Store conflict handling:** Known conflicts (pending review, version exists, submission
-in review) exit 0 to keep CI green. The publish summary report shows the real outcome
-with ⚠️ warnings. Only genuine errors (auth failure, network) cause red CI.
+in review) exit 0 to keep CI green. The step output shows the real outcome
+in each store job. Only genuine errors (auth failure, network) cause red CI.
 
 ### Recovering from a Failed Release
 
@@ -278,43 +278,32 @@ Patch releases: keep concise.
 
 ### `ci.yml` (Push to Main + Pull Requests)
 
-Single job `quality-gate`, using shared local actions:
-
-| Step       | Command                        |
-| ---------- | ------------------------------ |
-| TypeScript | `pnpm compile`                 |
-| Tests      | `pnpm test`                    |
-| Lint       | `pnpm lint`                    |
-| i18n       | `npx tsx scripts/lint-i18n.ts` |
-| Format     | `pnpm format:check`            |
-| Build      | `pnpm build`                   |
+One job runs type checking, behavior tests, ESLint, translation validation, media
+contract consistency and formatting. Superseded CI runs are cancelled. Browser
+packaging belongs to the release workflow, not every push.
 
 ### `release.yml` (Release Published + Manual Dispatch)
 
-1. **quality-gate job** — shared local quality gate
-2. **package job** — `pnpm zip` / `pnpm zip:firefox` → upload `.zip` to GitHub Release (on publish) or Actions artifact (on dispatch)
+One job installs dependencies once and runs `pnpm zip:all`. WXT builds each browser
+as part of packaging. Published releases receive both ZIPs; manual runs archive them.
+Do not add a separate build before `wxt zip` or repeat the CI suite here.
 
 ### `publish.yml` (Manual Dispatch Only)
 
-1. **resolve-version job** — `scripts/actions/resolve-release.ts`, production releases only
-2. **quality-gate job** — shared local quality gate against the exact tag commit
-3. **publish-chrome job** — `scripts/actions/publish-chrome.ts`
-4. **publish-firefox job** — `scripts/actions/publish-firefox.ts`
-5. **publish-edge job** — `scripts/actions/publish-edge.ts`, saves Edge operation variables after submission
-6. **publish-summary job** — `scripts/actions/publish-summary.ts`
+The resolver selects a production release. Chrome, Firefox and Edge jobs download
+its existing packages and submit them through `scripts/actions`. Firefox also receives
+the source archive for that exact tag. Store jobs do not rebuild or rerun source tests.
+Each job reports its own result; no separate summary runner is needed.
 
 ### `store-status.yml` (Manual Dispatch Only)
 
-Runs `scripts/actions/store-status.ts` and writes a direct markdown report to the
-Actions summary. `latest` resolves to the newest production GitHub Release only;
-beta/prerelease tags are rejected.
+`scripts/actions/store-status.ts` reports current store status. `latest` selects a
+production GitHub Release; prerelease tags are rejected.
 
-### Shared Actions
+### Shared Setup
 
-| Action                            | Responsibility                                                   |
-| --------------------------------- | ---------------------------------------------------------------- |
-| `.github/actions/setup-node-pnpm` | Node from `.nvmrc`, pnpm from `package.json`, dependency install |
-| `.github/actions/quality-gate`    | Compile, test, lint, i18n, formatting                            |
+`.github/actions/setup-node-pnpm` reads `.nvmrc` and `package.json` and installs the
+locked dependencies. Keep checks directly in `ci.yml`; no configurable gate wrapper.
 
 ---
 
@@ -340,7 +329,7 @@ beta/prerelease tags are rejected.
 
 ## H. Verification Commands
 
-Run these before committing changes:
+Select checks for the changed surface; builds and ZIPs are for packaging changes:
 
 ```bash
 pnpm format           # Auto-format all files
@@ -355,7 +344,7 @@ pnpm zip              # Package for store submission
 
 > **Every commit MUST pass `pnpm format:check`.** Run `pnpm format` before committing if you edit any source file.
 
-All checks must pass with zero errors before any PR or release.
+Required CI must pass. Keep coverage optional and do not add percentage quotas. Do not repeat builds that packaging commands already perform.
 
 ---
 

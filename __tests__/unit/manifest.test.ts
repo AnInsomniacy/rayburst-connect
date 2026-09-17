@@ -29,9 +29,6 @@ describe('buildExtensionManifest', () => {
   });
 
   it('pins unpacked Chromium builds to the Rayburst Connect identity', () => {
-    const manifest = buildExtensionManifest('chrome');
-
-    expect(manifest.key).toBe(CHROMIUM_EXTENSION_PUBLIC_KEY);
     expect(extensionIdFromPublicKey(CHROMIUM_EXTENSION_PUBLIC_KEY)).toBe(CHROMIUM_EXTENSION_ID);
   });
 

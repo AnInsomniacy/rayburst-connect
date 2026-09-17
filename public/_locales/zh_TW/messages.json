@@ -586,9 +586,9 @@
     "message": "確認清除",
     "description": "Second-click confirmation label for clearing diagnostic logs"
   },
-  "media_tab": {
-    "message": "媒體",
-    "description": "Media discovery: tab"
+  "sniffer_tab": {
+    "message": "嗅探",
+    "description": "Navigation label for discovering page resources"
   },
   "media_downloads": {
     "message": "下載",
@@ -965,7 +965,7 @@
     "message": "使用行動版 User-Agent"
   },
   "media_settings_title": {
-    "message": "媒體設定"
+    "message": "嗅探設定"
   },
   "media_settings_any_size": {
     "message": "不限大小"
@@ -1056,5 +1056,17 @@
   },
   "media_settings_close_preview": {
     "message": "關閉預覽"
+  },
+  "sniffer_page_count": {
+    "message": "目前網頁資源：$1 項",
+    "description": "Resource count for the current browser tab; $1 is the full count"
+  },
+  "sniffer_results": {
+    "message": "顯示 $1 / $2 項資源",
+    "description": "Filtered resources in the selected scope; $1 is visible, $2 is total"
+  },
+  "popup_status_checking": {
+    "message": "檢查中",
+    "description": "Connection status while the desktop check is pending"
   }
 }

@@ -586,9 +586,9 @@
     "message": "Törlés megerősítése",
     "description": "Second-click confirmation label for clearing diagnostic logs"
   },
-  "media_tab": {
-    "message": "Média",
-    "description": "Media discovery: tab"
+  "sniffer_tab": {
+    "message": "Felderítés",
+    "description": "Navigation label for discovering page resources"
   },
   "media_downloads": {
     "message": "Letöltések",
@@ -965,7 +965,7 @@
     "message": "Mobil User-Agent használata"
   },
   "media_settings_title": {
-    "message": "Médiabeállítások"
+    "message": "Felderítési beállítások"
   },
   "media_settings_any_size": {
     "message": "Bármilyen méret"
@@ -1056,5 +1056,17 @@
   },
   "media_settings_close_preview": {
     "message": "Előnézet bezárása"
+  },
+  "sniffer_page_count": {
+    "message": "Erőforrások ezen az oldalon: $1",
+    "description": "Resource count for the current browser tab; $1 is the full count"
+  },
+  "sniffer_results": {
+    "message": "$1 / $2 erőforrás megjelenítve",
+    "description": "Filtered resources in the selected scope; $1 is visible, $2 is total"
+  },
+  "popup_status_checking": {
+    "message": "Ellenőrzés",
+    "description": "Connection status while the desktop check is pending"
   }
 }

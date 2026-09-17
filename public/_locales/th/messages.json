@@ -586,9 +586,9 @@
     "message": "ยืนยันการล้าง",
     "description": "Second-click confirmation label for clearing diagnostic logs"
   },
-  "media_tab": {
-    "message": "สื่อ",
-    "description": "Media discovery: tab"
+  "sniffer_tab": {
+    "message": "ตรวจจับ",
+    "description": "Navigation label for discovering page resources"
   },
   "media_downloads": {
     "message": "การดาวน์โหลด",
@@ -965,7 +965,7 @@
     "message": "ใช้ User-Agent ของมือถือ"
   },
   "media_settings_title": {
-    "message": "การตั้งค่าสื่อ"
+    "message": "การตั้งค่าการตรวจจับ"
   },
   "media_settings_any_size": {
     "message": "ทุกขนาด"
@@ -1056,5 +1056,17 @@
   },
   "media_settings_close_preview": {
     "message": "ปิดตัวอย่าง"
+  },
+  "sniffer_page_count": {
+    "message": "ทรัพยากรในหน้านี้: $1",
+    "description": "Resource count for the current browser tab; $1 is the full count"
+  },
+  "sniffer_results": {
+    "message": "แสดง $1 จาก $2 ทรัพยากร",
+    "description": "Filtered resources in the selected scope; $1 is visible, $2 is total"
+  },
+  "popup_status_checking": {
+    "message": "กำลังตรวจสอบ",
+    "description": "Connection status while the desktop check is pending"
   }
 }

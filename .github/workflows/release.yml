@@ -9,47 +9,18 @@ permissions:
   contents: write
 
 jobs:
-  quality-gate:
-    name: Quality Gate
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: ./.github/actions/setup-node-pnpm
-
-      - uses: ./.github/actions/quality-gate
-
   package:
-    name: Package & Publish (${{ matrix.browser }})
-    needs: quality-gate
+    name: Package Chromium and Firefox
     runs-on: ubuntu-24.04
     timeout-minutes: 10
-
-    strategy:
-      matrix:
-        include:
-          - browser: chromium
-            zip_cmd: pnpm zip
-          - browser: firefox
-            zip_cmd: pnpm zip:firefox
 
     steps:
       - uses: actions/checkout@v6
 
       - uses: ./.github/actions/setup-node-pnpm
 
-      - name: Build and package (${{ matrix.browser }})
-        run: ${{ matrix.zip_cmd }}
-
-      - name: Identify artifact
-        id: artifact
-        run: |
-          ZIP=$(ls .output/*-mv3.zip)
-          echo "path=$ZIP" >> "$GITHUB_OUTPUT"
-          echo "name=$(basename $ZIP)" >> "$GITHUB_OUTPUT"
-          echo "Packaged: $ZIP ($(du -h $ZIP | cut -f1))"
+      - name: Build and package both browsers
+        run: pnpm zip:all
 
       - name: Upload to GitHub Release
         if: github.event_name == 'release'
@@ -57,7 +28,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload "${{ github.event.release.tag_name }}" \
-            "${{ steps.artifact.outputs.path }}" \
+            .output/*-mv3.zip \
             --clobber \
             -R "${{ github.repository }}"
 
@@ -65,6 +36,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ steps.artifact.outputs.name }}
-          path: ${{ steps.artifact.outputs.path }}
-          retention-days: 30
+          name: browser-packages
+          path: .output/*-mv3.zip
+          if-no-files-found: error
+          retention-days: 7

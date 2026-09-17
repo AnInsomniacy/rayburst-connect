@@ -321,7 +321,7 @@ const StorageSnapshotSchema = lenient(
 
 export type StorageSnapshot = z.output<typeof StorageSnapshotSchema>;
 
-export const SETTINGS_BACKUP_KIND = 'rayburst-connect-settings';
+export const SETTINGS_BACKUP_KIND = 'browser-extension-settings';
 
 export const SettingsBackupSchema = z.strictObject({
   kind: z.literal(SETTINGS_BACKUP_KIND),

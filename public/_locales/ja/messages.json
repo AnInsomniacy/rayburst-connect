@@ -586,9 +586,9 @@
     "message": "消去を確認",
     "description": "Second-click confirmation label for clearing diagnostic logs"
   },
-  "media_tab": {
-    "message": "メディア",
-    "description": "Media discovery: tab"
+  "sniffer_tab": {
+    "message": "検出",
+    "description": "Navigation label for discovering page resources"
   },
   "media_downloads": {
     "message": "ダウンロード",
@@ -965,7 +965,7 @@
     "message": "モバイルの User-Agent を使用"
   },
   "media_settings_title": {
-    "message": "メディア設定"
+    "message": "検出設定"
   },
   "media_settings_any_size": {
     "message": "サイズ制限なし"
@@ -1056,5 +1056,17 @@
   },
   "media_settings_close_preview": {
     "message": "プレビューを閉じる"
+  },
+  "sniffer_page_count": {
+    "message": "このページのリソース数: $1",
+    "description": "Resource count for the current browser tab; $1 is the full count"
+  },
+  "sniffer_results": {
+    "message": "$2 件中 $1 件のリソースを表示",
+    "description": "Filtered resources in the selected scope; $1 is visible, $2 is total"
+  },
+  "popup_status_checking": {
+    "message": "確認中",
+    "description": "Connection status while the desktop check is pending"
   }
 }

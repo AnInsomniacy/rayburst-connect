@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n/engine';
 import BrandLogo from '@/shared/components/BrandLogo.vue';
 
 const props = defineProps<{
-  status: ConnectionStatus | 'launching';
+  status: ConnectionStatus | 'launching' | 'checking';
   version: string | null;
   enabled: boolean;
 }>();
@@ -28,7 +28,7 @@ const { t: i18n } = useI18n();
         class="popup-header__badge"
         :class="{
           'popup-header__badge--ok': status === 'connected',
-          'popup-header__badge--pending': status === 'launching',
+          'popup-header__badge--pending': status === 'launching' || status === 'checking',
           'popup-header__badge--err': status === 'disconnected',
         }"
       >
@@ -39,7 +39,9 @@ const { t: i18n } = useI18n();
                 ? i18n('popup_status_connected', 'Connected')
                 : status === 'launching'
                   ? i18n('popup_status_launching', 'Starting')
-                  : i18n('popup_status_disconnected', 'Disconnected')
+                  : status === 'checking'
+                    ? i18n('popup_status_checking')
+                    : i18n('popup_status_disconnected', 'Disconnected')
             }}
           </span>
         </Transition>

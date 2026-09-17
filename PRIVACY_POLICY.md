@@ -4,7 +4,7 @@
 
 ## Overview
 
-Rayburst Connect ("the Extension") is a browser extension that intercepts browser downloads and redirects them to the [Rayburst](https://github.com/AnInsomniacy/motrix-next) desktop application for accelerated downloading via aria2.
+Rayburst Connect ("the Extension") is a browser extension that intercepts browser downloads and redirects them to the [Rayburst](https://github.com/AnInsomniacy/rayburst) desktop application for accelerated downloading via aria2.
 
 This privacy policy explains what data the Extension accesses, how it is used, and how it is protected.
 
@@ -148,10 +148,10 @@ If this privacy policy is updated, the changes will be reflected in this documen
 
 The Extension is open source under the MIT License. The complete source code is available for inspection at:
 
-https://github.com/AnInsomniacy/motrix-next-extension
+https://github.com/AnInsomniacy/rayburst-connect
 
 ## Contact
 
 For privacy-related questions or concerns, please open an issue on the GitHub repository:
 
-https://github.com/AnInsomniacy/motrix-next-extension/issues
+https://github.com/AnInsomniacy/rayburst-connect/issues

@@ -586,9 +586,9 @@
     "message": "Confirmă ștergerea",
     "description": "Second-click confirmation label for clearing diagnostic logs"
   },
-  "media_tab": {
-    "message": "Media",
-    "description": "Media discovery: tab"
+  "sniffer_tab": {
+    "message": "Detectare",
+    "description": "Navigation label for discovering page resources"
   },
   "media_downloads": {
     "message": "Descărcări",
@@ -965,7 +965,7 @@
     "message": "Folosește un User-Agent mobil"
   },
   "media_settings_title": {
-    "message": "Setări media"
+    "message": "Setări de detectare"
   },
   "media_settings_any_size": {
     "message": "Orice dimensiune"
@@ -1056,5 +1056,17 @@
   },
   "media_settings_close_preview": {
     "message": "Închide previzualizarea"
+  },
+  "sniffer_page_count": {
+    "message": "Resurse pe această pagină: $1",
+    "description": "Resource count for the current browser tab; $1 is the full count"
+  },
+  "sniffer_results": {
+    "message": "Se afișează $1 din $2 resurse",
+    "description": "Filtered resources in the selected scope; $1 is visible, $2 is total"
+  },
+  "popup_status_checking": {
+    "message": "Se verifică",
+    "description": "Connection status while the desktop check is pending"
   }
 }

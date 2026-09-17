@@ -629,7 +629,7 @@ onUnmounted(() => {
             </div>
 
             <div v-else-if="activeSection === 'media'" key="media" class="section-wrapper">
-              <h2 class="section-title">{{ i18n('media_tab') }}</h2>
+              <h2 class="section-title">{{ i18n('sniffer_tab') }}</h2>
               <div class="card">
                 <MediaSettingsSection
                   :value="draft.settings.mediaDiscovery"

@@ -30,6 +30,8 @@ import { createI18n, I18N_KEY, useNaiveLocale } from '@/shared/i18n/engine';
 import PopupHeader from './components/PopupHeader.vue';
 import StatDashboard from './components/StatDashboard.vue';
 import MediaPanel from './components/MediaPanel.vue';
+import ResourceCount from './components/ResourceCount.vue';
+import { usePopupNavigation } from './use-navigation';
 
 // ─── i18n + Theme ───────────────────────────────────────
 
@@ -50,7 +52,8 @@ const connectionPort = ref(DEFAULT_CONNECTION_CONFIG.port);
 const globalStat = ref<StatResponse | null>(null);
 const enabled = ref(true);
 const opening = ref(false);
-const view = ref('downloads');
+const { view, count: resourceCount, ready: navigationReady } = usePopupNavigation();
+const settingsReady = ref(false);
 const popupContent = ref<InstanceType<typeof window.HTMLElement>>();
 const popupHeight = ref<number>();
 let resizeObserver: InstanceType<typeof window.ResizeObserver> | undefined;
@@ -188,6 +191,7 @@ onMounted(async () => {
   connectionPort.value = data.connection.port;
   apiClient.updateConfig(data.connection);
   bindStorageChanges();
+  settingsReady.value = true;
 
   const poller = usePolling({
     fn: fetchData,
@@ -219,7 +223,7 @@ onUnmounted(() => {
       :dir="['ar', 'fa'].includes(effectiveLocale) ? 'rtl' : 'ltr'"
     >
       <div ref="popupContent" class="popup-content">
-        <div v-if="phase === 'initializing'" class="popup-skeleton" aria-busy="true">
+        <div v-if="!settingsReady || !navigationReady" class="popup-skeleton" aria-busy="true">
           <div class="popup-skeleton__header">
             <NSkeleton width="64px" height="24px" />
             <NSkeleton width="84px" height="18px" round />
@@ -238,11 +242,13 @@ onUnmounted(() => {
         <template v-else>
           <PopupHeader
             :status="
-              phase === 'connected'
-                ? 'connected'
-                : phase === 'launching'
-                  ? 'launching'
-                  : 'disconnected'
+              phase === 'initializing'
+                ? 'checking'
+                : phase === 'connected'
+                  ? 'connected'
+                  : phase === 'launching'
+                    ? 'launching'
+                    : 'disconnected'
             "
             :version="version"
             :enabled="enabled"
@@ -262,7 +268,16 @@ onUnmounted(() => {
               <div class="popup-viewport">
                 <Transition name="phase-switch" mode="out-in">
                   <section
-                    v-if="phase === 'launching'"
+                    v-if="phase === 'initializing'"
+                    key="initializing"
+                    class="popup-page popup-skeleton"
+                    aria-busy="true"
+                  >
+                    <NSkeleton height="108px" :sharp="false" />
+                    <NSkeleton height="108px" :sharp="false" />
+                  </section>
+                  <section
+                    v-else-if="phase === 'launching'"
                     key="launching"
                     class="popup-page popup-launching"
                   >
@@ -388,9 +403,18 @@ onUnmounted(() => {
                 </Transition>
               </div>
             </NTabPane>
-            <NTabPane name="media" :tab="i18n('media_tab')" display-directive="show:lazy"
-              ><MediaPanel :active="view === 'media'"
-            /></NTabPane>
+            <NTabPane name="media" display-directive="show:lazy">
+              <template #tab>
+                <span class="sniffer-tab">
+                  <span>{{ i18n('sniffer_tab') }}</span>
+                  <ResourceCount
+                    :count="resourceCount"
+                    :label="i18nSub('sniffer_page_count', [String(resourceCount)])"
+                  />
+                </span>
+              </template>
+              <MediaPanel :active="view === 'media'" />
+            </NTabPane>
           </NTabs>
         </template>
       </div>
@@ -399,6 +423,13 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.sniffer-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
 .popup-root {
   width: 420px;
   overflow: hidden;

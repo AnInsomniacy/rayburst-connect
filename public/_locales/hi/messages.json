@@ -586,9 +586,9 @@
     "message": "साफ़ करने की पुष्टि",
     "description": "Second-click confirmation label for clearing diagnostic logs"
   },
-  "media_tab": {
-    "message": "मीडिया",
-    "description": "Media discovery: tab"
+  "sniffer_tab": {
+    "message": "खोज",
+    "description": "Navigation label for discovering page resources"
   },
   "media_downloads": {
     "message": "डाउनलोड",
@@ -965,7 +965,7 @@
     "message": "मोबाइल User-Agent इस्तेमाल करें"
   },
   "media_settings_title": {
-    "message": "मीडिया सेटिंग"
+    "message": "खोज सेटिंग्स"
   },
   "media_settings_any_size": {
     "message": "कोई भी आकार"
@@ -1056,5 +1056,17 @@
   },
   "media_settings_close_preview": {
     "message": "पूर्वावलोकन बंद करें"
+  },
+  "sniffer_page_count": {
+    "message": "इस पेज पर संसाधन: $1",
+    "description": "Resource count for the current browser tab; $1 is the full count"
+  },
+  "sniffer_results": {
+    "message": "$2 में से $1 संसाधन दिखाए जा रहे हैं",
+    "description": "Filtered resources in the selected scope; $1 is visible, $2 is total"
+  },
+  "popup_status_checking": {
+    "message": "जाँच जारी है",
+    "description": "Connection status while the desktop check is pending"
   }
 }

@@ -6,6 +6,13 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   quality-gate:
     name: Quality Gate
@@ -17,7 +24,20 @@ jobs:
 
       - uses: ./.github/actions/setup-node-pnpm
 
-      - uses: ./.github/actions/quality-gate
-        with:
-          build_chromium: 'true'
-          build_firefox: 'true'
+      - name: Type check
+        run: pnpm compile
+
+      - name: Test
+        run: pnpm test
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Check translations
+        run: pnpm lint:i18n
+
+      - name: Check media contract
+        run: pnpm media:contract:check
+
+      - name: Check formatting
+        run: pnpm format:check

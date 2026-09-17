@@ -40,19 +40,15 @@ pnpm format --log-level warn 2>/dev/null || true
 
 # ── Pre-release verification gate ────────────────────────────────
 # Every check must pass before we commit, tag, or push.
-# This mirrors CI and packaging so release tags are only created from
-# source that already builds into store-ready artifacts locally.
+# Run source checks locally; GitHub Actions owns release packaging.
 echo "Running pre-release checks..."
 
 pnpm compile || { echo "❌ TypeScript type check failed."; exit 1; }
 pnpm test || { echo "❌ Tests failed."; exit 1; }
 pnpm lint || { echo "❌ ESLint check failed."; exit 1; }
-npx tsx scripts/lint-i18n.ts || { echo "❌ i18n lint failed."; exit 1; }
+pnpm lint:i18n || { echo "❌ i18n lint failed."; exit 1; }
+pnpm media:contract:check
 pnpm format:check || { echo "❌ Format check failed. Run 'pnpm format' first."; exit 1; }
-pnpm build || { echo "❌ Chromium build failed."; exit 1; }
-pnpm build:firefox || { echo "❌ Firefox build failed."; exit 1; }
-pnpm zip || { echo "❌ Chromium zip packaging failed."; exit 1; }
-pnpm zip:firefox || { echo "❌ Firefox zip packaging failed."; exit 1; }
 
 echo "✓ All pre-release checks passed"
 

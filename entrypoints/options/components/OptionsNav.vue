@@ -37,7 +37,7 @@ const sections = [
     icon: SettingsOutline,
     label: () => t('options_section_behavior', 'Download'),
   },
-  { id: 'media', icon: VideocamOutline, label: () => t('media_tab') },
+  { id: 'media', icon: VideocamOutline, label: () => t('sniffer_tab') },
   { id: 'rules', icon: ListOutline, label: () => t('options_section_rules', 'Rules') },
   {
     id: 'appearance',

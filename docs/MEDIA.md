@@ -5,10 +5,16 @@ storage. Aria2 Next inspects, downloads, decrypts and remuxes the result.
 
 ## User flow
 
-Play media and open the **Media** tab, native browser sidebar or full-page workspace.
+Play media and open the **Sniffer** tab, native browser sidebar or full-page workspace.
 Browse the current tab or all tabs, filter by type/name/URL, and sort by time, name
 or size. TS and standalone subtitle capture are off by default; M4S capture remains on. Type filters are available for captured resources. Select resources for batch download,
 URL copy, track combination or ordered fragment concatenation.
+
+The popup opens Sniffer when the current page has resources, or Downloads otherwise.
+Later discoveries update the count without switching tabs. The tab badge counts current-page
+resources, excluding player placeholders, and stays independent of list filters or scope.
+Counts above 99 display as `99+`; the full count remains in the accessible label and tooltip.
+Filtered and all-page lists show their own result counts.
 
 Each row offers copy, inspection, inline preview and download. HLS/DASH inspection opens native track selection. Quick download uses the native defaults for finite sources without track choices; multiple choices and live sources require confirmation. Choose video, audio, subtitles,
 container and a finite time range or live recording limit. Confirmation starts the
@@ -53,7 +59,7 @@ Native media-element controls provide seeking, volume, speed, loop, mute,
 Picture-in-Picture, fullscreen and screenshots. Browser gesture and permission
 requirements still apply.
 
-The **Media** section in extension settings owns capture policy. Extension and MIME
+The **Sniffer** section in extension settings owns capture policy. Extension and MIME
 tables support enable/disable switches, resource classification, native numeric
 size comparisons and inclusive ranges. Unknown lengths remain eligible. An explicit
 disabled extension wins over MIME fallback. Ordered regular expressions can capture,

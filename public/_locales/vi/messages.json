@@ -586,9 +586,9 @@
     "message": "Xác nhận xóa",
     "description": "Second-click confirmation label for clearing diagnostic logs"
   },
-  "media_tab": {
-    "message": "Phương tiện",
-    "description": "Media discovery: tab"
+  "sniffer_tab": {
+    "message": "Phát hiện",
+    "description": "Navigation label for discovering page resources"
   },
   "media_downloads": {
     "message": "Tải xuống",
@@ -965,7 +965,7 @@
     "message": "Dùng User-Agent di động"
   },
   "media_settings_title": {
-    "message": "Cài đặt phương tiện"
+    "message": "Cài đặt phát hiện"
   },
   "media_settings_any_size": {
     "message": "Mọi kích thước"
@@ -1056,5 +1056,17 @@
   },
   "media_settings_close_preview": {
     "message": "Đóng xem trước"
+  },
+  "sniffer_page_count": {
+    "message": "Tài nguyên trên trang này: $1",
+    "description": "Resource count for the current browser tab; $1 is the full count"
+  },
+  "sniffer_results": {
+    "message": "Hiển thị $1 trong $2 tài nguyên",
+    "description": "Filtered resources in the selected scope; $1 is visible, $2 is total"
+  },
+  "popup_status_checking": {
+    "message": "Đang kiểm tra",
+    "description": "Connection status while the desktop check is pending"
   }
 }

@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   resolve-version:
-    if: vars.RAYBURST_STORE_PUBLISHING_ENABLED == 'true'
+    if: vars.STORE_PUBLISHING_ENABLED == 'true'
     name: Resolve Version
     runs-on: ubuntu-24.04
     timeout-minutes: 2
@@ -35,65 +35,25 @@ jobs:
           RELEASE_INPUT: ${{ inputs.version }}
         run: pnpm exec tsx scripts/actions/resolve-release.ts
 
-  quality-gate:
-    name: Quality Gate
+  publish-chrome:
+    name: Publish to Chrome Web Store
     needs: resolve-version
     runs-on: ubuntu-24.04
     timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v6
-        with:
-          path: workflow
-          ref: main
 
-      - uses: actions/checkout@v6
-        with:
-          path: source
-          ref: ${{ needs.resolve-version.outputs.tag }}
+      - uses: ./.github/actions/setup-node-pnpm
 
-      - uses: ./workflow/.github/actions/setup-node-pnpm
-        with:
-          working-directory: source
-
-      - uses: ./workflow/.github/actions/quality-gate
-        with:
-          working-directory: source
-
-  publish-chrome:
-    name: Publish to Chrome Web Store
-    needs: [resolve-version, quality-gate]
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    outputs:
-      outcome: ${{ steps.publish.outputs.outcome }}
-
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          path: workflow
-          ref: main
-
-      - uses: actions/checkout@v6
-        with:
-          path: source
-          ref: ${{ needs.resolve-version.outputs.tag }}
-
-      - uses: ./workflow/.github/actions/setup-node-pnpm
-        with:
-          working-directory: source
-
-      - uses: ./workflow/.github/actions/setup-node-pnpm
-        with:
-          working-directory: workflow
-
-      - name: Build and package (Chromium)
-        working-directory: source
-        run: pnpm zip
+      - name: Download published Chromium package
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.resolve-version.outputs.tag }}
+          VERSION: ${{ needs.resolve-version.outputs.version }}
+        run: gh release download "$RELEASE_TAG" --pattern "rayburst-connect-${VERSION}-chromium-mv3.zip" --dir .output
 
       - name: Upload and publish to Chrome Web Store
-        id: publish
-        working-directory: source
         env:
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
@@ -101,89 +61,56 @@ jobs:
           CHROME_PUBLISHER_ID: ${{ vars.CHROME_PUBLISHER_ID }}
           CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
           VERSION: ${{ needs.resolve-version.outputs.version }}
-          ACTIONS_RUNTIME_DIR: ../workflow
-        run: ../workflow/node_modules/.bin/tsx ../workflow/scripts/actions/publish-chrome.ts
+        run: pnpm exec tsx scripts/actions/publish-chrome.ts
 
   publish-firefox:
     name: Publish to Firefox AMO
-    needs: [resolve-version, quality-gate]
+    needs: resolve-version
     runs-on: ubuntu-24.04
     timeout-minutes: 15
-    outputs:
-      outcome: ${{ steps.publish.outputs.outcome }}
 
     steps:
       - uses: actions/checkout@v6
-        with:
-          path: workflow
-          ref: main
 
-      - uses: actions/checkout@v6
-        with:
-          path: source
-          ref: ${{ needs.resolve-version.outputs.tag }}
+      - uses: ./.github/actions/setup-node-pnpm
 
-      - uses: ./workflow/.github/actions/setup-node-pnpm
-        with:
-          working-directory: source
-
-      - uses: ./workflow/.github/actions/setup-node-pnpm
-        with:
-          working-directory: workflow
-
-      - name: Build (Firefox)
-        working-directory: source
-        run: pnpm build:firefox
-
-      - name: Package source code for AMO review
-        working-directory: source
-        run: git archive --format=zip --output=source-code.zip HEAD
+      - name: Download published Firefox package and source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.resolve-version.outputs.tag }}
+          VERSION: ${{ needs.resolve-version.outputs.version }}
+        run: |
+          gh release download "$RELEASE_TAG" --pattern "rayburst-connect-${VERSION}-firefox-mv3.zip" --dir .output
+          unzip -q ".output/rayburst-connect-${VERSION}-firefox-mv3.zip" -d .output/firefox-mv3
+          gh api "repos/${GITHUB_REPOSITORY}/zipball/${RELEASE_TAG}" > source-code.zip
 
       - name: Sign and submit to AMO
-        id: publish
-        working-directory: source
         env:
           FIREFOX_API_KEY: ${{ secrets.FIREFOX_API_KEY }}
           FIREFOX_API_SECRET: ${{ secrets.FIREFOX_API_SECRET }}
           FIREFOX_ADDON_SLUG: ${{ vars.FIREFOX_ADDON_SLUG }}
           VERSION: ${{ needs.resolve-version.outputs.version }}
-          ACTIONS_RUNTIME_DIR: ../workflow
-        run: ../workflow/node_modules/.bin/tsx ../workflow/scripts/actions/publish-firefox.ts
+        run: pnpm exec tsx scripts/actions/publish-firefox.ts
 
   publish-edge:
     name: Publish to Edge Add-ons
-    needs: [resolve-version, quality-gate]
+    needs: resolve-version
     runs-on: ubuntu-24.04
     timeout-minutes: 10
-    outputs:
-      outcome: ${{ steps.publish.outputs.outcome }}
 
     steps:
       - uses: actions/checkout@v6
-        with:
-          path: workflow
-          ref: main
 
-      - uses: actions/checkout@v6
-        with:
-          path: source
-          ref: ${{ needs.resolve-version.outputs.tag }}
+      - uses: ./.github/actions/setup-node-pnpm
 
-      - uses: ./workflow/.github/actions/setup-node-pnpm
-        with:
-          working-directory: source
-
-      - uses: ./workflow/.github/actions/setup-node-pnpm
-        with:
-          working-directory: workflow
-
-      - name: Build and package (Chromium)
-        working-directory: source
-        run: pnpm zip
+      - name: Download published Chromium package
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.resolve-version.outputs.tag }}
+          VERSION: ${{ needs.resolve-version.outputs.version }}
+        run: gh release download "$RELEASE_TAG" --pattern "rayburst-connect-${VERSION}-chromium-mv3.zip" --dir .output
 
       - name: Upload and publish to Edge Add-ons
-        id: publish
-        working-directory: source
         env:
           EDGE_EXTENSION_ID: ${{ vars.EDGE_EXTENSION_ID }}
           EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
@@ -194,29 +121,4 @@ jobs:
           EDGE_LAST_OPERATION_ID: ${{ vars.EDGE_LAST_OPERATION_ID }}
           EDGE_LAST_OPERATION_VERSION: ${{ vars.EDGE_LAST_OPERATION_VERSION }}
           VERSION: ${{ needs.resolve-version.outputs.version }}
-          ACTIONS_RUNTIME_DIR: ../workflow
-        run: ../workflow/node_modules/.bin/tsx ../workflow/scripts/actions/publish-edge.ts
-
-  publish-summary:
-    name: Publish Summary
-    needs: [resolve-version, quality-gate, publish-chrome, publish-firefox, publish-edge]
-    runs-on: ubuntu-24.04
-    if: always()
-
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: ./.github/actions/setup-node-pnpm
-
-      - name: Generate publish summary
-        env:
-          VERSION: ${{ needs.resolve-version.outputs.version }}
-          TAG: ${{ needs.resolve-version.outputs.tag }}
-          QG_RESULT: ${{ needs.quality-gate.result }}
-          CHROME_RESULT: ${{ needs.publish-chrome.result }}
-          CHROME_OUTCOME: ${{ needs.publish-chrome.outputs.outcome }}
-          FIREFOX_RESULT: ${{ needs.publish-firefox.result }}
-          FIREFOX_OUTCOME: ${{ needs.publish-firefox.outputs.outcome }}
-          EDGE_RESULT: ${{ needs.publish-edge.result }}
-          EDGE_OUTCOME: ${{ needs.publish-edge.outputs.outcome }}
-        run: pnpm exec tsx scripts/actions/publish-summary.ts
+        run: pnpm exec tsx scripts/actions/publish-edge.ts
