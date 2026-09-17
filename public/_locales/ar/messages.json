@@ -1,4 +1,7 @@
 {
+  "options_website": {
+    "message": "الموقع الرسمي"
+  },
   "ext_name": {
     "message": "Rayburst Connect",
     "description": "Extension display name"
@@ -802,7 +805,7 @@
     "message": "Rayburst"
   },
   "brand_tagline": {
-    "message": "تتبّع التدفق، وصِل ما تباعد.",
+    "message": "نعيد تعريف إضافة المتصفح المرافقة.",
     "description": "Localized Rayburst Connect brand slogan"
   },
   "resources_current": {

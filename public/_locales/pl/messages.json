@@ -1,4 +1,7 @@
 {
+  "options_website": {
+    "message": "Strona internetowa"
+  },
   "ext_name": {
     "message": "Rayburst Connect",
     "description": "Extension display name"
@@ -802,7 +805,7 @@
     "message": "Rayburst"
   },
   "brand_tagline": {
-    "message": "Podążaj za strumieniem, połącz odległe światy.",
+    "message": "Definiujemy na nowo towarzyszące rozszerzenie przeglądarki.",
     "description": "Localized Rayburst Connect brand slogan"
   },
   "resources_current": {

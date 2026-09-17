@@ -1,4 +1,7 @@
 {
+  "options_website": {
+    "message": "Вебсайт"
+  },
   "ext_name": {
     "message": "Rayburst Connect",
     "description": "Extension display name"
@@ -802,7 +805,7 @@
     "message": "Rayburst"
   },
   "brand_tagline": {
-    "message": "Простеж потік, поєднай далеке.",
+    "message": "Переосмислюємо супутнє розширення для браузера.",
     "description": "Localized Rayburst Connect brand slogan"
   },
   "resources_current": {

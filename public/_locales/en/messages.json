@@ -1,4 +1,7 @@
 {
+  "options_website": {
+    "message": "Website"
+  },
   "ext_name": {
     "message": "Rayburst Connect",
     "description": "Extension display name"
@@ -802,7 +805,7 @@
     "message": "Rayburst"
   },
   "brand_tagline": {
-    "message": "Trace the stream, bridge the void.",
+    "message": "Redefining the companion browser extension.",
     "description": "Localized Rayburst Connect brand slogan"
   },
   "resources_current": {

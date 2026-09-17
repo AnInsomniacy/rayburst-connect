@@ -1,4 +1,7 @@
 {
+  "options_website": {
+    "message": "公式サイト"
+  },
   "ext_name": {
     "message": "Rayburst Connect",
     "description": "Extension display name"
@@ -802,7 +805,7 @@
     "message": "Rayburst"
   },
   "brand_tagline": {
-    "message": "流れをたどり、隔たりをつなぐ。",
+    "message": "連携ブラウザー拡張機能を再定義する。",
     "description": "Localized Rayburst Connect brand slogan"
   },
   "resources_current": {

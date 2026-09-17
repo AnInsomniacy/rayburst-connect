@@ -1,4 +1,7 @@
 {
+  "options_website": {
+    "message": "वेबसाइट"
+  },
   "ext_name": {
     "message": "Rayburst Connect",
     "description": "Extension display name"
@@ -802,7 +805,7 @@
     "message": "Rayburst"
   },
   "brand_tagline": {
-    "message": "प्रवाह का पता लगाओ, दूरियाँ मिटाओ।",
+    "message": "सहायक ब्राउज़र एक्सटेंशन को नया रूप।",
     "description": "Localized Rayburst Connect brand slogan"
   },
   "resources_current": {

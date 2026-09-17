@@ -4,7 +4,7 @@ Name: Rayburst Connect
 
 Short description: Send browser downloads and media to Rayburst.
 
-Trace the stream, bridge the void.
+Redefining the companion browser extension.
 
 Rayburst Connect hands browser downloads to the Rayburst desktop app. Send a link
 from the context menu, set site rules, or choose media tracks from the popup and

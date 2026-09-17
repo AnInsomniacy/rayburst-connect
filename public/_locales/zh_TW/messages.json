@@ -1,4 +1,7 @@
 {
+  "options_website": {
+    "message": "官方網站"
+  },
   "ext_name": {
     "message": "Rayburst Connect",
     "description": "Extension display name"
@@ -802,7 +805,7 @@
     "message": "Rayburst"
   },
   "brand_tagline": {
-    "message": "溯網尋蹤，隔空引渡。",
+    "message": "重新定義瀏覽器配套擴充功能。",
     "description": "Localized Rayburst Connect brand slogan"
   },
   "resources_current": {

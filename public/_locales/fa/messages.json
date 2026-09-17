@@ -1,4 +1,7 @@
 {
+  "options_website": {
+    "message": "وب‌سایت"
+  },
   "ext_name": {
     "message": "Rayburst Connect",
     "description": "Extension display name"
@@ -802,7 +805,7 @@
     "message": "Rayburst"
   },
   "brand_tagline": {
-    "message": "جریان را دنبال کن، فاصله را پیوند بزن.",
+    "message": "بازتعریف افزونهٔ همراه مرورگر.",
     "description": "Localized Rayburst Connect brand slogan"
   },
   "resources_current": {

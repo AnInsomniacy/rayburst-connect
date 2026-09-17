@@ -1,4 +1,7 @@
 {
+  "options_website": {
+    "message": "Sitio web"
+  },
   "ext_name": {
     "message": "Rayburst Connect",
     "description": "Extension display name"
@@ -802,7 +805,7 @@
     "message": "Rayburst"
   },
   "brand_tagline": {
-    "message": "Sigue el flujo, salva el vacío.",
+    "message": "Redefinimos la extensión complementaria del navegador.",
     "description": "Localized Rayburst Connect brand slogan"
   },
   "resources_current": {

@@ -1,4 +1,7 @@
 {
+  "options_website": {
+    "message": "Trang web"
+  },
   "ext_name": {
     "message": "Rayburst Connect",
     "description": "Extension display name"
@@ -802,7 +805,7 @@
     "message": "Rayburst"
   },
   "brand_tagline": {
-    "message": "Lần theo dòng chảy, nối liền khoảng không.",
+    "message": "Định nghĩa lại tiện ích trình duyệt đồng hành.",
     "description": "Localized Rayburst Connect brand slogan"
   },
   "resources_current": {

@@ -1,4 +1,7 @@
 {
+  "options_website": {
+    "message": "官网"
+  },
   "ext_name": {
     "message": "Rayburst Connect",
     "description": "扩展显示名称"
@@ -802,7 +805,7 @@
     "message": "Rayburst"
   },
   "brand_tagline": {
-    "message": "溯网寻踪，隔空引渡。",
+    "message": "重新定义浏览器配套扩展。",
     "description": "Localized Rayburst Connect brand slogan"
   },
   "resources_current": {

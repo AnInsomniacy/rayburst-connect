@@ -1,4 +1,7 @@
 {
+  "options_website": {
+    "message": "Ιστότοπος"
+  },
   "ext_name": {
     "message": "Rayburst Connect",
     "description": "Extension display name"
@@ -802,7 +805,7 @@
     "message": "Rayburst"
   },
   "brand_tagline": {
-    "message": "Ακολούθησε τη ροή, γεφύρωσε το κενό.",
+    "message": "Επαναπροσδιορίζουμε τη συνοδευτική επέκταση του προγράμματος περιήγησης.",
     "description": "Localized Rayburst Connect brand slogan"
   },
   "resources_current": {

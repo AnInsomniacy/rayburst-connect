@@ -1,4 +1,7 @@
 {
+  "options_website": {
+    "message": "เว็บไซต์"
+  },
   "ext_name": {
     "message": "Rayburst Connect",
     "description": "Extension display name"
@@ -802,7 +805,7 @@
     "message": "Rayburst"
   },
   "brand_tagline": {
-    "message": "ตามรอยกระแส เชื่อมข้ามความว่างเปล่า",
+    "message": "นิยามใหม่ของส่วนขยายเบราว์เซอร์ที่ทำงานร่วมกัน",
     "description": "Localized Rayburst Connect brand slogan"
   },
   "resources_current": {

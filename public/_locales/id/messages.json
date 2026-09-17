@@ -1,4 +1,7 @@
 {
+  "options_website": {
+    "message": "Situs web"
+  },
   "ext_name": {
     "message": "Rayburst Connect",
     "description": "Extension display name"
@@ -802,7 +805,7 @@
     "message": "Rayburst"
   },
   "brand_tagline": {
-    "message": "Telusuri alirannya, jembatani jaraknya.",
+    "message": "Mendefinisikan ulang ekstensi peramban pendamping.",
     "description": "Localized Rayburst Connect brand slogan"
   },
   "resources_current": {

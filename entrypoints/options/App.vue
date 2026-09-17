@@ -16,7 +16,8 @@
  */
 import { computed, onMounted, onUnmounted, provide, ref, watch } from 'vue';
 import { browser } from 'wxt/browser';
-import { NConfigProvider, createDiscreteApi } from 'naive-ui';
+import { NConfigProvider, NIcon, createDiscreteApi } from 'naive-ui';
+import { GlobeOutline, OpenOutline } from '@vicons/ionicons5';
 import {
   loadSnapshot,
   saveConnectionConfig,
@@ -543,6 +544,16 @@ onUnmounted(() => {
             </p>
           </div>
         </div>
+        <a
+          class="options-website"
+          href="https://rayburst.pages.dev/#connect"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <NIcon :size="18" aria-hidden="true"><GlobeOutline /></NIcon>
+          <span>{{ i18n('options_website', 'Website') }}</span>
+          <NIcon :size="14" aria-hidden="true"><OpenOutline /></NIcon>
+        </a>
       </header>
 
       <!-- ── Body: Nav + Content ─────────────────────────────── -->
@@ -698,7 +709,7 @@ onUnmounted(() => {
 
       <!-- ── Footer ──────────────────────────────────────────── -->
       <footer class="options-footer">
-        <p>{{ i18n('brand_tagline', 'Trace the stream, bridge the void.') }}</p>
+        <p>{{ i18n('brand_tagline', 'Redefining the companion browser extension.') }}</p>
         {{ i18nSub('options_footer', [extensionVersion], `Rayburst Connect v${extensionVersion}`) }}
       </footer>
     </div>
@@ -717,6 +728,11 @@ onUnmounted(() => {
 
 /* ── Header ──────────────────────────────────────────────────── */
 .options-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 24px;
   padding: 28px 32px 16px;
   border-bottom: 1px solid var(--color-outline-variant);
   background: var(--color-surface-container-low);
@@ -726,6 +742,32 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 14px;
+}
+
+.options-website {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  color: var(--color-on-surface-variant);
+  background: var(--color-surface);
+  border: 1px solid var(--color-outline-variant);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: 10px;
+}
+
+.options-website:hover {
+  border-color: var(--color-primary);
+  background: var(--color-surface-container-high);
+}
+
+.options-website:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
 }
 
 .options-header__icon {
