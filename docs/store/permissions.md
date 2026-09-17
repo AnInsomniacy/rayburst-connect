@@ -120,13 +120,13 @@ When the user enables "Hide Browser Download Bar" in Settings, this optional per
 ### Single Purpose Description
 
 ```
-Intercept browser downloads and delegate them to the Rayburst desktop download manager for accelerated multi-threaded downloading via aria2.
+Send browser downloads, discovered media and user-initiated captures to the local Rayburst desktop download manager.
 ```
 
 ### Permission Justification Summary
 
 ```
-This extension intercepts browser downloads and sends them to a locally running download manager (Rayburst). Required permissions: 'downloads' to intercept browser downloads, 'webRequest' to observe filtered request headers, 'storage' for local settings persistence, 'contextMenus' for the right-click download option, 'notifications' for duplicate download alerts, 'cookies' for authenticated download forwarding, and 'nativeMessaging' to activate the installed Rayburst application. Firefox also uses 'webRequest' and 'webRequestBlocking' to handle attachment and binary responses before its native save dialog opens. Required host permissions include localhost for the Rayburst HTTP API plus broad HTTP/HTTPS origins so cookie forwarding and request context forwarding work for downloads from any site. The only optional permission is 'downloads.ui' for hiding the Chromium download bar. No data is collected, transmitted, or shared with any external service.
+This extension intercepts browser downloads and sends them to a locally running download manager (Rayburst). Required permissions: 'downloads' to intercept browser downloads, 'webRequest' to observe filtered request headers, 'storage' for local settings persistence, 'contextMenus' for the right-click download option, 'notifications' for duplicate download alerts, 'cookies' for authenticated download forwarding, and 'nativeMessaging' to activate the installed Rayburst application. Firefox also uses 'webRequest' and 'webRequestBlocking' to handle attachment and binary responses before its native save dialog opens. Required host permissions include localhost for the Rayburst HTTP API plus broad HTTP/HTTPS origins so cookie forwarding and request context forwarding work for downloads from any site. Media discovery uses 'webNavigation' and 'alarms'; capture tools use 'scripting', 'tabs', 'declarativeNetRequest' and Chromium's 'sidePanel'. Firefox also uses 'webRequestFilterResponse' for opt-in response inspection. The only optional permission is 'downloads.ui' for hiding the Chromium download bar. Captures and download context go to the local desktop; user-requested previews connect to the selected media source. There is no developer telemetry or remote processing service.
 ```
 
 ### Data Use Disclosures

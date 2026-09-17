@@ -21,7 +21,7 @@ The Extension operates entirely on your local machine. Task handoff and capture 
 When media discovery is enabled, the Extension observes HTTP(S) request/response
 metadata and public media elements/resource timing in browser frames. It stores
 media candidate URLs, page titles, frame identity, MIME types, file-size hints and
-filtered request context in browser session memory. This supports the local Media
+filtered request context in browser session memory. This supports the local Sniffer
 list and user-requested desktop format inspection. Explicit deep-search modes inspect bounded response bodies and page decoding/key APIs.
 Buffer and recording modes capture browser media after activation. Playlists, candidate
 keys and recorded bytes are sent to the local desktop, not a developer service.
