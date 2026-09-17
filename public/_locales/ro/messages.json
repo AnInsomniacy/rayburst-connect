@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "Trimiteți descărcările din browser către Rayburst — un manager modern de descărcări bazat pe aria2",
+    "message": "Trimite descărcările și conținutul media detectat către Rayburst, cu previzualizare și instrumente de captură.",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {

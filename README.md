@@ -8,8 +8,7 @@
 
 </div>
 
-> [!IMPORTANT]
-> **Motrix Next Extension is now Rayburst Connect.** This code requires Rayburst 4 or later and uses new browser identities. Previous extension settings are not imported. Browser store publication is managed separately; existing store builds may still target the previous desktop app. Use a Rayburst Connect release or build from source below.
+> Requires Rayburst 4 or later on the same Windows, macOS or Linux computer. Configure the desktop Extension API port and secret in the extension settings.
 
 ---
 

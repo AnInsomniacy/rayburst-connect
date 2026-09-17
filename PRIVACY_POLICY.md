@@ -1,6 +1,6 @@
 # Privacy Policy — Rayburst Connect
 
-Last updated: September 17, 2026
+Last updated: September 18, 2026
 
 Rayburst Connect is the browser companion to the Rayburst desktop download manager. It processes browser downloads and media on your device. The developer does not receive this data or operate an analytics, advertising or remote processing service.
 

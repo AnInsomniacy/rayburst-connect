@@ -57,11 +57,8 @@ export function buildExtensionManifest(browser: string) {
               id: identity.firefoxId,
               strict_min_version: '140.0',
               data_collection_permissions: {
-                required: ['none'],
+                required: ['browsingActivity', 'websiteContent', 'authenticationInfo'],
               },
-            },
-            gecko_android: {
-              strict_min_version: '142.0',
             },
           },
         }

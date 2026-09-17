@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "브라우저 다운로드를 Rayburst로 전송 — aria2 기반 최신 다운로드 관리자",
+    "message": "다운로드와 발견한 미디어를 Rayburst로 전송하세요. 웹페이지 미디어 탐지, 미리보기, 캡처 도구를 제공합니다.",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {

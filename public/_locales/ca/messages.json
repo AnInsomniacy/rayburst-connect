@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "Envieu les descàrregues del navegador a Rayburst — un gestor de descàrregues modern impulsat per aria2",
+    "message": "Envia descàrregues i contingut multimèdia detectat a Rayburst, amb previsualització i eines de captura.",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {

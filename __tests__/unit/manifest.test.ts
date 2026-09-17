@@ -44,4 +44,13 @@ describe('buildExtensionManifest', () => {
     expect(manifest.permissions).toContain('webRequestBlocking');
     expect(manifest.key).toBeUndefined();
   });
+  it('declares desktop handoff data through Firefox native consent', () => {
+    const manifest = buildExtensionManifest('firefox');
+    expect(manifest.browser_specific_settings?.gecko.data_collection_permissions.required).toEqual([
+      'browsingActivity',
+      'websiteContent',
+      'authenticationInfo',
+    ]);
+    expect(manifest.browser_specific_settings).not.toHaveProperty('gecko_android');
+  });
 });

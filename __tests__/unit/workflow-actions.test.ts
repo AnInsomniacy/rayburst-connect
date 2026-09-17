@@ -111,7 +111,7 @@ describe('release workflow decisions', () => {
           errorCode: '',
           errors: null,
         },
-        { action: 'published', failed: false, terminal: true },
+        { action: 'submitted', failed: false, terminal: true },
       ],
       [
         {

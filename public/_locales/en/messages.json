@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "Send browser downloads to Rayburst — a modern download manager powered by aria2",
+    "message": "Send downloads and discovered media to Rayburst, with page sniffing, previews and capture tools.",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {

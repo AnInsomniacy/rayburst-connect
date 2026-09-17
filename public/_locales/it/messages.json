@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "Invia i download del browser a Rayburst — un gestore di download moderno basato su aria2",
+    "message": "Invia download e contenuti multimediali rilevati a Rayburst, con anteprime e strumenti di acquisizione.",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {

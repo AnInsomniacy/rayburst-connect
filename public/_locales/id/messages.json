@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "Kirim unduhan browser ke Rayburst — pengelola unduhan modern berbasis aria2",
+    "message": "Kirim unduhan dan media yang ditemukan ke Rayburst, dengan deteksi media halaman, pratinjau, dan alat perekaman.",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {

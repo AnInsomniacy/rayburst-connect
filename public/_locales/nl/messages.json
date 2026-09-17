@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "Stuur browserdownloads naar Rayburst — een moderne downloadmanager aangedreven door aria2",
+    "message": "Stuur downloads en gevonden media naar Rayburst, met mediadetectie, voorvertoningen en opnametools.",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {

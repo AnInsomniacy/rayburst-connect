@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "Gửi tải xuống từ trình duyệt đến Rayburst — trình quản lý tải xuống hiện đại dựa trên aria2",
+    "message": "Gửi nội dung tải xuống và đa phương tiện tìm thấy tới Rayburst, với tính năng dò tìm, xem trước và ghi lại.",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {

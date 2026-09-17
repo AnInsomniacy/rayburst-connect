@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "ブラウザのダウンロードをRayburstに送信 — aria2ベースのモダンなダウンロードマネージャー",
+    "message": "ダウンロードや検出したメディアを Rayburst に送信。ページ内のメディア検出、プレビュー、キャプチャに対応。",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {

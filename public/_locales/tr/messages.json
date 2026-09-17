@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "Tarayıcı indirmelerini Rayburst'e gönderin — aria2 tabanlı modern bir indirme yöneticisi",
+    "message": "İndirmeleri ve bulunan medyayı Rayburst’e gönderin. Sayfa tarama, önizleme ve yakalama araçları içerir.",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {

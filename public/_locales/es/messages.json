@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "Envía las descargas del navegador a Rayburst — un gestor de descargas moderno con aria2",
+    "message": "Envía descargas y medios detectados a Rayburst, con detección en páginas, vista previa y herramientas de captura.",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {

@@ -5,7 +5,7 @@ import {
   getFirefoxVersions,
   type ChromeConfig,
 } from './store-api';
-import zlib from 'node:zlib';
+import { execFileSync } from 'node:child_process';
 
 import {
   appendStepSummary,
@@ -17,6 +17,7 @@ import {
   md,
   optionalEnv,
   requiredEnv,
+  requireStoreIdentity,
   stringField,
 } from './workflow-utils';
 import { isBlockingChromeSubmissionState } from './publish-chrome';
@@ -177,6 +178,7 @@ async function withStoreError(
 }
 
 async function checkChrome(chrome: ChromeConfig): Promise<StoreStatusRow> {
+  requireStoreIdentity('chromeId', chrome.extensionId);
   const publicVersion = await getChromePublicVersion(chrome.extensionId);
   if (
     !configured(chrome.publisherId) ||
@@ -267,6 +269,7 @@ function mapChromeState(state: string): string {
 }
 
 async function checkFirefox(firefox: FirefoxConfig): Promise<StoreStatusRow> {
+  requireStoreIdentity('firefoxSlug', firefox.slug);
   const publicVersions = await getFirefoxVersions(firefox.slug, '');
   const publicLive = publicVersions.find((version) => firefoxStatus(version) === 'public');
   const authHeader =
@@ -320,6 +323,8 @@ function mapFirefoxState(status: string): string {
 }
 
 async function checkEdge(edge: EdgeConfig): Promise<StoreStatusRow> {
+  requireStoreIdentity('edgeId', edge.extensionId);
+  if (configured(edge.productId)) requireStoreIdentity('edgeProductId', edge.productId);
   const liveVersion = await getEdgePublicVersion(edge.extensionId);
   if (!configured(edge.operationId)) {
     return {
@@ -454,52 +459,24 @@ function formatEdgeErrors(errors: unknown): string {
   return `errors=${JSON.stringify(errors).slice(0, 500)}`;
 }
 
-function readManifestFromCrx(buffer: Buffer): unknown {
-  const zipOffset = getZipOffset(buffer);
-  const eocd = findEocd(buffer);
-  const centralSize = buffer.readUInt32LE(eocd + 12);
-  const centralOffset = zipOffset + buffer.readUInt32LE(eocd + 16);
-  let cursor = centralOffset;
-  const end = centralOffset + centralSize;
-
-  while (cursor < end) {
-    if (buffer.readUInt32LE(cursor) !== 0x02014b50) break;
-    const method = buffer.readUInt16LE(cursor + 10);
-    const compressedSize = buffer.readUInt32LE(cursor + 20);
-    const nameLength = buffer.readUInt16LE(cursor + 28);
-    const extraLength = buffer.readUInt16LE(cursor + 30);
-    const commentLength = buffer.readUInt16LE(cursor + 32);
-    const localOffset = zipOffset + buffer.readUInt32LE(cursor + 42);
-    const name = buffer.subarray(cursor + 46, cursor + 46 + nameLength).toString('utf8');
-
-    if (name === 'manifest.json') {
-      const localNameLength = buffer.readUInt16LE(localOffset + 26);
-      const localExtraLength = buffer.readUInt16LE(localOffset + 28);
-      const dataStart = localOffset + 30 + localNameLength + localExtraLength;
-      const data = buffer.subarray(dataStart, dataStart + compressedSize);
-      const json =
-        method === 8 ? zlib.inflateRawSync(data).toString('utf8') : data.toString('utf8');
-      return JSON.parse(json) as unknown;
-    }
-
-    cursor += 46 + nameLength + extraLength + commentLength;
-  }
-
-  throw new Error('manifest.json not found in Edge package');
-}
-
-function getZipOffset(buffer: Buffer): number {
-  if (buffer.subarray(0, 4).toString('ascii') !== 'Cr24') throw new Error('Invalid CRX header');
-  const version = buffer.readUInt32LE(4);
-  if (version === 3) return 12 + buffer.readUInt32LE(8);
-  throw new Error(`Unsupported CRX version: ${version}`);
-}
-
-function findEocd(buffer: Buffer): number {
-  for (let index = buffer.length - 22; index >= 0; index -= 1) {
-    if (buffer.readUInt32LE(index) === 0x06054b50) return index;
-  }
-  throw new Error('ZIP end of central directory not found');
+export function readManifestFromCrx(buffer: Buffer): unknown {
+  // zipfile handles the CRX prefix and ZIP directory without a custom archive parser.
+  const json = execFileSync(
+    'python3',
+    [
+      '-c',
+      `
+import io, sys, zipfile
+with zipfile.ZipFile(io.BytesIO(sys.stdin.buffer.read())) as archive:
+    info = archive.getinfo('manifest.json')
+    if info.file_size > 1024 * 1024:
+        raise ValueError('manifest.json exceeds 1 MiB')
+    sys.stdout.buffer.write(archive.read(info))
+`,
+    ],
+    { input: buffer, encoding: 'utf8', maxBuffer: 1024 * 1024, timeout: 10000 },
+  );
+  return JSON.parse(json) as unknown;
 }
 
 function storeNames(stores: StoreStatusRow[]): string {

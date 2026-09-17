@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "Send nedlastinger fra nettleseren til Rayburst — en moderne nedlastingsbehandler drevet av aria2",
+    "message": "Send nedlastinger og oppdagede medier til Rayburst, med mediesøk, forhåndsvisning og opptaksverktøy.",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {

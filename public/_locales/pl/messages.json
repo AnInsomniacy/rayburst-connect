@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "Wysyłaj pobierania z przeglądarki do Rayburst — nowoczesnego menedżera pobierania opartego na aria2",
+    "message": "Wysyłaj pobrane pliki i wykryte multimedia do Rayburst. Wyszukiwanie na stronach, podgląd i przechwytywanie.",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {

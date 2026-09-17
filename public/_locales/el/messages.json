@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "Στείλτε τις λήψεις του προγράμματος περιήγησης στο Rayburst — ένας σύγχρονος διαχειριστής λήψεων με aria2",
+    "message": "Στείλτε λήψεις και εντοπισμένα πολυμέσα στο Rayburst, με ανίχνευση σελίδας, προεπισκόπηση και καταγραφή.",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {

@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "Надсилайте завантаження з браузера до Rayburst — сучасного менеджера завантажень на базі aria2",
+    "message": "Надсилайте завантаження й знайдені медіа до Rayburst. Пошук на сторінках, попередній перегляд і захоплення.",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {

@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "ब्राउज़र डाउनलोड Rayburst को भेजें — aria2 से संचालित आधुनिक डाउनलोड मैनेजर",
+    "message": "डाउनलोड और मिले हुए मीडिया को Rayburst में भेजें। पेज पर मीडिया खोजें, प्रीव्यू देखें और कैप्चर करें।",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {

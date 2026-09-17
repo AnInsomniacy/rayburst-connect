@@ -7,7 +7,7 @@
     "description": "扩展显示名称"
   },
   "ext_description": {
-    "message": "将浏览器下载发送到 Rayburst — 基于 aria2 的现代下载管理器",
+    "message": "将下载和发现的媒体发送到 Rayburst，支持网页嗅探、预览和捕获工具。",
     "description": "在浏览器和应用商店中显示的扩展描述"
   },
   "popup_status_connected": {

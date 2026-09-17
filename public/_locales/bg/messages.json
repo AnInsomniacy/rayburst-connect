@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "Изпращайте изтегляния от браузъра към Rayburst — модерен мениджър за изтегляне, задвижван от aria2",
+    "message": "Изпращайте изтегляния и открити медии към Rayburst с откриване в страници, преглед и инструменти за запис.",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {

@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "أرسل تنزيلات المتصفح إلى Rayburst — مدير تنزيل حديث يعمل بمحرك aria2",
+    "message": "أرسل التنزيلات والوسائط المكتشفة إلى Rayburst، مع اكتشاف وسائط الصفحات ومعاينتها وأدوات التقاطها.",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {

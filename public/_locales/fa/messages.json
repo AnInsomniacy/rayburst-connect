@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "دانلودهای مرورگر را به Rayburst ارسال کنید — مدیر دانلود مدرن مبتنی بر aria2",
+    "message": "دانلودها و رسانه‌های شناسایی‌شده را به Rayburst بفرستید؛ همراه با شناسایی رسانه، پیش‌نمایش و ابزارهای ضبط.",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {

@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "將瀏覽器下載傳送至 Rayburst——基於 aria2 的現代下載管理器",
+    "message": "將下載與找到的媒體傳送至 Rayburst，支援網頁嗅探、預覽與擷取工具。",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {

@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "ส่งการดาวน์โหลดจากเบราว์เซอร์ไปยัง Rayburst — ตัวจัดการดาวน์โหลดสมัยใหม่ที่ขับเคลื่อนด้วย aria2",
+    "message": "ส่งรายการดาวน์โหลดและสื่อที่พบไปยัง Rayburst พร้อมเครื่องมือค้นหาสื่อในหน้าเว็บ ดูตัวอย่าง และบันทึกสื่อ",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {

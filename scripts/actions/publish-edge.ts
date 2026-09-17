@@ -28,7 +28,7 @@ type EdgePublishOperation = {
 type EdgePublishOperationAction =
   | 'failed'
   | 'pending'
-  | 'published'
+  | 'submitted'
   | 'skipped-in-review'
   | 'skipped-no-updates';
 
@@ -68,7 +68,7 @@ export function classifyEdgePublishOperation(
   operation: EdgePublishOperation,
 ): EdgePublishOperationDecision {
   if (operation.status === 'Succeeded') {
-    return { action: 'published', failed: false, terminal: true };
+    return { action: 'submitted', failed: false, terminal: true };
   }
 
   if (operation.status === 'InProgress') {

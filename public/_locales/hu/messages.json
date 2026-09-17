@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "Böngésző letöltések küldése a Rayburst-nek — modern, aria2 alapú letöltéskezelő",
+    "message": "Küldje a letöltéseket és a felismert médiát a Rayburstbe. Médiafelderítés, előnézet és rögzítési eszközök.",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {

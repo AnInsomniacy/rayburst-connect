@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "Browser-Downloads an Rayburst senden — ein moderner Download-Manager mit aria2",
+    "message": "Downloads und erkannte Medien an Rayburst senden, mit Mediensuche, Vorschau und Aufnahmefunktionen.",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {
