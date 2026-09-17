@@ -1,6 +1,5 @@
 <div align="center">
-  <img src="docs/brand/banner.png" alt="Rayburst Connect. Trace the stream, bridge the void." width="800" />
-  <p><strong>Redefining the companion browser extension.</strong></p>
+  <img src="docs/brand/banner.png" alt="Rayburst Connect — Redefining the companion browser extension" width="800" />
   <p>Send browser downloads and media to <a href="https://github.com/AnInsomniacy/rayburst">Rayburst</a>.</p>
 
 ![Version](https://img.shields.io/github/v/release/AnInsomniacy/rayburst-connect?label=Version)

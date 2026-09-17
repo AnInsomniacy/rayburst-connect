@@ -709,7 +709,7 @@ onUnmounted(() => {
 
       <!-- ── Footer ──────────────────────────────────────────── -->
       <footer class="options-footer">
-        <p>{{ i18n('brand_tagline', 'Redefining the companion browser extension.') }}</p>
+        <p>{{ i18n('brand_tagline', 'Redefining the companion browser extension') }}</p>
         {{ i18nSub('options_footer', [extensionVersion], `Rayburst Connect v${extensionVersion}`) }}
       </footer>
     </div>
