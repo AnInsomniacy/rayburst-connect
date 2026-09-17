@@ -7,6 +7,10 @@ and optional store IDs. The local key stabilizes unpacked builds on Chrome and E
 it is not a claim that either store has assigned that ID. Private key material is
 not needed for unpacked development and is not stored in this repository.
 
+Chromium ZIPs use WXT's `store` mode to omit the local `key` field required to be
+absent by Edge Add-ons. Unpacked builds retain it; store signing assigns the
+existing Chrome or Edge listing identity.
+
 Chrome and Edge retain their existing store entries and public extension IDs.
 The Chromium public key matches the Chrome store identity. Firefox uses a new
 Rayburst Connect listing with `rayburst-connect@aninsomniacy.dev`; it does not

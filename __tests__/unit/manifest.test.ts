@@ -37,6 +37,10 @@ describe('buildExtensionManifest', () => {
     expect(buildExtensionManifest('edge').key).toBe(CHROMIUM_EXTENSION_PUBLIC_KEY);
   });
 
+  it('omits the local identity key from store packages for Edge validation', () => {
+    expect(buildExtensionManifest('chromium', 'store').key).toBeUndefined();
+  });
+
   it('requires Native Messaging and response blocking on Firefox', () => {
     const manifest = buildExtensionManifest('firefox');
 

@@ -218,13 +218,16 @@ describe('store package validation', () => {
     manifest.browser_specific_settings.gecko.id = identity.firefoxId;
     expect(() => validatePackageManifest(manifest, '2.0.1', 'firefox')).not.toThrow();
   });
-  it('rejects a different Chromium key', () => {
+  it('rejects local Chromium keys in store packages', () => {
     expect(() =>
       validatePackageManifest(
-        { manifest_version: 3, version: '2.0.1', key: 'wrong' },
+        { manifest_version: 3, version: '2.0.1', key: identity.chromiumPublicKey },
         '2.0.1',
         'chromium',
       ),
-    ).toThrow('identity');
+    ).toThrow('Chromium key');
+    expect(() =>
+      validatePackageManifest({ manifest_version: 3, version: '2.0.1' }, '2.0.1', 'chromium'),
+    ).not.toThrow();
   });
 });

@@ -125,8 +125,7 @@ export function validatePackageManifest(
     throw new Error('Package version or manifest format does not match the release');
   }
   if (browser === 'chromium') {
-    if (value.key !== identity.chromiumPublicKey)
-      throw new Error('Package Chromium identity does not match');
+    if ('key' in value) throw new Error('Store packages must not include a Chromium key');
   } else {
     const settings = value.browser_specific_settings;
     const gecko = isRecord(settings) ? settings.gecko : undefined;

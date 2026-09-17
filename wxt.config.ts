@@ -31,7 +31,7 @@ export default defineConfig({
   zip: {
     artifactTemplate: '{{name}}-{{version}}-{{browser}}-mv3.zip',
   },
-  manifest: ({ browser }) => buildExtensionManifest(browser),
+  manifest: ({ browser, mode }) => buildExtensionManifest(browser, mode),
   vite: () => ({
     build: {
       // WXT builds the service worker as an IIFE, so manual code-splitting is

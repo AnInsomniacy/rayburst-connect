@@ -27,7 +27,7 @@ const FIREFOX_REQUIRED_PERMISSIONS = [
 const LOOPBACK_HOST_PERMISSIONS = ['http://127.0.0.1/*', 'http://localhost/*'] as const;
 const BROAD_DOWNLOAD_ORIGINS = ['https://*/*', 'http://*/*'] as const;
 
-export function buildExtensionManifest(browser: string) {
+export function buildExtensionManifest(browser: string, mode = 'production') {
   const optionalPermissions: UserManifest['optional_permissions'] =
     browser === 'firefox' ? [] : ['downloads.ui'];
   const permissions =
@@ -42,7 +42,7 @@ export function buildExtensionManifest(browser: string) {
     name: '__MSG_ext_name__',
     description: '__MSG_ext_description__',
     default_locale: 'en',
-    ...(browser !== 'firefox' ? { key: CHROMIUM_EXTENSION_PUBLIC_KEY } : {}),
+    ...(browser !== 'firefox' && mode !== 'store' ? { key: CHROMIUM_EXTENSION_PUBLIC_KEY } : {}),
     permissions,
     optional_permissions: optionalPermissions,
     host_permissions: [...LOOPBACK_HOST_PERMISSIONS, ...BROAD_DOWNLOAD_ORIGINS],
