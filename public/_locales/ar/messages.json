@@ -682,14 +682,6 @@
     "message": "إعادة المحاولة",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "إغلاق",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "تحديد موقع المشغّل",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "بلا فيديو",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "تتبّع التدفق، وصِل ما تباعد.",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "الصفحة الحالية"
+  },
+  "resources_other": {
+    "message": "كل الصفحات"
+  },
+  "resources_controls": {
+    "message": "التحكم بالمشغل"
+  },
+  "resources_expand": {
+    "message": "فتح مساحة العمل"
+  },
+  "resources_fullscreen": {
+    "message": "ملء الشاشة"
+  },
+  "resources_import": {
+    "message": "إضافة مصدر"
+  },
+  "resources_invert": {
+    "message": "عكس التحديد"
+  },
+  "resources_key": {
+    "message": "مفتاح AES-128"
+  },
+  "resources_kind_collection": {
+    "message": "وسائط مجمعة"
+  },
+  "resources_kind_fragment": {
+    "message": "مقطع"
+  },
+  "resources_loop": {
+    "message": "تكرار"
+  },
+  "resources_manifest": {
+    "message": "ملف البيان أو روابط المقاطع"
+  },
+  "resources_merge": {
+    "message": "دمج الصوت والفيديو"
+  },
+  "resources_mute": {
+    "message": "كتم الصوت"
+  },
+  "resources_preview": {
+    "message": "معاينة"
+  },
+  "resources_preview_unavailable": {
+    "message": "المعاينة غير متاحة. قد يظل التنزيل ممكنًا."
+  },
+  "resources_reload": {
+    "message": "إعادة التحميل للالتقاط من البداية"
+  },
+  "resources_screen": {
+    "message": "تسجيل الشاشة"
+  },
+  "resources_screenshot": {
+    "message": "حفظ لقطة"
+  },
+  "resources_sequence": {
+    "message": "دمج المقاطع"
+  },
+  "resources_sidebar": {
+    "message": "فتح اللوحة الجانبية"
+  },
+  "resources_start": {
+    "message": "بدء"
+  },
+  "resources_start_time": {
+    "message": "البداية (ثوانٍ)"
+  },
+  "resources_end_time": {
+    "message": "النهاية (0: نهاية المصدر)"
+  },
+  "resources_stop": {
+    "message": "إيقاف"
+  },
+  "resources_test_keys": {
+    "message": "اختبار المفاتيح المكتشفة"
+  },
+  "resources_tools": {
+    "message": "أدوات الوسائط"
+  },
+  "resources_volume": {
+    "message": "مستوى الصوت"
+  },
+  "resources_preserve": {
+    "message": "الاحتفاظ بالمصادر بعد التنقل"
+  },
+  "resources_deep": {
+    "message": "بحث عميق"
+  },
+  "resources_cache": {
+    "message": "التقاط ذاكرة الوسائط"
+  },
+  "resources_copy": {
+    "message": "نسخ"
+  },
+  "resources_select_all": {
+    "message": "تحديد الكل"
+  },
+  "resources_name": {
+    "message": "الاسم"
+  },
+  "resources_size": {
+    "message": "الحجم"
+  },
+  "resources_type": {
+    "message": "النوع"
+  },
+  "resources_speed": {
+    "message": "السرعة"
+  },
+  "resources_kind_image": {
+    "message": "صور"
+  },
+  "resources_all": {
+    "message": "الكل"
+  },
+  "resources_time": {
+    "message": "الوقت"
+  },
+  "resources_video": {
+    "message": "بدء التسجيل"
+  },
+  "resources_kind_embedded": {
+    "message": "المصدر"
+  },
+  "resources_kind_file": {
+    "message": "الملف الأصلي"
+  },
+  "resources_kind_subtitle": {
+    "message": "الترجمة"
+  },
+  "resources_pause": {
+    "message": "إيقاف مؤقت"
+  },
+  "resources_play": {
+    "message": "تشغيل"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "ترتيب"
+  },
+  "resources_auto": {
+    "message": "تنزيل الموارد الجديدة تلقائيًا"
+  },
+  "resources_mobile": {
+    "message": "استخدام User-Agent للأجهزة المحمولة"
   }
 }

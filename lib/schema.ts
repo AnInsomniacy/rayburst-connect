@@ -12,6 +12,7 @@ import { z } from 'zod';
 import { normalizeFileExtensionList } from './file-extensions';
 import {
   MediaProbeRequestSchema,
+  MediaInputPlanSchema,
   MediaProbeSchema,
   MediaRequestContextSchema,
   MediaSelectionSchema,
@@ -63,6 +64,19 @@ const DownloadSettingsSchema = lenient(
       z.object({
         enabled: z.boolean().catch(true),
         excludedHosts: z.array(z.string().min(1).max(253)).max(100).catch([]),
+        preserveOnNavigation: z.boolean().catch(false),
+        rules: z
+          .array(
+            z.object({
+              pattern: z.string().max(512),
+              field: z.enum(['url', 'mime', 'extension']).catch('url'),
+              minimumBytes: z.number().int().nonnegative().catch(0),
+              kind: z.enum(['hls', 'dash', 'file', 'subtitle', 'image', 'json', 'ignore']),
+              enabled: z.boolean(),
+            }),
+          )
+          .max(100)
+          .catch([]),
       }),
     ),
     hideDownloadBar: z.boolean().catch(false),
@@ -287,8 +301,8 @@ export const parseSnapshot = (input: unknown): StorageSnapshot =>
 
 // Media URLs and credentials are session data, never settings or backup data.
 export const MEDIA_SESSION_KEY = 'mediaSession';
-export const MEDIA_MAX_CANDIDATES = 128;
-export const MEDIA_MAX_PER_TAB = 40;
+export const MEDIA_MAX_CANDIDATES = 2048;
+export const MEDIA_MAX_PER_TAB = 1000;
 export const MEDIA_RETENTION_MS = 30 * 60_000;
 export const MediaCapturedContextSchema = MediaRequestContextSchema.extend({
   capturedAt: z.number().int().nonnegative(),
@@ -302,17 +316,30 @@ export const MediaCandidateSchema = z.strictObject({
   frameUrl: z.string().max(16_384),
   pageUrl: z.string().max(16_384),
   url: z.string().max(16_384),
-  kind: z.enum(['file', 'hls', 'dash', 'embedded']),
+  kind: z.enum([
+    'file',
+    'hls',
+    'dash',
+    'embedded',
+    'fragment',
+    'subtitle',
+    'image',
+    'json',
+    'collection',
+  ]),
   title: z.string().max(512),
   filename: z.string().max(255),
   mime: z.string().max(128),
   size: z.number().int().nonnegative().nullable(),
   method: z.string().max(16),
-  evidence: z.enum(['network', 'element', 'resource']),
+  evidence: z.enum(['network', 'element', 'resource', 'script', 'capture']),
+  input: MediaInputPlanSchema.optional(),
+  variant: z.string().max(64).optional(),
   firstSeen: z.number().nonnegative(),
   lastSeen: z.number().nonnegative(),
   context: MediaCapturedContextSchema.optional(),
   sentToDesktop: z.boolean().optional(),
+  downloadError: z.string().max(128).optional(),
 });
 export const MediaOperationSchema = z.strictObject({
   candidateId: z.uuid(),
@@ -341,7 +368,15 @@ export const MediaScopedContextSchema = MediaCapturedContextSchema.extend({
   frameUrl: z.string().max(16_384),
   pageUrl: z.string().max(16_384),
 });
+export const MediaKeySchema = z.strictObject({
+  tabId: z.number().int(),
+  frameId: z.number().int(),
+  key: z.string().regex(/^[a-f0-9]{32}$/i),
+  url: z.string().max(16384),
+  capturedAt: z.number(),
+});
 export const MediaSessionSchema = z.strictObject({
+  keys: z.array(MediaKeySchema).max(256).default([]),
   candidates: z.array(MediaCandidateSchema).max(MEDIA_MAX_CANDIDATES),
   operations: z.array(MediaOperationSchema).max(MEDIA_MAX_CANDIDATES),
   contexts: z.array(MediaScopedContextSchema).max(128),

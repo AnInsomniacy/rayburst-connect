@@ -682,14 +682,6 @@
     "message": "Opnieuw proberen",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "Sluiten",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "Speler vinden",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "Geen video",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "Volg de stroom, overbrug de leegte.",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "Huidige pagina"
+  },
+  "resources_other": {
+    "message": "Alle pagina’s"
+  },
+  "resources_controls": {
+    "message": "Spelerbediening"
+  },
+  "resources_expand": {
+    "message": "Werkruimte openen"
+  },
+  "resources_fullscreen": {
+    "message": "Volledig scherm"
+  },
+  "resources_import": {
+    "message": "Bron toevoegen"
+  },
+  "resources_invert": {
+    "message": "Selectie omkeren"
+  },
+  "resources_key": {
+    "message": "AES-128-sleutel"
+  },
+  "resources_kind_collection": {
+    "message": "Gecombineerde media"
+  },
+  "resources_kind_fragment": {
+    "message": "Segment"
+  },
+  "resources_loop": {
+    "message": "Herhalen"
+  },
+  "resources_manifest": {
+    "message": "Manifest of segment-URL’s"
+  },
+  "resources_merge": {
+    "message": "Audio en video samenvoegen"
+  },
+  "resources_mute": {
+    "message": "Dempen"
+  },
+  "resources_preview": {
+    "message": "Voorbeeld"
+  },
+  "resources_preview_unavailable": {
+    "message": "Geen voorbeeld beschikbaar. Downloaden kan nog wel werken."
+  },
+  "resources_reload": {
+    "message": "Herladen om vanaf het begin vast te leggen"
+  },
+  "resources_screen": {
+    "message": "Schermopname"
+  },
+  "resources_screenshot": {
+    "message": "Schermafbeelding opslaan"
+  },
+  "resources_sequence": {
+    "message": "Segmenten samenvoegen"
+  },
+  "resources_sidebar": {
+    "message": "Zijbalk openen"
+  },
+  "resources_start": {
+    "message": "Starten"
+  },
+  "resources_start_time": {
+    "message": "Begin (seconden)"
+  },
+  "resources_end_time": {
+    "message": "Einde (0: broneinde)"
+  },
+  "resources_stop": {
+    "message": "Stoppen"
+  },
+  "resources_test_keys": {
+    "message": "Gevonden sleutels testen"
+  },
+  "resources_tools": {
+    "message": "Mediahulpmiddelen"
+  },
+  "resources_volume": {
+    "message": "Volume"
+  },
+  "resources_preserve": {
+    "message": "Bronnen behouden na navigatie"
+  },
+  "resources_deep": {
+    "message": "Diep zoeken"
+  },
+  "resources_cache": {
+    "message": "Mediabuffers vastleggen"
+  },
+  "resources_copy": {
+    "message": "Kopieer"
+  },
+  "resources_select_all": {
+    "message": "Selecteer alles"
+  },
+  "resources_name": {
+    "message": "Naam"
+  },
+  "resources_size": {
+    "message": "Grootte"
+  },
+  "resources_type": {
+    "message": "Type"
+  },
+  "resources_speed": {
+    "message": "Snelheid"
+  },
+  "resources_kind_image": {
+    "message": "Afbeeldingen"
+  },
+  "resources_all": {
+    "message": "Alle"
+  },
+  "resources_time": {
+    "message": "Tijd"
+  },
+  "resources_video": {
+    "message": "Opname starten"
+  },
+  "resources_kind_embedded": {
+    "message": "Bron"
+  },
+  "resources_kind_file": {
+    "message": "Origineel bestand"
+  },
+  "resources_kind_subtitle": {
+    "message": "Ondertitels"
+  },
+  "resources_pause": {
+    "message": "Pauzeren"
+  },
+  "resources_play": {
+    "message": "Afspelen"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "Sorteren"
+  },
+  "resources_auto": {
+    "message": "Nieuwe bronnen automatisch downloaden"
+  },
+  "resources_mobile": {
+    "message": "Mobiele User-Agent gebruiken"
   }
 }

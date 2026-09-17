@@ -12,7 +12,7 @@ const i18n = createI18n(props.prefs.locale, { localeApi: browser.i18n });
 provide(I18N_KEY, i18n);
 const { naiveLocale, naiveDateLocale } = useNaiveLocale(i18n.effectiveLocale);
 const theme = useAppTheme();
-const playerUrl = new URL(window.location.href).searchParams.get('source') ?? '';
+
 function configure(value: unknown) {
   const prefs = parseUiPrefs(value);
   i18n.setLocale(prefs.locale);
@@ -26,15 +26,10 @@ const changed: Parameters<typeof browser.storage.onChanged.addListener>[0] = (ch
 };
 configure(props.prefs);
 onMounted(() => {
-  document.addEventListener('keydown', closeOnEscape);
   browser.storage.onChanged.addListener(changed);
 });
-function closeOnEscape(event: InstanceType<typeof window.KeyboardEvent>) {
-  if (event.key === 'Escape') window.parent.postMessage('RAYBURST_MEDIA_CLOSE', '*');
-}
 onUnmounted(() => {
   browser.storage.onChanged.removeListener(changed);
-  document.removeEventListener('keydown', closeOnEscape);
 });
 </script>
 
@@ -45,7 +40,7 @@ onUnmounted(() => {
     :locale="naiveLocale"
     :date-locale="naiveDateLocale"
   >
-    <MediaPanel frame :player-url="playerUrl" />
+    <MediaPanel expanded />
   </NConfigProvider>
 </template>
 
@@ -54,8 +49,5 @@ onUnmounted(() => {
   margin: 0;
   padding: 12px 0;
   min-width: 0;
-}
-:deep(.media-panel) {
-  max-height: calc(100vh - 24px);
 }
 </style>

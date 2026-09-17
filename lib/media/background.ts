@@ -1,3 +1,5 @@
+import type { DuplicateDownloadGuard } from '../download/duplicate-guard';
+import { startMediaTools } from './tools';
 import { browser, type Browser } from 'wxt/browser';
 import type { DesktopApiClient } from '../api';
 import { MediaApiError } from '../api';
@@ -12,23 +14,16 @@ import { type RequestHeaderContextStore } from '../download/request-context';
 import { matchSiteRule } from '../site-rules';
 import { createMediaCatalog } from './catalog';
 import { hostname } from './detection';
-import { frameContext, startMediaDiscovery } from './discovery';
+import { startMediaDiscovery } from './discovery';
 import { captureMediaContext } from './request-context';
-import {
-  MediaCommandSchema,
-  MediaFrameCommandSchema,
-  MediaObservationsSchema,
-  type MediaList,
-} from './messages';
+import { MediaCommandSchema, MediaObservationsSchema, type MediaList } from './messages';
 import { createMediaWorkflow, mediaErrorCode } from './workflow';
-import { loadUiPrefs } from '../storage';
-import { I18nEngine } from '@/shared/i18n/engine';
-import { resolveLocaleId } from '@/shared/i18n/dictionaries';
 
 const CLEANUP_ALARM = 'media-cleanup';
 
 export function startMediaBackground(options: {
   client: DesktopApiClient;
+  duplicateGuard: DuplicateDownloadGuard;
   ensureConfig: () => Promise<void>;
   settings: () => DownloadSettings;
   siteRules: () => SiteRule[];
@@ -37,6 +32,7 @@ export function startMediaBackground(options: {
   sendFile: (candidate: MediaCandidate) => Promise<boolean>;
   requestHeaders: RequestHeaderContextStore;
   onError?: () => void;
+  onDownloadError?: (candidateId: string, error: string) => void;
 }) {
   const catalog = createMediaCatalog();
   const report = () => options.onError?.();
@@ -53,7 +49,7 @@ export function startMediaBackground(options: {
     );
   }
 
-  const { observe, validateCandidate, synchronizeTab, updateBadge, clearRequests } =
+  const { observe, validateCandidate, synchronizeTab, updateBadge, clearRequests, contextFor } =
     startMediaDiscovery({
       catalog,
       ensureConfig: options.ensureConfig,
@@ -84,6 +80,7 @@ export function startMediaBackground(options: {
   const workflow = createMediaWorkflow({
     catalog,
     client: options.client,
+    duplicateGuard: options.duplicateGuard,
     getSettings: options.settings,
     activate: options.activate,
     sendFile: options.sendFile,
@@ -91,7 +88,37 @@ export function startMediaBackground(options: {
     connectionKey,
   });
 
+  startMediaTools({
+    ensureConfig: options.ensureConfig,
+    onDownloadError: options.onDownloadError,
+    catalog,
+    client: options.client,
+    allowed,
+    workflow,
+    contextFor,
+    settings: options.settings,
+    probe: workflow.probe,
+    observe: async (item) => {
+      await catalog.observe(item);
+      await updateBadge(item.tabId);
+    },
+  });
+
   async function list(tabId: number): Promise<MediaList> {
+    if (tabId === -1) {
+      const tabs = await browser.tabs.query({});
+      const lists = await Promise.all(
+        tabs
+          .filter((tab) => tab.id !== undefined && tab.url?.startsWith('http'))
+          .map((tab) => list(tab.id!)),
+      );
+      return {
+        host: '',
+        enabled: options.settings().mediaDiscovery.enabled,
+        excluded: false,
+        items: lists.flatMap((value) => value.items),
+      };
+    }
     await synchronizeTab(tabId);
     const tab = await browser.tabs.get(tabId);
     const host = hostname(tab.url ?? '');
@@ -120,24 +147,6 @@ export function startMediaBackground(options: {
   }
 
   browser.runtime.onMessage.addListener((raw: unknown, sender: Browser.runtime.MessageSender) => {
-    if (
-      raw &&
-      typeof raw === 'object' &&
-      'type' in raw &&
-      raw.type === 'MEDIA_OVERLAY_LABELS' &&
-      sender.id === browser.runtime.id
-    ) {
-      return loadUiPrefs().then((prefs) => {
-        const locale =
-          prefs.locale === 'auto' ? resolveLocaleId(browser.i18n.getUILanguage()) : prefs.locale;
-        const i18n = new I18nEngine(locale);
-        return {
-          download: i18n.t('media_download'),
-          close: i18n.t('media_close'),
-          options: i18n.t('media_options'),
-        };
-      });
-    }
     const observations = MediaObservationsSchema.safeParse(raw);
     if (observations.success) {
       if (
@@ -164,71 +173,17 @@ export function startMediaBackground(options: {
         .then(() => ({ ok: true }))
         .catch(() => ({ ok: false }));
     }
-    const scoped = MediaFrameCommandSchema.safeParse(raw);
-    const command = MediaCommandSchema.safeParse(scoped.success ? scoped.data.command : raw);
-    if (!command.success) return;
-    if (sender.id !== browser.runtime.id) return;
-    if (scoped.success) {
-      if (sender.tab?.id === undefined || sender.frameId === undefined) return;
-      if (['MEDIA_ENABLE', 'MEDIA_CLEAR'].includes(command.data.type)) return;
-      command.data.tabId = sender.tab.id;
-    } else if (!sender.url?.startsWith(browser.runtime.getURL(''))) return;
+    const command = MediaCommandSchema.safeParse(raw);
+    if (
+      !command.success ||
+      sender.id !== browser.runtime.id ||
+      !sender.url?.startsWith(browser.runtime.getURL(''))
+    )
+      return;
     return (async () => {
       await options.ensureConfig();
       const message = command.data;
-      let sourceFrameId = sender.frameId;
-      if (scoped.success) {
-        if (sourceFrameId === undefined) throw new MediaApiError('source_expired');
-        const isPanel = sender.url?.split('?')[0] === browser.runtime.getURL('/media.html');
-        if (isPanel) {
-          const panel = await browser.webNavigation.getFrame({
-            tabId: message.tabId,
-            frameId: sourceFrameId,
-          });
-          if (!panel || panel.parentFrameId < 0) throw new MediaApiError('source_expired');
-          sourceFrameId = panel.parentFrameId;
-        }
-        const current = await frameContext(
-          message.tabId,
-          sourceFrameId,
-          isPanel ? undefined : sender.documentId,
-        );
-        if (!current || (!isPanel && current.frame.url !== sender.url))
-          throw new MediaApiError('source_expired');
-        if (!allowed(current.tab.url ?? '', current.frame.url))
-          return { ok: true, data: { ...(await list(message.tabId)), enabled: false, items: [] } };
-        if ('candidateId' in message && message.candidateId) {
-          const valid = await catalog.run((state) =>
-            state.candidates.some(
-              (item) =>
-                item.id === message.candidateId &&
-                item.tabId === message.tabId &&
-                item.frameId === sourceFrameId &&
-                item.documentId === (current.frame.documentId ?? '') &&
-                item.frameUrl === current.frame.url,
-            ),
-          );
-          if (!valid) throw new MediaApiError('source_expired');
-        }
-      }
       switch (message.type) {
-        case 'MEDIA_LOCATE': {
-          const item = await catalog.run((state) =>
-            state.candidates.find(
-              (candidate) =>
-                candidate.id === message.candidateId && candidate.tabId === message.tabId,
-            ),
-          );
-          if (!item || !(await validateCandidate(item))) throw new MediaApiError('source_expired');
-          const found: unknown = await browser.tabs.sendMessage(
-            message.tabId,
-            { type: 'MEDIA_LOCATE_PLAYER', url: item.url },
-            { frameId: item.frameId },
-          );
-          if (found !== true) throw new MediaApiError('player_not_found');
-          await browser.tabs.update(message.tabId, { active: true });
-          break;
-        }
         case 'MEDIA_ENABLE':
           await updateSettings({
             mediaDiscovery: { ...options.settings().mediaDiscovery, enabled: message.enabled },
@@ -270,7 +225,6 @@ export function startMediaBackground(options: {
           break;
       }
       const data = await list(message.tabId);
-      if (scoped.success) data.items = data.items.filter((item) => item.frameId === sourceFrameId);
       return { ok: true, data };
     })().catch((error: unknown) => ({ ok: false, error: mediaErrorCode(error) }));
   });
@@ -285,7 +239,7 @@ export function startMediaBackground(options: {
         (item) => openIds.has(item.tabId) && allowed(item.pageUrl, item.url),
       );
       for (const item of state.candidates)
-        if (item.context)
+        if (item.context && item.evidence !== 'capture')
           item.context = {
             ...captureMediaContext(item.url, item.context.headers, options.settings()),
             capturedAt: item.context.capturedAt,

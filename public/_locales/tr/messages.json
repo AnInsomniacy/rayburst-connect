@@ -682,14 +682,6 @@
     "message": "Yeniden dene",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "Kapat",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "Oynatıcıyı bul",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "Video yok",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "Akışın izini sür, boşluğa köprü kur.",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "Geçerli sayfa"
+  },
+  "resources_other": {
+    "message": "Tüm sayfalar"
+  },
+  "resources_controls": {
+    "message": "Oynatıcı denetimleri"
+  },
+  "resources_expand": {
+    "message": "Çalışma alanını aç"
+  },
+  "resources_fullscreen": {
+    "message": "Tam ekran"
+  },
+  "resources_import": {
+    "message": "Kaynak ekle"
+  },
+  "resources_invert": {
+    "message": "Seçimi tersine çevir"
+  },
+  "resources_key": {
+    "message": "AES-128 anahtarı"
+  },
+  "resources_kind_collection": {
+    "message": "Birleştirilmiş medya"
+  },
+  "resources_kind_fragment": {
+    "message": "Parça"
+  },
+  "resources_loop": {
+    "message": "Döngü"
+  },
+  "resources_manifest": {
+    "message": "Bildirim veya parça adresleri"
+  },
+  "resources_merge": {
+    "message": "Ses ve videoyu birleştir"
+  },
+  "resources_mute": {
+    "message": "Sessize al"
+  },
+  "resources_preview": {
+    "message": "Önizleme"
+  },
+  "resources_preview_unavailable": {
+    "message": "Önizleme kullanılamıyor. İndirme yine de çalışabilir."
+  },
+  "resources_reload": {
+    "message": "Baştan yakalamak için yeniden yükle"
+  },
+  "resources_screen": {
+    "message": "Ekran kaydı"
+  },
+  "resources_screenshot": {
+    "message": "Ekran görüntüsünü kaydet"
+  },
+  "resources_sequence": {
+    "message": "Parçaları birleştir"
+  },
+  "resources_sidebar": {
+    "message": "Yan paneli aç"
+  },
+  "resources_start": {
+    "message": "Başlat"
+  },
+  "resources_start_time": {
+    "message": "Başlangıç (saniye)"
+  },
+  "resources_end_time": {
+    "message": "Bitiş (0: kaynağın sonu)"
+  },
+  "resources_stop": {
+    "message": "Durdur"
+  },
+  "resources_test_keys": {
+    "message": "Bulunan anahtarları dene"
+  },
+  "resources_tools": {
+    "message": "Medya araçları"
+  },
+  "resources_volume": {
+    "message": "Ses düzeyi"
+  },
+  "resources_preserve": {
+    "message": "Gezinmeden sonra kaynakları koru"
+  },
+  "resources_deep": {
+    "message": "Derin arama"
+  },
+  "resources_cache": {
+    "message": "Medya arabelleğini yakala"
+  },
+  "resources_copy": {
+    "message": "Kopyala"
+  },
+  "resources_select_all": {
+    "message": "Tümünü Seç"
+  },
+  "resources_name": {
+    "message": "Ad"
+  },
+  "resources_size": {
+    "message": "Boyut"
+  },
+  "resources_type": {
+    "message": "Tür"
+  },
+  "resources_speed": {
+    "message": "Hız"
+  },
+  "resources_kind_image": {
+    "message": "Görseller"
+  },
+  "resources_all": {
+    "message": "Tümü"
+  },
+  "resources_time": {
+    "message": "Zaman"
+  },
+  "resources_video": {
+    "message": "Kaydı başlat"
+  },
+  "resources_kind_embedded": {
+    "message": "Kaynak"
+  },
+  "resources_kind_file": {
+    "message": "Özgün dosya"
+  },
+  "resources_kind_subtitle": {
+    "message": "Altyazılar"
+  },
+  "resources_pause": {
+    "message": "Duraklat"
+  },
+  "resources_play": {
+    "message": "Oynat"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "Sırala"
+  },
+  "resources_auto": {
+    "message": "Yeni kaynakları otomatik indir"
+  },
+  "resources_mobile": {
+    "message": "Mobil User-Agent kullan"
   }
 }

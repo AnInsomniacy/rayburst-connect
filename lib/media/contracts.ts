@@ -1,10 +1,10 @@
 /** The versioned desktop media protocol. No browser or engine implementation lives here. */
 import { z } from 'zod';
 
-export const MEDIA_API_PATH = 'media/v1';
-export const MEDIA_PROTOCOL_VERSION = 1;
-export const MediaSourceKindSchema = z.enum(['hls', 'dash']);
-export const MediaFormatSchema = z.enum(['mp4', 'mkv']);
+export const MEDIA_API_PATH = 'media/v2';
+export const MEDIA_PROTOCOL_VERSION = 2;
+export const MediaSourceKindSchema = z.enum(['hls', 'dash', 'collection']);
+export const MediaFormatSchema = z.enum(['mp4', 'mkv', 'vtt']);
 export const MediaHttpUrlSchema = z
   .string()
   .max(16_384)
@@ -20,6 +20,8 @@ const identifier = z.string().min(1).max(128);
 const integer = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 
 export const MediaFailureCodeSchema = z.enum([
+  'integration_unavailable',
+  'unavailable',
   'unsupported_source',
   'protected_media',
   'authentication_required',
@@ -38,6 +40,33 @@ export const MediaRequestContextSchema = z.strictObject({
     .max(32),
 });
 
+export const MediaInputPlanSchema = z.strictObject({
+  manifests: z
+    .array(z.strictObject({ url: MediaHttpUrlSchema, content: z.string().max(2 * 1024 * 1024) }))
+    .max(32),
+  tracks: z
+    .array(
+      z.strictObject({
+        id: z.string().min(1).max(128),
+        type: z.enum(['video', 'audio', 'muxed', 'subtitle']),
+        urls: z.array(MediaHttpUrlSchema).min(1).max(10_000),
+        offsetMs: z.number().int().min(0).max(31_536_000_000).optional(),
+      }),
+    )
+    .max(32),
+  keys: z
+    .array(
+      z.strictObject({
+        url: z.union([z.literal(''), MediaHttpUrlSchema]),
+        key: z.string().regex(/^[a-f0-9]{32}$/i),
+        iv: z.union([z.literal(''), z.string().regex(/^[a-f0-9]{32}$/i)]),
+      }),
+    )
+    .max(64),
+});
+export type MediaInputPlan = z.infer<typeof MediaInputPlanSchema>;
+export const emptyMediaInput = (): MediaInputPlan => ({ manifests: [], tracks: [], keys: [] });
+
 export const MediaSourceSchema = z.strictObject({
   url: MediaHttpUrlSchema,
   kind: MediaSourceKindSchema,
@@ -46,6 +75,7 @@ export const MediaSourceSchema = z.strictObject({
   filename: z.string().max(255),
   mime: z.string().max(128),
   requestContexts: z.array(MediaRequestContextSchema).max(8),
+  input: MediaInputPlanSchema.optional(),
 });
 
 export const MediaTrackSchema = z.strictObject({
@@ -65,6 +95,8 @@ export const MediaSelectionSchema = z.strictObject({
   subtitleId: identifier.nullable(),
   format: MediaFormatSchema,
   recordTimeSeconds: z.number().int().min(0).max(31_536_000),
+  startTimeSeconds: z.number().int().min(0).max(31_536_000).optional(),
+  endTimeSeconds: z.number().int().min(0).max(31_536_000).optional(),
 });
 
 export const MediaPresentationSchema = z
@@ -90,7 +122,7 @@ export const MediaPresentationSchema = z
 export const MediaCapabilitiesSchema = z.strictObject({
   product: z.literal('rayburst'),
   protocolVersion: z.literal(MEDIA_PROTOCOL_VERSION),
-  sourceKinds: z.array(MediaSourceKindSchema).min(1).max(2),
+  sourceKinds: z.array(MediaSourceKindSchema).min(1).max(3),
   requestContexts: z.literal(true),
 });
 export const MediaProbeRequestSchema = z.strictObject({ id: z.uuid(), source: MediaSourceSchema });
@@ -148,6 +180,21 @@ export function selectionError(
   presentation: { kind: MediaSourceKind; live: boolean; tracks: MediaTrack[]; formats: string[] },
   selection: MediaSelection,
 ): string | null {
+  if (
+    (selection.endTimeSeconds ?? 0) > 0 &&
+    (selection.endTimeSeconds ?? 0) <= (selection.startTimeSeconds ?? 0)
+  )
+    return 'invalid_range';
+  if (
+    (presentation.live || presentation.kind === 'collection') &&
+    (selection.startTimeSeconds || selection.endTimeSeconds)
+  )
+    return 'invalid_range';
+  if (
+    selection.format === 'vtt' &&
+    (selection.videoId || selection.audioId || !selection.subtitleId)
+  )
+    return 'invalid_format';
   if (!presentation.formats.includes(selection.format)) return 'invalid_format';
   if (!presentation.live && selection.recordTimeSeconds !== 0) return 'invalid_duration';
   const video = presentation.tracks.find((track) => track.id === selection.videoId);
@@ -161,6 +208,6 @@ export function selectionError(
     return 'invalid_subtitle';
   if (video && audio && (video.type === 'muxed' || audio.type === 'muxed') && video.id !== audio.id)
     return 'invalid_muxed_selection';
-  if (!video && !audio) return 'track_required';
+  if (!video && !audio && !subtitle) return 'track_required';
   return null;
 }

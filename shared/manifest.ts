@@ -15,8 +15,15 @@ const REQUIRED_PERMISSIONS = [
   'alarms',
   'cookies',
   'nativeMessaging',
+  'scripting',
+  'declarativeNetRequest',
+  'tabs',
 ] as const;
-const FIREFOX_REQUIRED_PERMISSIONS = [...REQUIRED_PERMISSIONS, 'webRequestBlocking'] as const;
+const FIREFOX_REQUIRED_PERMISSIONS = [
+  ...REQUIRED_PERMISSIONS,
+  'webRequestBlocking',
+  'webRequestFilterResponse',
+] as const;
 const LOOPBACK_HOST_PERMISSIONS = ['http://127.0.0.1/*', 'http://localhost/*'] as const;
 const BROAD_DOWNLOAD_ORIGINS = ['https://*/*', 'http://*/*'] as const;
 
@@ -24,7 +31,9 @@ export function buildExtensionManifest(browser: string) {
   const optionalPermissions: UserManifest['optional_permissions'] =
     browser === 'firefox' ? [] : ['downloads.ui'];
   const permissions =
-    browser === 'firefox' ? [...FIREFOX_REQUIRED_PERMISSIONS] : [...REQUIRED_PERMISSIONS];
+    browser === 'firefox'
+      ? [...FIREFOX_REQUIRED_PERMISSIONS]
+      : [...REQUIRED_PERMISSIONS, 'sidePanel'];
 
   const manifest = {
     ...(browser !== 'firefox' ? { minimum_chrome_version: '132' } : {}),
@@ -38,7 +47,9 @@ export function buildExtensionManifest(browser: string) {
     optional_permissions: optionalPermissions,
     host_permissions: [...LOOPBACK_HOST_PERMISSIONS, ...BROAD_DOWNLOAD_ORIGINS],
     optional_host_permissions: [],
-    web_accessible_resources: [{ resources: ['media.html'], matches: [...BROAD_DOWNLOAD_ORIGINS] }],
+    ...(browser === 'firefox'
+      ? { sidebar_action: { default_panel: 'media.html', default_title: 'Rayburst' } }
+      : { side_panel: { default_path: 'media.html' } }),
     ...(browser === 'firefox'
       ? {
           browser_specific_settings: {

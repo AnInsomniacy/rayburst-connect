@@ -682,14 +682,6 @@
     "message": "Retry",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "Close",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "Locate player",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "No video",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "Trace the stream, bridge the void.",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "Current page"
+  },
+  "resources_other": {
+    "message": "All pages"
+  },
+  "resources_controls": {
+    "message": "Player controls"
+  },
+  "resources_expand": {
+    "message": "Open workspace"
+  },
+  "resources_fullscreen": {
+    "message": "Fullscreen"
+  },
+  "resources_import": {
+    "message": "Add a source"
+  },
+  "resources_invert": {
+    "message": "Invert selection"
+  },
+  "resources_key": {
+    "message": "AES-128 key"
+  },
+  "resources_kind_collection": {
+    "message": "Combined media"
+  },
+  "resources_kind_fragment": {
+    "message": "Segment"
+  },
+  "resources_loop": {
+    "message": "Loop"
+  },
+  "resources_manifest": {
+    "message": "Manifest or segment URLs"
+  },
+  "resources_merge": {
+    "message": "Merge audio and video"
+  },
+  "resources_mute": {
+    "message": "Mute"
+  },
+  "resources_preview": {
+    "message": "Preview"
+  },
+  "resources_preview_unavailable": {
+    "message": "Preview unavailable. The source may still download."
+  },
+  "resources_reload": {
+    "message": "Reload to capture from the beginning"
+  },
+  "resources_screen": {
+    "message": "Screen recording"
+  },
+  "resources_screenshot": {
+    "message": "Save screenshot"
+  },
+  "resources_sequence": {
+    "message": "Join segments"
+  },
+  "resources_sidebar": {
+    "message": "Open sidebar"
+  },
+  "resources_start": {
+    "message": "Start"
+  },
+  "resources_start_time": {
+    "message": "Start (seconds)"
+  },
+  "resources_end_time": {
+    "message": "End (0: source end)"
+  },
+  "resources_stop": {
+    "message": "Stop"
+  },
+  "resources_test_keys": {
+    "message": "Test discovered keys"
+  },
+  "resources_tools": {
+    "message": "Media tools"
+  },
+  "resources_volume": {
+    "message": "Volume"
+  },
+  "resources_preserve": {
+    "message": "Keep sources after navigation"
+  },
+  "resources_deep": {
+    "message": "Deep search"
+  },
+  "resources_cache": {
+    "message": "Capture media buffers"
+  },
+  "resources_copy": {
+    "message": "Copy"
+  },
+  "resources_select_all": {
+    "message": "Select All"
+  },
+  "resources_name": {
+    "message": "Name"
+  },
+  "resources_size": {
+    "message": "Size"
+  },
+  "resources_type": {
+    "message": "Type"
+  },
+  "resources_speed": {
+    "message": "Speed"
+  },
+  "resources_kind_image": {
+    "message": "Images"
+  },
+  "resources_all": {
+    "message": "All"
+  },
+  "resources_time": {
+    "message": "Time"
+  },
+  "resources_video": {
+    "message": "Start recording"
+  },
+  "resources_kind_embedded": {
+    "message": "Source"
+  },
+  "resources_kind_file": {
+    "message": "Original file"
+  },
+  "resources_kind_subtitle": {
+    "message": "Subtitles"
+  },
+  "resources_pause": {
+    "message": "Pause"
+  },
+  "resources_play": {
+    "message": "Play"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "Sort"
+  },
+  "resources_auto": {
+    "message": "Download new resources automatically"
+  },
+  "resources_mobile": {
+    "message": "Use a mobile User-Agent"
   }
 }

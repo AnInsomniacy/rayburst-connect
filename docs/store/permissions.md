@@ -12,15 +12,27 @@ Used to associate discovered media with its actual tab, frame, and document; rem
 stale sources after navigation; and retain correct provenance across same-document
 history changes. No browsing history is exported or sent to a remote service.
 
-The floating media interface is an extension iframe (`media.html`, exposed as a
-web-accessible resource). Its native parent-frame identity scopes media commands;
-the content script cannot select another tab or frame by supplying an ID. The panel
-receives sanitized source metadata and shares the popup's download confirmation UI.
+### `scripting`, `tabs`, `sidePanel`
+
+Explicit deep-search and capture modes install bounded page-world hooks with the
+native scripting API. Tab/frame identity scopes captured data. The media workspace
+shows the current tab or all tabs and opens in Chromium's native side panel;
+Firefox uses `sidebarAction`.
+
+### `declarativeNetRequest`
+
+Applies an opt-in mobile User-Agent as a tab-scoped session rule. The rule is removed
+when disabled or when its tab closes.
+
+### `webRequestFilterResponse` (Firefox only)
+
+Opt-in deep search inspects bounded response copies while forwarding the original
+bytes unchanged. Observations are processed locally.
 
 ### `alarms`
 
 Runs bounded media session cleanup after extension worker suspension. It expires
-inactive local media metadata and request context. It does not schedule downloads.
+inactive local media metadata and request context. It also resumes user-requested batch and automatic media queues.
 
 ### Media discovery and session storage
 
@@ -78,7 +90,7 @@ Activates the installed Rayburst desktop application when its local HTTP API is 
 ### `http://127.0.0.1/*` and `http://localhost/*`
 
 ```
-Required to communicate with the Rayburst HTTP API running on the user's local machine inside the desktop application. This is the ONLY network communication the extension makes. The extension sends requests to http://127.0.0.1:{port} (default port: 29110) to submit download tasks, check connection status, query stats, and control tasks. No requests are ever made to any remote server.
+Required to communicate with the Rayburst HTTP API running on the user's local machine inside the desktop application. Task handoff and capture uploads use this local API. User-requested previews also contact the selected media source. The extension sends requests to http://127.0.0.1:{port} (default port: 29110) to submit download tasks, check connection status, query stats, and control tasks. No developer telemetry or remote processing endpoint is contacted.
 ```
 
 ### `cookies`

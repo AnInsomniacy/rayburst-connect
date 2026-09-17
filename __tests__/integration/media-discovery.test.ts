@@ -1,12 +1,13 @@
+import { DuplicateDownloadGuard } from '@/lib/download/duplicate-guard';
+import { z } from 'zod';
+import { MediaListSchema } from '@/lib/media/messages';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { browser } from 'wxt/browser';
 import { fakeBrowser } from 'wxt/testing';
-import { z } from 'zod';
 import { startMediaBackground } from '@/lib/media/background';
 import { DesktopApiClient } from '@/lib/api';
 import { RequestHeaderContextStore } from '@/lib/download/request-context';
 import { MEDIA_SESSION_KEY, MediaSessionSchema, parseDownloadSettings } from '@/lib/schema';
-import { MediaListSchema } from '@/lib/media/messages';
 
 let response: Parameters<typeof browser.webRequest.onResponseStarted.addListener>[0];
 let request: Parameters<typeof browser.webRequest.onSendHeaders.addListener>[0];
@@ -86,6 +87,7 @@ beforeEach(async () => {
   ]);
   const settings = parseDownloadSettings(null);
   startMediaBackground({
+    duplicateGuard: new DuplicateDownloadGuard(),
     client: new DesktopApiClient({ port: 29110, secret: '' }),
     ensureConfig: async () => undefined,
     settings: () => settings,
@@ -104,59 +106,112 @@ afterEach(() => {
 });
 
 describe('browser discovery integration', () => {
-  it("binds floating UI to its native parent frame and rejects another frame's candidate", async () => {
-    response(resource('https://cdn.example.com/main.m3u8'));
-    await vi.waitFor(async () => expect((await snapshot()).candidates).toHaveLength(1));
-    const candidate = (await snapshot()).candidates[0]!;
-    const tab = await browser.tabs.get(tabId);
-    const normalFrame = await browser.webNavigation.getFrame({ tabId, frameId: 0 });
-    vi.spyOn(browser.webNavigation, 'getFrame').mockImplementation(async ({ frameId }) => {
-      if (!normalFrame) return null;
-      return { ...normalFrame, parentFrameId: frameId === 10 ? 2 : -1 };
+  it('reports an unsupported player source and removes it from the download queue', async () => {
+    await fakeBrowser.runtime.onMessage.trigger(
+      {
+        type: 'MEDIA_OBSERVATIONS',
+        title: 'Player',
+        observations: [
+          {
+            url: 'blob:https://example.com/player',
+            evidence: 'element',
+            elementType: 'video',
+          },
+        ],
+      },
+      {
+        id: browser.runtime.id,
+        tab: await browser.tabs.get(tabId),
+        frameId: 0,
+        documentId,
+        url: frameUrl,
+      },
+    );
+    const source = (await snapshot()).candidates[0]!;
+    expect(source.kind).toBe('embedded');
+    await fakeBrowser.runtime.onMessage.trigger(
+      { type: 'MEDIA_BATCH', tabId, ids: [source.id] },
+      { id: browser.runtime.id, url: browser.runtime.getURL('/popup.html') },
+    );
+    expect((await snapshot()).candidates[0]?.downloadError).toBe('unsupported_source');
+    expect((await browser.storage.session.get('mediaQueue')).mediaQueue).toEqual([]);
+  });
+
+  it('recovers exact request credentials for a disguised inline manifest', async () => {
+    const sessionId = crypto.randomUUID();
+    await browser.storage.session.set({
+      mediaTools: { [tabId]: { id: sessionId, mode: 'deep', streams: {} } },
+    });
+    const details = resource('https://cdn.example.com/disguised', {
+      responseHeaders: [{ name: 'Content-Type', value: 'text/plain' }],
+    });
+    request({
+      ...details,
+      requestHeaders: [{ name: 'Authorization', value: 'Bearer exact-document' }],
+    });
+    response(details);
+    await Promise.resolve();
+    await fakeBrowser.runtime.onMessage.trigger(
+      {
+        type: 'MEDIA_SCRIPT_DATA',
+        data: { sessionId, type: 'manifest', kind: 'hls', url: details.url, content: '#EXTM3U\n' },
+      },
+      {
+        id: browser.runtime.id,
+        tab: await browser.tabs.get(tabId),
+        frameId: 0,
+        documentId,
+        url: frameUrl,
+      },
+    );
+    const item = (await snapshot()).candidates[0];
+    expect(item?.context?.headers).toContainEqual({
+      name: 'authorization',
+      value: 'Bearer exact-document',
+    });
+    expect(item?.input?.manifests[0]?.content).toBe('#EXTM3U\n');
+  });
+  it('does not duplicate capture bytes or mix frames after a replay', async () => {
+    const sessionId = crypto.randomUUID(),
+      captureId = crypto.randomUUID(),
+      id = crypto.randomUUID();
+    const append = vi
+      .spyOn(DesktopApiClient.prototype, 'appendCapture')
+      .mockResolvedValue({ offset: 3 });
+    await browser.storage.session.set({
+      mediaTools: { [tabId]: { id: sessionId, mode: 'cache', captureId, streams: {} } },
     });
     const sender = {
       id: browser.runtime.id,
-      url: browser.runtime.getURL('/media.html'),
-      tab,
-      frameId: 10,
+      tab: await browser.tabs.get(tabId),
+      frameId: 0,
+      documentId,
+      url: frameUrl,
     };
-    const listed: unknown[] = await fakeBrowser.runtime.onMessage.trigger(
-      { type: 'MEDIA_FRAME', command: { type: 'MEDIA_LIST', tabId: 99999 } },
+    const data = {
+      type: 'chunk',
+      sessionId,
+      id,
+      stream: 0,
+      mime: 'video/mp4',
+      offsetMs: 25,
+      data: btoa('abc'),
+    };
+    await fakeBrowser.runtime.onMessage.trigger({ type: 'MEDIA_SCRIPT_DATA', data }, sender);
+    await fakeBrowser.runtime.onMessage.trigger({ type: 'MEDIA_SCRIPT_DATA', data }, sender);
+    await fakeBrowser.runtime.onMessage.trigger(
+      { type: 'MEDIA_SCRIPT_DATA', data: { ...data, id: crypto.randomUUID() } },
+      { ...sender, frameId: 1 },
+    );
+    await fakeBrowser.runtime.onMessage.trigger(
+      { type: 'MEDIA_SCRIPT_DATA', data: { ...data, sessionId: crypto.randomUUID() } },
       sender,
     );
-    const view = z
-      .object({ ok: z.literal(true), data: MediaListSchema })
-      .parse(listed.find((value) => value !== undefined));
-    expect(view.data.items).toEqual([]);
-    const rejected: unknown[] = await fakeBrowser.runtime.onMessage.trigger(
-      {
-        type: 'MEDIA_FRAME',
-        command: { type: 'MEDIA_PROBE', tabId: 99999, candidateId: candidate.id },
-      },
-      sender,
-    );
-    expect(rejected).toContainEqual({ ok: false, error: 'source_expired' });
-    expect((await snapshot()).operations).toEqual([]);
-  });
-  it("returns only sources from the content sender's native frame", async () => {
-    response(resource('https://cdn.example.com/main.m3u8'));
-    await vi.waitFor(async () => expect((await snapshot()).candidates).toHaveLength(1));
-    const results: unknown[] = await fakeBrowser.runtime.onMessage.trigger(
-      { type: 'MEDIA_FRAME', command: { type: 'MEDIA_LIST', tabId: 99999 } },
-      {
-        id: browser.runtime.id,
-        url: frameUrl,
-        documentId,
-        tab: await browser.tabs.get(tabId),
-        frameId: 0,
-      },
-    );
-    const view = z
-      .object({ ok: z.literal(true), data: MediaListSchema })
-      .parse(results.find((value) => value !== undefined));
-    expect(view.data.items).toHaveLength(1);
-    expect(view.data.items[0]?.tabId).toBe(tabId);
-    expect(JSON.stringify(view)).not.toContain('headers');
+    expect(append).toHaveBeenCalledExactlyOnceWith(captureId, 0, 0, new Uint8Array([97, 98, 99]));
+    const state = (await browser.storage.session.get('mediaTools')).mediaTools;
+    expect(state).toMatchObject({
+      [tabId]: { frameId: 0, streams: { 0: { offset: 3, lastId: id, offsetMs: 25 } } },
+    });
   });
   it('rejects a pre-navigation response even when a browser provides no document ID', async () => {
     const stale = resource('https://cdn.example.com/stale.m3u8', { documentId: undefined });
@@ -213,14 +268,19 @@ describe('browser discovery integration', () => {
     await vi.waitFor(async () => expect((await snapshot()).candidates).toHaveLength(1));
     expect((await snapshot()).candidates[0]?.url).toContain('current.m3u8');
   });
-  it('does not add fragments as titles and preserves their own origin context', async () => {
+  it('classifies fragments separately and preserves their origin context', async () => {
     const details = resource('https://segments.example.com/part-1.m4s', {
       responseHeaders: [{ name: 'Content-Type', value: 'video/iso.segment' }],
     });
     request({ ...details, requestHeaders: [{ name: 'Cookie', value: 'segment-session=private' }] });
     response(details);
     await vi.waitFor(async () => expect((await snapshot()).contexts).toHaveLength(1));
-    expect((await snapshot()).candidates).toEqual([]);
+    await vi.waitFor(async () =>
+      expect((await snapshot()).candidates[0]).toMatchObject({
+        kind: 'fragment',
+        url: details.url,
+      }),
+    );
     expect((await snapshot()).contexts[0]?.url).toBe(details.url);
   });
   it('ignores privileged commands from content scripts', async () => {

@@ -16,6 +16,34 @@ beforeEach(() => {
 });
 
 describe('media session ownership', () => {
+  it('keeps network credentials when an inline playlist arrives in the same batch', async () => {
+    const catalog = createMediaCatalog();
+    const first = mediaCandidate({
+      context: {
+        url: 'https://example.com/stream',
+        capturedAt: Date.now(),
+        headers: [{ name: 'authorization', value: 'Bearer scoped' }],
+      },
+    });
+    const input = { manifests: [{ url: first.url, content: '#EXTM3U\n' }], tracks: [], keys: [] };
+    await Promise.all([
+      catalog.observe(first),
+      catalog.observe({
+        ...first,
+        id: crypto.randomUUID(),
+        evidence: 'script',
+        context: undefined,
+        input,
+      }),
+    ]);
+    expect(await catalog.run((state) => state.candidates)).toEqual([{ ...first, input }]);
+  });
+  it('does not resurrect observations after a clear races the capture batch', async () => {
+    const catalog = createMediaCatalog();
+    const item = mediaCandidate();
+    await Promise.all([catalog.observe(item), catalog.remove(item.tabId)]);
+    expect(await catalog.run((state) => state.candidates)).toEqual([]);
+  });
   it('keeps distinct blob hints for multiple players in the same frame', async () => {
     const catalog = createMediaCatalog();
     await catalog.observe(

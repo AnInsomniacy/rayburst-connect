@@ -682,14 +682,6 @@
     "message": "Coba lagi",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "Tutup",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "Temukan pemutar",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "Tanpa video",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "Telusuri alirannya, jembatani jaraknya.",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "Halaman saat ini"
+  },
+  "resources_other": {
+    "message": "Semua halaman"
+  },
+  "resources_controls": {
+    "message": "Kontrol pemutar"
+  },
+  "resources_expand": {
+    "message": "Buka ruang kerja"
+  },
+  "resources_fullscreen": {
+    "message": "Layar penuh"
+  },
+  "resources_import": {
+    "message": "Tambah sumber"
+  },
+  "resources_invert": {
+    "message": "Balik pilihan"
+  },
+  "resources_key": {
+    "message": "Kunci AES-128"
+  },
+  "resources_kind_collection": {
+    "message": "Media gabungan"
+  },
+  "resources_kind_fragment": {
+    "message": "Segmen"
+  },
+  "resources_loop": {
+    "message": "Ulangi"
+  },
+  "resources_manifest": {
+    "message": "Manifest atau URL segmen"
+  },
+  "resources_merge": {
+    "message": "Gabungkan audio dan video"
+  },
+  "resources_mute": {
+    "message": "Bisukan"
+  },
+  "resources_preview": {
+    "message": "Pratinjau"
+  },
+  "resources_preview_unavailable": {
+    "message": "Pratinjau tidak tersedia. Unduhan mungkin masih dapat dilakukan."
+  },
+  "resources_reload": {
+    "message": "Muat ulang untuk menangkap dari awal"
+  },
+  "resources_screen": {
+    "message": "Perekaman layar"
+  },
+  "resources_screenshot": {
+    "message": "Simpan tangkapan layar"
+  },
+  "resources_sequence": {
+    "message": "Gabungkan segmen"
+  },
+  "resources_sidebar": {
+    "message": "Buka bilah samping"
+  },
+  "resources_start": {
+    "message": "Mulai"
+  },
+  "resources_start_time": {
+    "message": "Awal (detik)"
+  },
+  "resources_end_time": {
+    "message": "Akhir (0: akhir sumber)"
+  },
+  "resources_stop": {
+    "message": "Hentikan"
+  },
+  "resources_test_keys": {
+    "message": "Uji kunci yang ditemukan"
+  },
+  "resources_tools": {
+    "message": "Alat media"
+  },
+  "resources_volume": {
+    "message": "Volume"
+  },
+  "resources_preserve": {
+    "message": "Simpan sumber setelah navigasi"
+  },
+  "resources_deep": {
+    "message": "Pencarian mendalam"
+  },
+  "resources_cache": {
+    "message": "Tangkap buffer media"
+  },
+  "resources_copy": {
+    "message": "Salin"
+  },
+  "resources_select_all": {
+    "message": "Pilih Semua"
+  },
+  "resources_name": {
+    "message": "Nama"
+  },
+  "resources_size": {
+    "message": "Ukuran"
+  },
+  "resources_type": {
+    "message": "Jenis"
+  },
+  "resources_speed": {
+    "message": "Kecepatan"
+  },
+  "resources_kind_image": {
+    "message": "Gambar"
+  },
+  "resources_all": {
+    "message": "Semua"
+  },
+  "resources_time": {
+    "message": "Waktu"
+  },
+  "resources_video": {
+    "message": "Mulai merekam"
+  },
+  "resources_kind_embedded": {
+    "message": "Sumber"
+  },
+  "resources_kind_file": {
+    "message": "Berkas asli"
+  },
+  "resources_kind_subtitle": {
+    "message": "Subtitel"
+  },
+  "resources_pause": {
+    "message": "Jeda"
+  },
+  "resources_play": {
+    "message": "Putar"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "Urutkan"
+  },
+  "resources_auto": {
+    "message": "Unduh sumber daya baru secara otomatis"
+  },
+  "resources_mobile": {
+    "message": "Gunakan User-Agent seluler"
   }
 }

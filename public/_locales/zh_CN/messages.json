@@ -682,14 +682,6 @@
     "message": "重试",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "关闭",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "定位播放器",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "不含视频",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "溯网寻踪，隔空引渡。",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "当前页面"
+  },
+  "resources_other": {
+    "message": "所有页面"
+  },
+  "resources_controls": {
+    "message": "播放器控制"
+  },
+  "resources_expand": {
+    "message": "打开工作区"
+  },
+  "resources_fullscreen": {
+    "message": "全屏"
+  },
+  "resources_import": {
+    "message": "添加资源"
+  },
+  "resources_invert": {
+    "message": "反选"
+  },
+  "resources_key": {
+    "message": "AES-128 密钥"
+  },
+  "resources_kind_collection": {
+    "message": "组合媒体"
+  },
+  "resources_kind_fragment": {
+    "message": "分片"
+  },
+  "resources_loop": {
+    "message": "循环"
+  },
+  "resources_manifest": {
+    "message": "清单或分片地址"
+  },
+  "resources_merge": {
+    "message": "合并音视频"
+  },
+  "resources_mute": {
+    "message": "静音"
+  },
+  "resources_preview": {
+    "message": "预览"
+  },
+  "resources_preview_unavailable": {
+    "message": "无法预览，资源仍可能可以下载。"
+  },
+  "resources_reload": {
+    "message": "刷新页面，从头捕获"
+  },
+  "resources_screen": {
+    "message": "屏幕录制"
+  },
+  "resources_screenshot": {
+    "message": "保存截图"
+  },
+  "resources_sequence": {
+    "message": "合并分片"
+  },
+  "resources_sidebar": {
+    "message": "打开侧栏"
+  },
+  "resources_start": {
+    "message": "开始"
+  },
+  "resources_start_time": {
+    "message": "起点（秒）"
+  },
+  "resources_end_time": {
+    "message": "终点（0 表示末尾）"
+  },
+  "resources_stop": {
+    "message": "停止"
+  },
+  "resources_test_keys": {
+    "message": "验证发现的密钥"
+  },
+  "resources_tools": {
+    "message": "媒体工具"
+  },
+  "resources_volume": {
+    "message": "音量"
+  },
+  "resources_preserve": {
+    "message": "跳转后保留资源"
+  },
+  "resources_deep": {
+    "message": "深度搜索"
+  },
+  "resources_cache": {
+    "message": "捕获媒体缓存"
+  },
+  "resources_copy": {
+    "message": "复制"
+  },
+  "resources_select_all": {
+    "message": "全选"
+  },
+  "resources_name": {
+    "message": "文件名"
+  },
+  "resources_size": {
+    "message": "大小"
+  },
+  "resources_type": {
+    "message": "类型"
+  },
+  "resources_speed": {
+    "message": "速度"
+  },
+  "resources_kind_image": {
+    "message": "图片"
+  },
+  "resources_all": {
+    "message": "全部"
+  },
+  "resources_time": {
+    "message": "时间"
+  },
+  "resources_video": {
+    "message": "开始录制"
+  },
+  "resources_kind_embedded": {
+    "message": "来源"
+  },
+  "resources_kind_file": {
+    "message": "原始文件"
+  },
+  "resources_kind_subtitle": {
+    "message": "字幕"
+  },
+  "resources_pause": {
+    "message": "暂停"
+  },
+  "resources_play": {
+    "message": "播放"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "排序"
+  },
+  "resources_auto": {
+    "message": "自动下载新发现的资源"
+  },
+  "resources_mobile": {
+    "message": "使用移动端 User-Agent"
   }
 }

@@ -682,14 +682,6 @@
     "message": "Prøv igjen",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "Lukk",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "Finn avspilleren",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "Ingen video",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "Følg strømmen, bygg bro over tomrommet.",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "Gjeldende side"
+  },
+  "resources_other": {
+    "message": "Alle sider"
+  },
+  "resources_controls": {
+    "message": "Spillerkontroller"
+  },
+  "resources_expand": {
+    "message": "Åpne arbeidsområde"
+  },
+  "resources_fullscreen": {
+    "message": "Fullskjerm"
+  },
+  "resources_import": {
+    "message": "Legg til kilde"
+  },
+  "resources_invert": {
+    "message": "Inverter utvalg"
+  },
+  "resources_key": {
+    "message": "AES-128-nøkkel"
+  },
+  "resources_kind_collection": {
+    "message": "Kombinerte medier"
+  },
+  "resources_kind_fragment": {
+    "message": "Segment"
+  },
+  "resources_loop": {
+    "message": "Gjenta"
+  },
+  "resources_manifest": {
+    "message": "Manifest eller segmentadresser"
+  },
+  "resources_merge": {
+    "message": "Slå sammen lyd og video"
+  },
+  "resources_mute": {
+    "message": "Demp"
+  },
+  "resources_preview": {
+    "message": "Forhåndsvisning"
+  },
+  "resources_preview_unavailable": {
+    "message": "Forhåndsvisning er utilgjengelig. Nedlasting kan fortsatt fungere."
+  },
+  "resources_reload": {
+    "message": "Last inn på nytt for å fange fra starten"
+  },
+  "resources_screen": {
+    "message": "Skjermopptak"
+  },
+  "resources_screenshot": {
+    "message": "Lagre skjermbilde"
+  },
+  "resources_sequence": {
+    "message": "Slå sammen segmenter"
+  },
+  "resources_sidebar": {
+    "message": "Åpne sidepanel"
+  },
+  "resources_start": {
+    "message": "Start"
+  },
+  "resources_start_time": {
+    "message": "Start (sekunder)"
+  },
+  "resources_end_time": {
+    "message": "Slutt (0: kildens slutt)"
+  },
+  "resources_stop": {
+    "message": "Stopp"
+  },
+  "resources_test_keys": {
+    "message": "Test oppdagede nøkler"
+  },
+  "resources_tools": {
+    "message": "Medieverktøy"
+  },
+  "resources_volume": {
+    "message": "Volum"
+  },
+  "resources_preserve": {
+    "message": "Behold kilder etter navigering"
+  },
+  "resources_deep": {
+    "message": "Dypt søk"
+  },
+  "resources_cache": {
+    "message": "Fang mediebuffer"
+  },
+  "resources_copy": {
+    "message": "Kopier"
+  },
+  "resources_select_all": {
+    "message": "Merk alt"
+  },
+  "resources_name": {
+    "message": "Navn"
+  },
+  "resources_size": {
+    "message": "Størrelse"
+  },
+  "resources_type": {
+    "message": "Type"
+  },
+  "resources_speed": {
+    "message": "Hastighet"
+  },
+  "resources_kind_image": {
+    "message": "Bilder"
+  },
+  "resources_all": {
+    "message": "Alle"
+  },
+  "resources_time": {
+    "message": "Tid"
+  },
+  "resources_video": {
+    "message": "Start opptak"
+  },
+  "resources_kind_embedded": {
+    "message": "Kilde"
+  },
+  "resources_kind_file": {
+    "message": "Originalfil"
+  },
+  "resources_kind_subtitle": {
+    "message": "Undertekster"
+  },
+  "resources_pause": {
+    "message": "Pause"
+  },
+  "resources_play": {
+    "message": "Spill av"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "Sorter"
+  },
+  "resources_auto": {
+    "message": "Last ned nye ressurser automatisk"
+  },
+  "resources_mobile": {
+    "message": "Bruk mobil User-Agent"
   }
 }

@@ -682,14 +682,6 @@
     "message": "Újra",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "Bezárás",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "Lejátszó megkeresése",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "Nincs videó",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "Kövesd az áramlatot, hidald át az űrt.",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "Jelenlegi oldal"
+  },
+  "resources_other": {
+    "message": "Minden oldal"
+  },
+  "resources_controls": {
+    "message": "Lejátszóvezérlés"
+  },
+  "resources_expand": {
+    "message": "Munkaterület megnyitása"
+  },
+  "resources_fullscreen": {
+    "message": "Teljes képernyő"
+  },
+  "resources_import": {
+    "message": "Forrás hozzáadása"
+  },
+  "resources_invert": {
+    "message": "Kijelölés megfordítása"
+  },
+  "resources_key": {
+    "message": "AES-128-kulcs"
+  },
+  "resources_kind_collection": {
+    "message": "Egyesített média"
+  },
+  "resources_kind_fragment": {
+    "message": "Szegmens"
+  },
+  "resources_loop": {
+    "message": "Ismétlés"
+  },
+  "resources_manifest": {
+    "message": "Leírófájl vagy szegmenscímek"
+  },
+  "resources_merge": {
+    "message": "Hang és videó egyesítése"
+  },
+  "resources_mute": {
+    "message": "Némítás"
+  },
+  "resources_preview": {
+    "message": "Előnézet"
+  },
+  "resources_preview_unavailable": {
+    "message": "Az előnézet nem érhető el. A letöltés még működhet."
+  },
+  "resources_reload": {
+    "message": "Újratöltés a rögzítés kezdetéhez"
+  },
+  "resources_screen": {
+    "message": "Képernyőfelvétel"
+  },
+  "resources_screenshot": {
+    "message": "Képernyőkép mentése"
+  },
+  "resources_sequence": {
+    "message": "Szegmensek egyesítése"
+  },
+  "resources_sidebar": {
+    "message": "Oldalsáv megnyitása"
+  },
+  "resources_start": {
+    "message": "Indítás"
+  },
+  "resources_start_time": {
+    "message": "Kezdet (másodperc)"
+  },
+  "resources_end_time": {
+    "message": "Vég (0: forrás vége)"
+  },
+  "resources_stop": {
+    "message": "Leállítás"
+  },
+  "resources_test_keys": {
+    "message": "Talált kulcsok ellenőrzése"
+  },
+  "resources_tools": {
+    "message": "Médiaeszközök"
+  },
+  "resources_volume": {
+    "message": "Hangerő"
+  },
+  "resources_preserve": {
+    "message": "Források megőrzése navigáláskor"
+  },
+  "resources_deep": {
+    "message": "Mély keresés"
+  },
+  "resources_cache": {
+    "message": "Médiapuffer rögzítése"
+  },
+  "resources_copy": {
+    "message": "Másolás"
+  },
+  "resources_select_all": {
+    "message": "Az összes kijelölése"
+  },
+  "resources_name": {
+    "message": "Név"
+  },
+  "resources_size": {
+    "message": "Méret"
+  },
+  "resources_type": {
+    "message": "Típus"
+  },
+  "resources_speed": {
+    "message": "Sebesség"
+  },
+  "resources_kind_image": {
+    "message": "Képek"
+  },
+  "resources_all": {
+    "message": "Összes"
+  },
+  "resources_time": {
+    "message": "Idő"
+  },
+  "resources_video": {
+    "message": "Felvétel indítása"
+  },
+  "resources_kind_embedded": {
+    "message": "Forrás"
+  },
+  "resources_kind_file": {
+    "message": "Eredeti fájl"
+  },
+  "resources_kind_subtitle": {
+    "message": "Feliratok"
+  },
+  "resources_pause": {
+    "message": "Szünet"
+  },
+  "resources_play": {
+    "message": "Lejátszás"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "Rendezés"
+  },
+  "resources_auto": {
+    "message": "Új erőforrások automatikus letöltése"
+  },
+  "resources_mobile": {
+    "message": "Mobil User-Agent használata"
   }
 }

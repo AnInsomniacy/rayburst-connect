@@ -1,3 +1,4 @@
+import { MediaApiError } from '@/lib/api';
 import { browser, type Browser } from 'wxt/browser';
 import { DownloadOrchestrator, type DownloadCandidate } from '@/lib/download/orchestrator';
 import { startChromiumTakeover } from '@/lib/download/chromium-takeover';
@@ -253,6 +254,7 @@ export default defineBackground(() => {
 
   registerFirefoxResponseInterception();
   startMediaBackground({
+    duplicateGuard: duplicateDownloadGuard,
     client: desktopClient,
     ensureConfig: ensureConfigLoaded,
     settings: () => settings,
@@ -266,10 +268,16 @@ export default defineBackground(() => {
         headerContext: context,
         filename: candidate.filename,
       });
-      return result === 'routed-to-desktop';
+      if (result === 'duplicate-blocked') throw new MediaApiError('duplicate_blocked');
+      return true;
     },
     onError: () =>
       logWarn('media_discovery_failed', 'Media discovery could not update its session'),
+    onDownloadError: (candidateId, error) =>
+      logWarn('download_delivery_failed', 'Media download could not be submitted', {
+        candidateId,
+        error,
+      }),
     activate: () =>
       activateDesktopAndWait({
         activate: activateDesktopApp,

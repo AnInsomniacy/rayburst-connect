@@ -682,14 +682,6 @@
     "message": "再試行",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "閉じる",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "プレーヤーを表示",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "動画なし",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "流れをたどり、隔たりをつなぐ。",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "現在のページ"
+  },
+  "resources_other": {
+    "message": "すべてのページ"
+  },
+  "resources_controls": {
+    "message": "プレーヤー操作"
+  },
+  "resources_expand": {
+    "message": "ワークスペースを開く"
+  },
+  "resources_fullscreen": {
+    "message": "全画面"
+  },
+  "resources_import": {
+    "message": "ソースを追加"
+  },
+  "resources_invert": {
+    "message": "選択を反転"
+  },
+  "resources_key": {
+    "message": "AES-128 キー"
+  },
+  "resources_kind_collection": {
+    "message": "結合メディア"
+  },
+  "resources_kind_fragment": {
+    "message": "セグメント"
+  },
+  "resources_loop": {
+    "message": "繰り返し"
+  },
+  "resources_manifest": {
+    "message": "マニフェストまたはセグメントの URL"
+  },
+  "resources_merge": {
+    "message": "音声と映像を結合"
+  },
+  "resources_mute": {
+    "message": "ミュート"
+  },
+  "resources_preview": {
+    "message": "プレビュー"
+  },
+  "resources_preview_unavailable": {
+    "message": "プレビューできません。ダウンロードは可能な場合があります。"
+  },
+  "resources_reload": {
+    "message": "再読み込みして最初から取得"
+  },
+  "resources_screen": {
+    "message": "画面録画"
+  },
+  "resources_screenshot": {
+    "message": "スクリーンショットを保存"
+  },
+  "resources_sequence": {
+    "message": "セグメントを結合"
+  },
+  "resources_sidebar": {
+    "message": "サイドバーを開く"
+  },
+  "resources_start": {
+    "message": "開始"
+  },
+  "resources_start_time": {
+    "message": "開始位置（秒）"
+  },
+  "resources_end_time": {
+    "message": "終了位置（0：末尾）"
+  },
+  "resources_stop": {
+    "message": "停止"
+  },
+  "resources_test_keys": {
+    "message": "検出したキーを検証"
+  },
+  "resources_tools": {
+    "message": "メディアツール"
+  },
+  "resources_volume": {
+    "message": "音量"
+  },
+  "resources_preserve": {
+    "message": "ページ移動後もソースを保持"
+  },
+  "resources_deep": {
+    "message": "詳細検索"
+  },
+  "resources_cache": {
+    "message": "メディアバッファを取得"
+  },
+  "resources_copy": {
+    "message": "コピー"
+  },
+  "resources_select_all": {
+    "message": "すべてを選択"
+  },
+  "resources_name": {
+    "message": "ファイル名"
+  },
+  "resources_size": {
+    "message": "サイズ"
+  },
+  "resources_type": {
+    "message": "種類"
+  },
+  "resources_speed": {
+    "message": "速度"
+  },
+  "resources_kind_image": {
+    "message": "画像"
+  },
+  "resources_all": {
+    "message": "すべて"
+  },
+  "resources_time": {
+    "message": "時刻"
+  },
+  "resources_video": {
+    "message": "録画を開始"
+  },
+  "resources_kind_embedded": {
+    "message": "ソース"
+  },
+  "resources_kind_file": {
+    "message": "元のファイル"
+  },
+  "resources_kind_subtitle": {
+    "message": "字幕"
+  },
+  "resources_pause": {
+    "message": "一時停止"
+  },
+  "resources_play": {
+    "message": "再生"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "並べ替え"
+  },
+  "resources_auto": {
+    "message": "新しく見つかったリソースを自動ダウンロード"
+  },
+  "resources_mobile": {
+    "message": "モバイルの User-Agent を使用"
   }
 }

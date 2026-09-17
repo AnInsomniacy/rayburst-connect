@@ -682,14 +682,6 @@
     "message": "Повторен опит",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "Затваряне",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "Намиране на плейъра",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "Без видео",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "Проследи потока, свържи далечното.",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "Текуща страница"
+  },
+  "resources_other": {
+    "message": "Всички страници"
+  },
+  "resources_controls": {
+    "message": "Управление на плейъра"
+  },
+  "resources_expand": {
+    "message": "Отвори работното пространство"
+  },
+  "resources_fullscreen": {
+    "message": "Цял екран"
+  },
+  "resources_import": {
+    "message": "Добави източник"
+  },
+  "resources_invert": {
+    "message": "Обърни избора"
+  },
+  "resources_key": {
+    "message": "Ключ AES-128"
+  },
+  "resources_kind_collection": {
+    "message": "Обединена медия"
+  },
+  "resources_kind_fragment": {
+    "message": "Сегмент"
+  },
+  "resources_loop": {
+    "message": "Повтаряне"
+  },
+  "resources_manifest": {
+    "message": "Манифест или адреси на сегменти"
+  },
+  "resources_merge": {
+    "message": "Обедини звук и видео"
+  },
+  "resources_mute": {
+    "message": "Без звук"
+  },
+  "resources_preview": {
+    "message": "Преглед"
+  },
+  "resources_preview_unavailable": {
+    "message": "Прегледът е недостъпен. Изтеглянето може да работи."
+  },
+  "resources_reload": {
+    "message": "Презареди за прихващане отначало"
+  },
+  "resources_screen": {
+    "message": "Запис на екрана"
+  },
+  "resources_screenshot": {
+    "message": "Запази снимка"
+  },
+  "resources_sequence": {
+    "message": "Обедини сегментите"
+  },
+  "resources_sidebar": {
+    "message": "Отвори страничния панел"
+  },
+  "resources_start": {
+    "message": "Начало"
+  },
+  "resources_start_time": {
+    "message": "Начало (секунди)"
+  },
+  "resources_end_time": {
+    "message": "Край (0: край на източника)"
+  },
+  "resources_stop": {
+    "message": "Спиране"
+  },
+  "resources_test_keys": {
+    "message": "Провери откритите ключове"
+  },
+  "resources_tools": {
+    "message": "Медийни инструменти"
+  },
+  "resources_volume": {
+    "message": "Сила на звука"
+  },
+  "resources_preserve": {
+    "message": "Запазвай източниците при навигация"
+  },
+  "resources_deep": {
+    "message": "Задълбочено търсене"
+  },
+  "resources_cache": {
+    "message": "Прихващане на медийния буфер"
+  },
+  "resources_copy": {
+    "message": "Копирай"
+  },
+  "resources_select_all": {
+    "message": "Избери всички"
+  },
+  "resources_name": {
+    "message": "Име"
+  },
+  "resources_size": {
+    "message": "Размер"
+  },
+  "resources_type": {
+    "message": "Тип"
+  },
+  "resources_speed": {
+    "message": "Скорост"
+  },
+  "resources_kind_image": {
+    "message": "Изображения"
+  },
+  "resources_all": {
+    "message": "Всички"
+  },
+  "resources_time": {
+    "message": "Време"
+  },
+  "resources_video": {
+    "message": "Начало на записа"
+  },
+  "resources_kind_embedded": {
+    "message": "Източник"
+  },
+  "resources_kind_file": {
+    "message": "Оригинален файл"
+  },
+  "resources_kind_subtitle": {
+    "message": "Субтитри"
+  },
+  "resources_pause": {
+    "message": "Пауза"
+  },
+  "resources_play": {
+    "message": "Възпроизвеждане"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "Подреждане"
+  },
+  "resources_auto": {
+    "message": "Автоматично изтегляне на нови ресурси"
+  },
+  "resources_mobile": {
+    "message": "Използване на мобилен User-Agent"
   }
 }

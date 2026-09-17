@@ -682,14 +682,6 @@
     "message": "ลองอีกครั้ง",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "ปิด",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "ค้นหาเครื่องเล่น",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "ไม่มีวิดีโอ",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "ตามรอยกระแส เชื่อมข้ามความว่างเปล่า",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "หน้าปัจจุบัน"
+  },
+  "resources_other": {
+    "message": "ทุกหน้า"
+  },
+  "resources_controls": {
+    "message": "ควบคุมเครื่องเล่น"
+  },
+  "resources_expand": {
+    "message": "เปิดพื้นที่ทำงาน"
+  },
+  "resources_fullscreen": {
+    "message": "เต็มหน้าจอ"
+  },
+  "resources_import": {
+    "message": "เพิ่มแหล่งที่มา"
+  },
+  "resources_invert": {
+    "message": "สลับการเลือก"
+  },
+  "resources_key": {
+    "message": "คีย์ AES-128"
+  },
+  "resources_kind_collection": {
+    "message": "สื่อที่รวมแล้ว"
+  },
+  "resources_kind_fragment": {
+    "message": "ส่วนย่อย"
+  },
+  "resources_loop": {
+    "message": "เล่นวน"
+  },
+  "resources_manifest": {
+    "message": "รายการหรือ URL ของส่วนย่อย"
+  },
+  "resources_merge": {
+    "message": "รวมเสียงและวิดีโอ"
+  },
+  "resources_mute": {
+    "message": "ปิดเสียง"
+  },
+  "resources_preview": {
+    "message": "ดูตัวอย่าง"
+  },
+  "resources_preview_unavailable": {
+    "message": "ดูตัวอย่างไม่ได้ แต่อาจยังดาวน์โหลดได้"
+  },
+  "resources_reload": {
+    "message": "โหลดใหม่เพื่อจับข้อมูลตั้งแต่ต้น"
+  },
+  "resources_screen": {
+    "message": "บันทึกหน้าจอ"
+  },
+  "resources_screenshot": {
+    "message": "บันทึกภาพหน้าจอ"
+  },
+  "resources_sequence": {
+    "message": "รวมส่วนย่อย"
+  },
+  "resources_sidebar": {
+    "message": "เปิดแถบด้านข้าง"
+  },
+  "resources_start": {
+    "message": "เริ่ม"
+  },
+  "resources_start_time": {
+    "message": "เริ่มต้น (วินาที)"
+  },
+  "resources_end_time": {
+    "message": "สิ้นสุด (0: จบแหล่งข้อมูล)"
+  },
+  "resources_stop": {
+    "message": "หยุด"
+  },
+  "resources_test_keys": {
+    "message": "ทดสอบคีย์ที่พบ"
+  },
+  "resources_tools": {
+    "message": "เครื่องมือสื่อ"
+  },
+  "resources_volume": {
+    "message": "ระดับเสียง"
+  },
+  "resources_preserve": {
+    "message": "เก็บแหล่งที่มาหลังเปลี่ยนหน้า"
+  },
+  "resources_deep": {
+    "message": "ค้นหาเชิงลึก"
+  },
+  "resources_cache": {
+    "message": "จับข้อมูลบัฟเฟอร์สื่อ"
+  },
+  "resources_copy": {
+    "message": "คัดลอก"
+  },
+  "resources_select_all": {
+    "message": "เลือกทั้งหมด"
+  },
+  "resources_name": {
+    "message": "ชื่อ"
+  },
+  "resources_size": {
+    "message": "ขนาด"
+  },
+  "resources_type": {
+    "message": "ประเภท"
+  },
+  "resources_speed": {
+    "message": "ความเร็ว"
+  },
+  "resources_kind_image": {
+    "message": "รูปภาพ"
+  },
+  "resources_all": {
+    "message": "ทั้งหมด"
+  },
+  "resources_time": {
+    "message": "เวลา"
+  },
+  "resources_video": {
+    "message": "เริ่มบันทึก"
+  },
+  "resources_kind_embedded": {
+    "message": "แหล่งที่มา"
+  },
+  "resources_kind_file": {
+    "message": "ไฟล์ต้นฉบับ"
+  },
+  "resources_kind_subtitle": {
+    "message": "คำบรรยาย"
+  },
+  "resources_pause": {
+    "message": "พัก"
+  },
+  "resources_play": {
+    "message": "เล่น"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "เรียงลำดับ"
+  },
+  "resources_auto": {
+    "message": "ดาวน์โหลดทรัพยากรใหม่โดยอัตโนมัติ"
+  },
+  "resources_mobile": {
+    "message": "ใช้ User-Agent ของมือถือ"
   }
 }

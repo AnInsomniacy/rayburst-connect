@@ -1,3 +1,4 @@
+import { DuplicateDownloadGuard } from '@/lib/download/duplicate-guard';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fakeBrowser } from 'wxt/testing';
 import { ApiTimeoutError, DesktopApiClient, MediaApiError } from '@/lib/api';
@@ -20,7 +21,7 @@ async function fixture() {
   const settings = parseDownloadSettings({ forwardCookies: false });
   vi.spyOn(client, 'mediaCapabilities').mockResolvedValue({
     product: 'rayburst',
-    protocolVersion: 1,
+    protocolVersion: 2,
     sourceKinds: ['hls', 'dash'],
     requestContexts: true,
   });
@@ -45,6 +46,7 @@ async function fixture() {
     .spyOn(client, 'cancelMediaProbe')
     .mockImplementation(async (id) => ({ id, state: 'cancelled' }));
   const args = {
+    duplicateGuard: new DuplicateDownloadGuard(),
     client,
     getSettings: () => settings,
     connectionKey: async () => key,
@@ -71,6 +73,37 @@ async function fixture() {
 }
 
 describe('media probe and selection lifecycle', () => {
+  it('allows explicit file resends to reach the existing delivery guard', async () => {
+    const f = await fixture();
+    await f.catalog.run((state) => {
+      state.candidates[0]!.kind = 'file';
+      state.candidates[0]!.sentToDesktop = true;
+    }, true);
+    await f.workflow.downloadFile(1, f.candidate.id);
+    f.args.sendFile.mockRejectedValueOnce(new MediaApiError('duplicate_blocked'));
+    await expect(f.workflow.downloadFile(1, f.candidate.id)).rejects.toMatchObject({
+      code: 'duplicate_blocked',
+    });
+    await f.workflow.downloadFile(1, f.candidate.id);
+    expect(f.args.sendFile).toHaveBeenCalledTimes(3);
+  });
+  it('starts a new explicit media submission after completion and honors the shared duplicate window', async () => {
+    const f = await fixture();
+    f.args.getSettings().duplicateGuard = { enabled: true, windowSeconds: 10 };
+    await f.workflow.probe(1, f.candidate.id);
+    await f.workflow.submit(1, f.candidate.id, mediaSelection);
+    const first = (await f.operation())!.request.id;
+    await f.workflow.probe(1, f.candidate.id);
+    expect((await f.operation())!.request.id).not.toBe(first);
+    await f.workflow.submit(1, f.candidate.id, mediaSelection);
+    expect(f.submit).toHaveBeenCalledTimes(1);
+    expect(await f.operation()).toMatchObject({ state: 'ready', error: 'duplicate_blocked' });
+    f.args.getSettings().duplicateGuard.enabled = false;
+    await f.workflow.submit(1, f.candidate.id, mediaSelection);
+    expect(f.submit).toHaveBeenCalledTimes(2);
+    expect(await f.operation()).toMatchObject({ state: 'submitted' });
+  });
+
   it('does not accept another submission receipt as success', async () => {
     const f = await fixture();
     await f.workflow.probe(1, f.candidate.id);

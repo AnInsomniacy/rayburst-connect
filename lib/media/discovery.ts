@@ -12,6 +12,7 @@ import {
 import { detectMedia, isMediaFragment, mediaOrigin, type MediaObservation } from './detection';
 import { captureMediaContext } from './request-context';
 import type { MediaCatalog } from './catalog';
+import { matchMediaRule } from './rules';
 
 const HTTP_URLS = ['http://*/*', 'https://*/*'];
 const REQUEST_TTL_MS = 2 * 60_000;
@@ -38,6 +39,9 @@ export function startMediaDiscovery(options: {
 }) {
   const { catalog, allowed } = options;
   const pending = new Map<string, { context: MediaCapturedContext; generation: string }>();
+  const recent = new Map<string, MediaCapturedContext>();
+  const contextKey = (tabId: number, frameId: number, documentId: string, url: string) =>
+    JSON.stringify([tabId, frameId, documentId, url]);
   const generations = new Map<string, number>();
   const safely = (work: Promise<unknown>) => {
     void work.catch(options.report);
@@ -51,6 +55,10 @@ export function startMediaDiscovery(options: {
     await options.ensureConfig();
     if (!allowed(candidate.pageUrl, candidate.url)) return false;
     try {
+      if (options.settings().mediaDiscovery.preserveOnNavigation) {
+        await browser.tabs.get(candidate.tabId);
+        return candidate.lastSeen >= Date.now() - MEDIA_RETENTION_MS;
+      }
       const current = await frameContext(candidate.tabId, candidate.frameId, candidate.documentId);
       return Boolean(
         current &&
@@ -69,7 +77,7 @@ export function startMediaDiscovery(options: {
         state.candidates.filter((item) => item.tabId === tabId && item.kind !== 'embedded').length,
     );
     await browser.action.setBadgeText({ tabId, text: count ? String(count) : '' });
-    await browser.action.setBadgeBackgroundColor({ tabId, color: '#7c5800' });
+    await browser.action.setBadgeBackgroundColor({ tabId, color: '#7B3ED1' });
   }
 
   async function observe(
@@ -82,6 +90,24 @@ export function startMediaDiscovery(options: {
     documentUrl?: string,
   ) {
     let detected = detectMedia(input);
+    const rule = matchMediaRule(options.settings().mediaDiscovery.rules, {
+      ...input,
+      size: detected?.size ?? (Number(input.length) || null),
+    });
+    if (rule === 'ignore') return;
+    if (rule) {
+      detected = {
+        ...(detected ?? {
+          url: input.url,
+          filename: '',
+          mime: input.mime ?? '',
+          size: null,
+          method: input.method ?? 'GET',
+          evidence: input.evidence,
+        }),
+        kind: rule,
+      };
+    }
     const fragment =
       input.evidence === 'network' &&
       input.method === 'GET' &&
@@ -191,6 +217,15 @@ export function startMediaDiscovery(options: {
             captured.generation !== generation(details.tabId, details.frameId)
           )
             return;
+          if (context?.url === details.url && options.settings().mediaDiscovery.enabled) {
+            recent.set(
+              contextKey(details.tabId, details.frameId, details.documentId ?? '', details.url),
+              context,
+            );
+            for (const [key, value] of recent)
+              if (value.capturedAt < Date.now() - REQUEST_TTL_MS || recent.size > 512)
+                recent.delete(key);
+          }
           const documentUrl =
             'documentUrl' in details && typeof details.documentUrl === 'string'
               ? details.documentUrl
@@ -243,7 +278,8 @@ export function startMediaDiscovery(options: {
     ]);
     await catalog.run((state) => {
       state.candidates = state.candidates.filter((item) => {
-        if (item.tabId !== tabId) return true;
+        if (item.tabId !== tabId || options.settings().mediaDiscovery.preserveOnNavigation)
+          return true;
         const frame = frames?.find((value) => value.frameId === item.frameId);
         return (
           frame &&
@@ -273,6 +309,14 @@ export function startMediaDiscovery(options: {
   }
 
   browser.webNavigation.onCommitted.addListener((details) => {
+    for (const key of recent.keys()) {
+      const identity = JSON.parse(key) as [number, number, string, string];
+      if (
+        identity[0] === details.tabId &&
+        (details.frameId === 0 || identity[1] === details.frameId)
+      )
+        recent.delete(key);
+    }
     const key = `${details.tabId}:${details.frameId}`;
     const next = (generations.get(key) ?? 0) + 1;
     if (details.frameId === 0)
@@ -286,12 +330,14 @@ export function startMediaDiscovery(options: {
           state.candidates = state.candidates.filter(
             (item) =>
               item.tabId !== details.tabId ||
+              options.settings().mediaDiscovery.preserveOnNavigation ||
               (details.frameId !== 0 && item.frameId !== details.frameId) ||
               Boolean(details.documentId && item.documentId === details.documentId),
           );
           state.contexts = state.contexts.filter(
             (item) =>
               item.tabId !== details.tabId ||
+              options.settings().mediaDiscovery.preserveOnNavigation ||
               (details.frameId !== 0 && item.frameId !== details.frameId) ||
               Boolean(details.documentId && item.documentId === details.documentId),
           );
@@ -331,6 +377,20 @@ export function startMediaDiscovery(options: {
     validateCandidate,
     synchronizeTab,
     updateBadge,
-    clearRequests: () => pending.clear(),
+    clearRequests: () => {
+      pending.clear();
+      recent.clear();
+    },
+    contextFor: (item: MediaCandidate) => {
+      const exact = recent.get(contextKey(item.tabId, item.frameId, item.documentId, item.url));
+      // Firefox versions without document IDs still require an exact native frame and URL.
+      const value = exact ?? recent.get(contextKey(item.tabId, item.frameId, '', item.url));
+      return value && value.capturedAt >= Date.now() - REQUEST_TTL_MS
+        ? {
+            ...captureMediaContext(value.url, value.headers, options.settings()),
+            capturedAt: value.capturedAt,
+          }
+        : undefined;
+    },
   };
 }

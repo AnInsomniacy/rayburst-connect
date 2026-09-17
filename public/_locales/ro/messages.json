@@ -682,14 +682,6 @@
     "message": "Reîncearcă",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "Închide",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "Localizează playerul",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "Fără video",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "Urmărește fluxul, unește depărtările.",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "Pagina curentă"
+  },
+  "resources_other": {
+    "message": "Toate paginile"
+  },
+  "resources_controls": {
+    "message": "Comenzi de redare"
+  },
+  "resources_expand": {
+    "message": "Deschide spațiul de lucru"
+  },
+  "resources_fullscreen": {
+    "message": "Ecran complet"
+  },
+  "resources_import": {
+    "message": "Adaugă sursă"
+  },
+  "resources_invert": {
+    "message": "Inversează selecția"
+  },
+  "resources_key": {
+    "message": "Cheie AES-128"
+  },
+  "resources_kind_collection": {
+    "message": "Conținut combinat"
+  },
+  "resources_kind_fragment": {
+    "message": "Segment"
+  },
+  "resources_loop": {
+    "message": "Repetă"
+  },
+  "resources_manifest": {
+    "message": "Manifest sau adresele segmentelor"
+  },
+  "resources_merge": {
+    "message": "Combină sunetul și imaginea"
+  },
+  "resources_mute": {
+    "message": "Dezactivează sunetul"
+  },
+  "resources_preview": {
+    "message": "Previzualizare"
+  },
+  "resources_preview_unavailable": {
+    "message": "Previzualizare indisponibilă. Descărcarea poate funcționa în continuare."
+  },
+  "resources_reload": {
+    "message": "Reîncarcă pentru a captura de la început"
+  },
+  "resources_screen": {
+    "message": "Înregistrarea ecranului"
+  },
+  "resources_screenshot": {
+    "message": "Salvează captura"
+  },
+  "resources_sequence": {
+    "message": "Unește segmentele"
+  },
+  "resources_sidebar": {
+    "message": "Deschide panoul lateral"
+  },
+  "resources_start": {
+    "message": "Pornește"
+  },
+  "resources_start_time": {
+    "message": "Început (secunde)"
+  },
+  "resources_end_time": {
+    "message": "Sfârșit (0: sfârșitul sursei)"
+  },
+  "resources_stop": {
+    "message": "Oprește"
+  },
+  "resources_test_keys": {
+    "message": "Verifică cheile descoperite"
+  },
+  "resources_tools": {
+    "message": "Instrumente media"
+  },
+  "resources_volume": {
+    "message": "Volum"
+  },
+  "resources_preserve": {
+    "message": "Păstrează sursele după navigare"
+  },
+  "resources_deep": {
+    "message": "Căutare aprofundată"
+  },
+  "resources_cache": {
+    "message": "Capturează memoria tampon media"
+  },
+  "resources_copy": {
+    "message": "Copiere"
+  },
+  "resources_select_all": {
+    "message": "Selectare totală"
+  },
+  "resources_name": {
+    "message": "Nume"
+  },
+  "resources_size": {
+    "message": "Dimensiune"
+  },
+  "resources_type": {
+    "message": "Tip"
+  },
+  "resources_speed": {
+    "message": "Viteză"
+  },
+  "resources_kind_image": {
+    "message": "Imagini"
+  },
+  "resources_all": {
+    "message": "Toate"
+  },
+  "resources_time": {
+    "message": "Oră"
+  },
+  "resources_video": {
+    "message": "Începe înregistrarea"
+  },
+  "resources_kind_embedded": {
+    "message": "Sursă"
+  },
+  "resources_kind_file": {
+    "message": "Fișier original"
+  },
+  "resources_kind_subtitle": {
+    "message": "Subtitrări"
+  },
+  "resources_pause": {
+    "message": "Pauză"
+  },
+  "resources_play": {
+    "message": "Redă"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "Sortează"
+  },
+  "resources_auto": {
+    "message": "Descarcă automat resursele noi"
+  },
+  "resources_mobile": {
+    "message": "Folosește un User-Agent mobil"
   }
 }

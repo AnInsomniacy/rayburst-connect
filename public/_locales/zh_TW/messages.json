@@ -682,14 +682,6 @@
     "message": "重試",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "關閉",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "定位播放器",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "不含影片",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "溯網尋蹤，隔空引渡。",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "目前頁面"
+  },
+  "resources_other": {
+    "message": "所有頁面"
+  },
+  "resources_controls": {
+    "message": "播放器控制"
+  },
+  "resources_expand": {
+    "message": "開啟工作區"
+  },
+  "resources_fullscreen": {
+    "message": "全螢幕"
+  },
+  "resources_import": {
+    "message": "新增資源"
+  },
+  "resources_invert": {
+    "message": "反向選取"
+  },
+  "resources_key": {
+    "message": "AES-128 金鑰"
+  },
+  "resources_kind_collection": {
+    "message": "組合媒體"
+  },
+  "resources_kind_fragment": {
+    "message": "分段"
+  },
+  "resources_loop": {
+    "message": "循環"
+  },
+  "resources_manifest": {
+    "message": "清單或分段網址"
+  },
+  "resources_merge": {
+    "message": "合併影音"
+  },
+  "resources_mute": {
+    "message": "靜音"
+  },
+  "resources_preview": {
+    "message": "預覽"
+  },
+  "resources_preview_unavailable": {
+    "message": "無法預覽，資源仍可能可以下載。"
+  },
+  "resources_reload": {
+    "message": "重新整理頁面，從頭擷取"
+  },
+  "resources_screen": {
+    "message": "螢幕錄製"
+  },
+  "resources_screenshot": {
+    "message": "儲存截圖"
+  },
+  "resources_sequence": {
+    "message": "合併分段"
+  },
+  "resources_sidebar": {
+    "message": "開啟側邊欄"
+  },
+  "resources_start": {
+    "message": "開始"
+  },
+  "resources_start_time": {
+    "message": "起點（秒）"
+  },
+  "resources_end_time": {
+    "message": "終點（0 表示結尾）"
+  },
+  "resources_stop": {
+    "message": "停止"
+  },
+  "resources_test_keys": {
+    "message": "驗證找到的金鑰"
+  },
+  "resources_tools": {
+    "message": "媒體工具"
+  },
+  "resources_volume": {
+    "message": "音量"
+  },
+  "resources_preserve": {
+    "message": "導覽後保留資源"
+  },
+  "resources_deep": {
+    "message": "深入搜尋"
+  },
+  "resources_cache": {
+    "message": "擷取媒體緩衝"
+  },
+  "resources_copy": {
+    "message": "拷貝"
+  },
+  "resources_select_all": {
+    "message": "全選"
+  },
+  "resources_name": {
+    "message": "檔名"
+  },
+  "resources_size": {
+    "message": "大小"
+  },
+  "resources_type": {
+    "message": "類型"
+  },
+  "resources_speed": {
+    "message": "速度"
+  },
+  "resources_kind_image": {
+    "message": "圖片"
+  },
+  "resources_all": {
+    "message": "全部"
+  },
+  "resources_time": {
+    "message": "時間"
+  },
+  "resources_video": {
+    "message": "開始錄製"
+  },
+  "resources_kind_embedded": {
+    "message": "來源"
+  },
+  "resources_kind_file": {
+    "message": "原始檔案"
+  },
+  "resources_kind_subtitle": {
+    "message": "字幕"
+  },
+  "resources_pause": {
+    "message": "暫停"
+  },
+  "resources_play": {
+    "message": "播放"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "排序"
+  },
+  "resources_auto": {
+    "message": "自動下載新發現的資源"
+  },
+  "resources_mobile": {
+    "message": "使用行動版 User-Agent"
   }
 }

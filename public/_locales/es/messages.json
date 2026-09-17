@@ -682,14 +682,6 @@
     "message": "Reintentar",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "Cerrar",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "Localizar reproductor",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "Sin vídeo",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "Sigue el flujo, salva el vacío.",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "Página actual"
+  },
+  "resources_other": {
+    "message": "Todas las páginas"
+  },
+  "resources_controls": {
+    "message": "Controles del reproductor"
+  },
+  "resources_expand": {
+    "message": "Abrir espacio de trabajo"
+  },
+  "resources_fullscreen": {
+    "message": "Pantalla completa"
+  },
+  "resources_import": {
+    "message": "Añadir fuente"
+  },
+  "resources_invert": {
+    "message": "Invertir selección"
+  },
+  "resources_key": {
+    "message": "Clave AES-128"
+  },
+  "resources_kind_collection": {
+    "message": "Medios combinados"
+  },
+  "resources_kind_fragment": {
+    "message": "Segmento"
+  },
+  "resources_loop": {
+    "message": "Repetir"
+  },
+  "resources_manifest": {
+    "message": "Manifiesto o URL de segmentos"
+  },
+  "resources_merge": {
+    "message": "Unir audio y vídeo"
+  },
+  "resources_mute": {
+    "message": "Silenciar"
+  },
+  "resources_preview": {
+    "message": "Vista previa"
+  },
+  "resources_preview_unavailable": {
+    "message": "Vista previa no disponible. La descarga aún puede funcionar."
+  },
+  "resources_reload": {
+    "message": "Recargar para capturar desde el principio"
+  },
+  "resources_screen": {
+    "message": "Grabar pantalla"
+  },
+  "resources_screenshot": {
+    "message": "Guardar captura"
+  },
+  "resources_sequence": {
+    "message": "Unir segmentos"
+  },
+  "resources_sidebar": {
+    "message": "Abrir panel lateral"
+  },
+  "resources_start": {
+    "message": "Iniciar"
+  },
+  "resources_start_time": {
+    "message": "Inicio (segundos)"
+  },
+  "resources_end_time": {
+    "message": "Fin (0: final de la fuente)"
+  },
+  "resources_stop": {
+    "message": "Detener"
+  },
+  "resources_test_keys": {
+    "message": "Probar claves detectadas"
+  },
+  "resources_tools": {
+    "message": "Herramientas multimedia"
+  },
+  "resources_volume": {
+    "message": "Volumen"
+  },
+  "resources_preserve": {
+    "message": "Conservar fuentes al navegar"
+  },
+  "resources_deep": {
+    "message": "Búsqueda profunda"
+  },
+  "resources_cache": {
+    "message": "Capturar búfer multimedia"
+  },
+  "resources_copy": {
+    "message": "Copiar"
+  },
+  "resources_select_all": {
+    "message": "Seleccionar todo"
+  },
+  "resources_name": {
+    "message": "Nombre"
+  },
+  "resources_size": {
+    "message": "Tamaño"
+  },
+  "resources_type": {
+    "message": "Tipo"
+  },
+  "resources_speed": {
+    "message": "Velocidad"
+  },
+  "resources_kind_image": {
+    "message": "Imágenes"
+  },
+  "resources_all": {
+    "message": "Todos"
+  },
+  "resources_time": {
+    "message": "Hora"
+  },
+  "resources_video": {
+    "message": "Iniciar grabación"
+  },
+  "resources_kind_embedded": {
+    "message": "Fuente"
+  },
+  "resources_kind_file": {
+    "message": "Archivo original"
+  },
+  "resources_kind_subtitle": {
+    "message": "Subtítulos"
+  },
+  "resources_pause": {
+    "message": "Pausar"
+  },
+  "resources_play": {
+    "message": "Reproducir"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "Ordenar"
+  },
+  "resources_auto": {
+    "message": "Descargar automáticamente los recursos nuevos"
+  },
+  "resources_mobile": {
+    "message": "Usar un User-Agent móvil"
   }
 }

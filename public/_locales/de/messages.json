@@ -682,14 +682,6 @@
     "message": "Erneut versuchen",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "Schließen",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "Player finden",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "Kein Video",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "Folge dem Strom, überbrücke die Leere.",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "Aktuelle Seite"
+  },
+  "resources_other": {
+    "message": "Alle Seiten"
+  },
+  "resources_controls": {
+    "message": "Wiedergabe steuern"
+  },
+  "resources_expand": {
+    "message": "Arbeitsbereich öffnen"
+  },
+  "resources_fullscreen": {
+    "message": "Vollbild"
+  },
+  "resources_import": {
+    "message": "Quelle hinzufügen"
+  },
+  "resources_invert": {
+    "message": "Auswahl umkehren"
+  },
+  "resources_key": {
+    "message": "AES-128-Schlüssel"
+  },
+  "resources_kind_collection": {
+    "message": "Kombinierte Medien"
+  },
+  "resources_kind_fragment": {
+    "message": "Segment"
+  },
+  "resources_loop": {
+    "message": "Wiederholen"
+  },
+  "resources_manifest": {
+    "message": "Manifest oder Segment-URLs"
+  },
+  "resources_merge": {
+    "message": "Audio und Video zusammenführen"
+  },
+  "resources_mute": {
+    "message": "Stummschalten"
+  },
+  "resources_preview": {
+    "message": "Vorschau"
+  },
+  "resources_preview_unavailable": {
+    "message": "Keine Vorschau. Ein Download ist möglicherweise dennoch möglich."
+  },
+  "resources_reload": {
+    "message": "Neu laden und von Anfang an erfassen"
+  },
+  "resources_screen": {
+    "message": "Bildschirmaufnahme"
+  },
+  "resources_screenshot": {
+    "message": "Bild speichern"
+  },
+  "resources_sequence": {
+    "message": "Segmente verbinden"
+  },
+  "resources_sidebar": {
+    "message": "Seitenleiste öffnen"
+  },
+  "resources_start": {
+    "message": "Starten"
+  },
+  "resources_start_time": {
+    "message": "Start (Sekunden)"
+  },
+  "resources_end_time": {
+    "message": "Ende (0: Quellenende)"
+  },
+  "resources_stop": {
+    "message": "Stoppen"
+  },
+  "resources_test_keys": {
+    "message": "Gefundene Schlüssel prüfen"
+  },
+  "resources_tools": {
+    "message": "Medienwerkzeuge"
+  },
+  "resources_volume": {
+    "message": "Lautstärke"
+  },
+  "resources_preserve": {
+    "message": "Quellen beim Seitenwechsel behalten"
+  },
+  "resources_deep": {
+    "message": "Tiefensuche"
+  },
+  "resources_cache": {
+    "message": "Medienpuffer erfassen"
+  },
+  "resources_copy": {
+    "message": "Kopieren"
+  },
+  "resources_select_all": {
+    "message": "Alles auswählen"
+  },
+  "resources_name": {
+    "message": "Name"
+  },
+  "resources_size": {
+    "message": "Größe"
+  },
+  "resources_type": {
+    "message": "Typ"
+  },
+  "resources_speed": {
+    "message": "Geschwindigkeit"
+  },
+  "resources_kind_image": {
+    "message": "Bilder"
+  },
+  "resources_all": {
+    "message": "Alle"
+  },
+  "resources_time": {
+    "message": "Zeit"
+  },
+  "resources_video": {
+    "message": "Aufnahme starten"
+  },
+  "resources_kind_embedded": {
+    "message": "Quelle"
+  },
+  "resources_kind_file": {
+    "message": "Originaldatei"
+  },
+  "resources_kind_subtitle": {
+    "message": "Untertitel"
+  },
+  "resources_pause": {
+    "message": "Pause"
+  },
+  "resources_play": {
+    "message": "Abspielen"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "Sortieren"
+  },
+  "resources_auto": {
+    "message": "Neue Ressourcen automatisch herunterladen"
+  },
+  "resources_mobile": {
+    "message": "Mobilen User-Agent verwenden"
   }
 }

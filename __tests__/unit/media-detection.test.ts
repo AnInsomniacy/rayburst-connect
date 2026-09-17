@@ -15,13 +15,15 @@ describe('passive media classification', () => {
         ?.kind,
     ).toBe('hls');
   });
-  it('filters fragments, HTML errors, failed requests, and non-network addresses', () => {
+  it('classifies fragments while rejecting HTML errors, failures and non-network addresses', () => {
     for (const url of [
       'https://example.com/1.ts',
       'https://example.com/1.m4s',
       'https://example.com/key.key',
     ]) {
-      expect(detectMedia({ url, mime: 'video/mp4', evidence: 'network' })).toBeNull();
+      expect(detectMedia({ url, mime: 'video/mp4', evidence: 'network' })).toMatchObject({
+        kind: 'fragment',
+      });
     }
     expect(
       detectMedia({ url: 'https://example.com/video.mp4', mime: 'text/html', evidence: 'network' }),

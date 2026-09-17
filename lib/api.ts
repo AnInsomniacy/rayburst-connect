@@ -241,6 +241,61 @@ export class DesktopApiClient {
     return results.filter((result) => result.status === 'rejected').length;
   }
 
+  async createCapture(id: string) {
+    return this.request(
+      `${MEDIA_API_PATH}/assets/${id}`,
+      z.object({ id: z.uuid() }),
+      { method: 'POST', headers: this.authHeaders(), retry: 0 },
+      'Create capture',
+    );
+  }
+  async appendCapture(id: string, stream: number, offset: number, bytes: Uint8Array<ArrayBuffer>) {
+    return this.request(
+      `${MEDIA_API_PATH}/assets/${id}/${stream}`,
+      z.object({ offset: z.number().int().nonnegative() }),
+      {
+        method: 'PUT',
+        headers: {
+          ...this.authHeaders(),
+          'Content-Type': 'application/octet-stream',
+          'X-Upload-Offset': String(offset),
+        },
+        body: bytes,
+        retry: 0,
+        timeout: 15000,
+      },
+      'Save capture',
+    );
+  }
+  async discardCapture(id: string) {
+    return this.request(
+      `${MEDIA_API_PATH}/assets/${id}`,
+      z.object({ id: z.uuid() }),
+      { method: 'DELETE', headers: this.authHeaders(), retry: 0 },
+      'Discard empty capture',
+    );
+  }
+  async sealCapture(id: string) {
+    return this.request(
+      `${MEDIA_API_PATH}/assets/${id}/seal`,
+      z.object({
+        id: z.uuid(),
+        streams: z.array(z.object({ stream: z.number(), size: z.number() })),
+      }),
+      { method: 'POST', headers: this.authHeaders(), retry: 0 },
+      'Finish capture',
+    );
+  }
+  captureResource(id: string, stream: number) {
+    return {
+      url: `http://127.0.0.1:${this.config.port}/${MEDIA_API_PATH}/assets/${id}/${stream}`,
+      headers: Object.entries(this.authHeaders()).map(([name, value]) => ({
+        name: name.toLowerCase(),
+        value,
+      })),
+    };
+  }
+
   async mediaCapabilities() {
     return this.request(
       `${MEDIA_API_PATH}/capabilities`,

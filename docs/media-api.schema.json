@@ -1,18 +1,18 @@
 {
-  "protocolVersion": 1,
-  "basePath": "/media/v1",
+  "protocolVersion": 2,
+  "basePath": "/media/v2",
   "schemas": {
     "capabilities": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
         "product": { "type": "string", "const": "rayburst" },
-        "protocolVersion": { "type": "number", "const": 1 },
+        "protocolVersion": { "type": "number", "const": 2 },
         "sourceKinds": {
           "minItems": 1,
-          "maxItems": 2,
+          "maxItems": 3,
           "type": "array",
-          "items": { "type": "string", "enum": ["hls", "dash"] }
+          "items": { "type": "string", "enum": ["hls", "dash", "collection"] }
         },
         "requestContexts": { "type": "boolean", "const": true }
       },
@@ -32,7 +32,7 @@
           "type": "object",
           "properties": {
             "url": { "type": "string", "maxLength": 16384 },
-            "kind": { "type": "string", "enum": ["hls", "dash"] },
+            "kind": { "type": "string", "enum": ["hls", "dash", "collection"] },
             "pageUrl": { "type": "string", "maxLength": 16384 },
             "title": { "type": "string", "maxLength": 512 },
             "filename": { "type": "string", "maxLength": 255 },
@@ -61,6 +61,70 @@
                 "required": ["url", "headers"],
                 "additionalProperties": false
               }
+            },
+            "input": {
+              "type": "object",
+              "properties": {
+                "manifests": {
+                  "maxItems": 32,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "url": { "type": "string", "maxLength": 16384 },
+                      "content": { "type": "string", "maxLength": 2097152 }
+                    },
+                    "required": ["url", "content"],
+                    "additionalProperties": false
+                  }
+                },
+                "tracks": {
+                  "maxItems": 32,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+                      "type": { "type": "string", "enum": ["video", "audio", "muxed", "subtitle"] },
+                      "urls": {
+                        "minItems": 1,
+                        "maxItems": 10000,
+                        "type": "array",
+                        "items": { "type": "string", "maxLength": 16384 }
+                      },
+                      "offsetMs": { "type": "integer", "minimum": 0, "maximum": 31536000000 }
+                    },
+                    "required": ["id", "type", "urls"],
+                    "additionalProperties": false
+                  }
+                },
+                "keys": {
+                  "maxItems": 64,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "anyOf": [
+                          { "type": "string", "const": "" },
+                          { "type": "string", "maxLength": 16384 }
+                        ]
+                      },
+                      "key": { "type": "string", "pattern": "^[a-f0-9]{32}$" },
+                      "iv": {
+                        "anyOf": [
+                          { "type": "string", "const": "" },
+                          { "type": "string", "pattern": "^[a-f0-9]{32}$" }
+                        ]
+                      }
+                    },
+                    "required": ["url", "key", "iv"],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": ["manifests", "tracks", "keys"],
+              "additionalProperties": false
             }
           },
           "required": ["url", "kind", "pageUrl", "title", "filename", "mime", "requestContexts"],
@@ -100,7 +164,7 @@
             "presentation": {
               "type": "object",
               "properties": {
-                "kind": { "type": "string", "enum": ["hls", "dash"] },
+                "kind": { "type": "string", "enum": ["hls", "dash", "collection"] },
                 "title": { "type": "string", "maxLength": 512 },
                 "live": { "type": "boolean" },
                 "durationMs": {
@@ -147,7 +211,7 @@
                   "minItems": 1,
                   "maxItems": 3,
                   "type": "array",
-                  "items": { "type": "string", "enum": ["mp4", "mkv"] }
+                  "items": { "type": "string", "enum": ["mp4", "mkv", "vtt"] }
                 },
                 "defaults": {
                   "type": "object",
@@ -170,8 +234,10 @@
                         { "type": "null" }
                       ]
                     },
-                    "format": { "type": "string", "enum": ["mp4", "mkv"] },
-                    "recordTimeSeconds": { "type": "integer", "minimum": 0, "maximum": 31536000 }
+                    "format": { "type": "string", "enum": ["mp4", "mkv", "vtt"] },
+                    "recordTimeSeconds": { "type": "integer", "minimum": 0, "maximum": 31536000 },
+                    "startTimeSeconds": { "type": "integer", "minimum": 0, "maximum": 31536000 },
+                    "endTimeSeconds": { "type": "integer", "minimum": 0, "maximum": 31536000 }
                   },
                   "required": ["videoId", "audioId", "subtitleId", "format", "recordTimeSeconds"],
                   "additionalProperties": false
@@ -206,6 +272,8 @@
             "error": {
               "type": "string",
               "enum": [
+                "integration_unavailable",
+                "unavailable",
                 "unsupported_source",
                 "protected_media",
                 "authentication_required",
@@ -297,8 +365,10 @@
             "subtitleId": {
               "anyOf": [{ "type": "string", "minLength": 1, "maxLength": 128 }, { "type": "null" }]
             },
-            "format": { "type": "string", "enum": ["mp4", "mkv"] },
-            "recordTimeSeconds": { "type": "integer", "minimum": 0, "maximum": 31536000 }
+            "format": { "type": "string", "enum": ["mp4", "mkv", "vtt"] },
+            "recordTimeSeconds": { "type": "integer", "minimum": 0, "maximum": 31536000 },
+            "startTimeSeconds": { "type": "integer", "minimum": 0, "maximum": 31536000 },
+            "endTimeSeconds": { "type": "integer", "minimum": 0, "maximum": 31536000 }
           },
           "required": ["videoId", "audioId", "subtitleId", "format", "recordTimeSeconds"],
           "additionalProperties": false
@@ -370,6 +440,8 @@
         "error": {
           "type": "string",
           "enum": [
+            "integration_unavailable",
+            "unavailable",
             "unsupported_source",
             "protected_media",
             "authentication_required",

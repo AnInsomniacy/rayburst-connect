@@ -682,14 +682,6 @@
     "message": "تلاش مجدد",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "بستن",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "یافتن پخش‌کننده",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "بدون ویدیو",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "جریان را دنبال کن، فاصله را پیوند بزن.",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "صفحهٔ فعلی"
+  },
+  "resources_other": {
+    "message": "همهٔ صفحه‌ها"
+  },
+  "resources_controls": {
+    "message": "کنترل پخش‌کننده"
+  },
+  "resources_expand": {
+    "message": "باز کردن فضای کار"
+  },
+  "resources_fullscreen": {
+    "message": "تمام‌صفحه"
+  },
+  "resources_import": {
+    "message": "افزودن منبع"
+  },
+  "resources_invert": {
+    "message": "وارونه کردن انتخاب"
+  },
+  "resources_key": {
+    "message": "کلید AES-128"
+  },
+  "resources_kind_collection": {
+    "message": "رسانهٔ ترکیبی"
+  },
+  "resources_kind_fragment": {
+    "message": "قطعه"
+  },
+  "resources_loop": {
+    "message": "تکرار"
+  },
+  "resources_manifest": {
+    "message": "فهرست پخش یا نشانی قطعه‌ها"
+  },
+  "resources_merge": {
+    "message": "ترکیب صدا و تصویر"
+  },
+  "resources_mute": {
+    "message": "بی‌صدا"
+  },
+  "resources_preview": {
+    "message": "پیش‌نمایش"
+  },
+  "resources_preview_unavailable": {
+    "message": "پیش‌نمایش در دسترس نیست. شاید بارگیری همچنان ممکن باشد."
+  },
+  "resources_reload": {
+    "message": "بارگذاری دوباره برای ضبط از ابتدا"
+  },
+  "resources_screen": {
+    "message": "ضبط صفحه"
+  },
+  "resources_screenshot": {
+    "message": "ذخیرهٔ تصویر"
+  },
+  "resources_sequence": {
+    "message": "اتصال قطعه‌ها"
+  },
+  "resources_sidebar": {
+    "message": "باز کردن نوار کناری"
+  },
+  "resources_start": {
+    "message": "شروع"
+  },
+  "resources_start_time": {
+    "message": "شروع (ثانیه)"
+  },
+  "resources_end_time": {
+    "message": "پایان (0: انتهای منبع)"
+  },
+  "resources_stop": {
+    "message": "توقف"
+  },
+  "resources_test_keys": {
+    "message": "آزمایش کلیدهای یافت‌شده"
+  },
+  "resources_tools": {
+    "message": "ابزارهای رسانه"
+  },
+  "resources_volume": {
+    "message": "بلندی صدا"
+  },
+  "resources_preserve": {
+    "message": "نگه داشتن منابع پس از پیمایش"
+  },
+  "resources_deep": {
+    "message": "جست‌وجوی عمیق"
+  },
+  "resources_cache": {
+    "message": "ضبط بافر رسانه"
+  },
+  "resources_copy": {
+    "message": "رونوشت"
+  },
+  "resources_select_all": {
+    "message": "انتخاب همه"
+  },
+  "resources_name": {
+    "message": "نام"
+  },
+  "resources_size": {
+    "message": "حجم"
+  },
+  "resources_type": {
+    "message": "نوع"
+  },
+  "resources_speed": {
+    "message": "سرعت"
+  },
+  "resources_kind_image": {
+    "message": "تصاویر"
+  },
+  "resources_all": {
+    "message": "همه"
+  },
+  "resources_time": {
+    "message": "زمان"
+  },
+  "resources_video": {
+    "message": "شروع ضبط"
+  },
+  "resources_kind_embedded": {
+    "message": "منبع"
+  },
+  "resources_kind_file": {
+    "message": "فایل اصلی"
+  },
+  "resources_kind_subtitle": {
+    "message": "زیرنویس"
+  },
+  "resources_pause": {
+    "message": "مکث"
+  },
+  "resources_play": {
+    "message": "پخش"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "مرتب‌سازی"
+  },
+  "resources_auto": {
+    "message": "دانلود خودکار منابع جدید"
+  },
+  "resources_mobile": {
+    "message": "استفاده از User-Agent موبایل"
   }
 }

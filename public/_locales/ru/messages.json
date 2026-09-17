@@ -682,14 +682,6 @@
     "message": "Повторить",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "Закрыть",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "Найти проигрыватель",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "Без видео",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "Проследи поток, соедини далёкое.",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "Текущая страница"
+  },
+  "resources_other": {
+    "message": "Все страницы"
+  },
+  "resources_controls": {
+    "message": "Управление плеером"
+  },
+  "resources_expand": {
+    "message": "Открыть рабочую область"
+  },
+  "resources_fullscreen": {
+    "message": "Полный экран"
+  },
+  "resources_import": {
+    "message": "Добавить источник"
+  },
+  "resources_invert": {
+    "message": "Инвертировать выбор"
+  },
+  "resources_key": {
+    "message": "Ключ AES-128"
+  },
+  "resources_kind_collection": {
+    "message": "Объединённые медиа"
+  },
+  "resources_kind_fragment": {
+    "message": "Сегмент"
+  },
+  "resources_loop": {
+    "message": "Повтор"
+  },
+  "resources_manifest": {
+    "message": "Манифест или адреса сегментов"
+  },
+  "resources_merge": {
+    "message": "Объединить звук и видео"
+  },
+  "resources_mute": {
+    "message": "Без звука"
+  },
+  "resources_preview": {
+    "message": "Предпросмотр"
+  },
+  "resources_preview_unavailable": {
+    "message": "Предпросмотр недоступен. Скачивание всё ещё может работать."
+  },
+  "resources_reload": {
+    "message": "Перезагрузить для захвата с начала"
+  },
+  "resources_screen": {
+    "message": "Запись экрана"
+  },
+  "resources_screenshot": {
+    "message": "Сохранить снимок"
+  },
+  "resources_sequence": {
+    "message": "Объединить сегменты"
+  },
+  "resources_sidebar": {
+    "message": "Открыть боковую панель"
+  },
+  "resources_start": {
+    "message": "Начать"
+  },
+  "resources_start_time": {
+    "message": "Начало (секунды)"
+  },
+  "resources_end_time": {
+    "message": "Конец (0: конец источника)"
+  },
+  "resources_stop": {
+    "message": "Остановить"
+  },
+  "resources_test_keys": {
+    "message": "Проверить найденные ключи"
+  },
+  "resources_tools": {
+    "message": "Медиаинструменты"
+  },
+  "resources_volume": {
+    "message": "Громкость"
+  },
+  "resources_preserve": {
+    "message": "Сохранять источники при переходе"
+  },
+  "resources_deep": {
+    "message": "Глубокий поиск"
+  },
+  "resources_cache": {
+    "message": "Захват медиабуфера"
+  },
+  "resources_copy": {
+    "message": "Копировать"
+  },
+  "resources_select_all": {
+    "message": "Выбрать все"
+  },
+  "resources_name": {
+    "message": "Имя"
+  },
+  "resources_size": {
+    "message": "Размер"
+  },
+  "resources_type": {
+    "message": "Тип"
+  },
+  "resources_speed": {
+    "message": "Скорость"
+  },
+  "resources_kind_image": {
+    "message": "Изображения"
+  },
+  "resources_all": {
+    "message": "Все"
+  },
+  "resources_time": {
+    "message": "Время"
+  },
+  "resources_video": {
+    "message": "Начать запись"
+  },
+  "resources_kind_embedded": {
+    "message": "Источник"
+  },
+  "resources_kind_file": {
+    "message": "Исходный файл"
+  },
+  "resources_kind_subtitle": {
+    "message": "Субтитры"
+  },
+  "resources_pause": {
+    "message": "Пауза"
+  },
+  "resources_play": {
+    "message": "Воспроизвести"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "Сортировка"
+  },
+  "resources_auto": {
+    "message": "Автоматически скачивать новые ресурсы"
+  },
+  "resources_mobile": {
+    "message": "Использовать мобильный User-Agent"
   }
 }

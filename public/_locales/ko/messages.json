@@ -682,14 +682,6 @@
     "message": "다시 시도",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "닫기",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "플레이어 찾기",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "동영상 없음",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "흐름을 따라, 빈틈을 잇다.",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "현재 페이지"
+  },
+  "resources_other": {
+    "message": "모든 페이지"
+  },
+  "resources_controls": {
+    "message": "플레이어 제어"
+  },
+  "resources_expand": {
+    "message": "작업 공간 열기"
+  },
+  "resources_fullscreen": {
+    "message": "전체 화면"
+  },
+  "resources_import": {
+    "message": "소스 추가"
+  },
+  "resources_invert": {
+    "message": "선택 반전"
+  },
+  "resources_key": {
+    "message": "AES-128 키"
+  },
+  "resources_kind_collection": {
+    "message": "결합된 미디어"
+  },
+  "resources_kind_fragment": {
+    "message": "세그먼트"
+  },
+  "resources_loop": {
+    "message": "반복"
+  },
+  "resources_manifest": {
+    "message": "매니페스트 또는 세그먼트 URL"
+  },
+  "resources_merge": {
+    "message": "오디오와 비디오 합치기"
+  },
+  "resources_mute": {
+    "message": "음소거"
+  },
+  "resources_preview": {
+    "message": "미리 보기"
+  },
+  "resources_preview_unavailable": {
+    "message": "미리 볼 수 없습니다. 다운로드는 가능할 수 있습니다."
+  },
+  "resources_reload": {
+    "message": "새로고침하여 처음부터 캡처"
+  },
+  "resources_screen": {
+    "message": "화면 녹화"
+  },
+  "resources_screenshot": {
+    "message": "스크린샷 저장"
+  },
+  "resources_sequence": {
+    "message": "세그먼트 합치기"
+  },
+  "resources_sidebar": {
+    "message": "사이드바 열기"
+  },
+  "resources_start": {
+    "message": "시작"
+  },
+  "resources_start_time": {
+    "message": "시작 위치(초)"
+  },
+  "resources_end_time": {
+    "message": "끝 위치(0: 소스 끝)"
+  },
+  "resources_stop": {
+    "message": "중지"
+  },
+  "resources_test_keys": {
+    "message": "발견된 키 검증"
+  },
+  "resources_tools": {
+    "message": "미디어 도구"
+  },
+  "resources_volume": {
+    "message": "볼륨"
+  },
+  "resources_preserve": {
+    "message": "페이지 이동 후 소스 유지"
+  },
+  "resources_deep": {
+    "message": "심층 검색"
+  },
+  "resources_cache": {
+    "message": "미디어 버퍼 캡처"
+  },
+  "resources_copy": {
+    "message": "복사하기"
+  },
+  "resources_select_all": {
+    "message": "모두 선택"
+  },
+  "resources_name": {
+    "message": "파일명"
+  },
+  "resources_size": {
+    "message": "크기"
+  },
+  "resources_type": {
+    "message": "유형"
+  },
+  "resources_speed": {
+    "message": "속도"
+  },
+  "resources_kind_image": {
+    "message": "이미지"
+  },
+  "resources_all": {
+    "message": "전체"
+  },
+  "resources_time": {
+    "message": "시간"
+  },
+  "resources_video": {
+    "message": "녹화 시작"
+  },
+  "resources_kind_embedded": {
+    "message": "소스"
+  },
+  "resources_kind_file": {
+    "message": "원본 파일"
+  },
+  "resources_kind_subtitle": {
+    "message": "자막"
+  },
+  "resources_pause": {
+    "message": "일시 정지"
+  },
+  "resources_play": {
+    "message": "재생"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "정렬"
+  },
+  "resources_auto": {
+    "message": "새 리소스 자동 다운로드"
+  },
+  "resources_mobile": {
+    "message": "모바일 User-Agent 사용"
   }
 }

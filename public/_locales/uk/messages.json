@@ -682,14 +682,6 @@
     "message": "Повторити",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "Закрити",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "Знайти програвач",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "Без відео",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "Простеж потік, поєднай далеке.",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "Поточна сторінка"
+  },
+  "resources_other": {
+    "message": "Усі сторінки"
+  },
+  "resources_controls": {
+    "message": "Керування програвачем"
+  },
+  "resources_expand": {
+    "message": "Відкрити робочу область"
+  },
+  "resources_fullscreen": {
+    "message": "Повний екран"
+  },
+  "resources_import": {
+    "message": "Додати джерело"
+  },
+  "resources_invert": {
+    "message": "Інвертувати вибір"
+  },
+  "resources_key": {
+    "message": "Ключ AES-128"
+  },
+  "resources_kind_collection": {
+    "message": "Об’єднані медіа"
+  },
+  "resources_kind_fragment": {
+    "message": "Сегмент"
+  },
+  "resources_loop": {
+    "message": "Повтор"
+  },
+  "resources_manifest": {
+    "message": "Маніфест або адреси сегментів"
+  },
+  "resources_merge": {
+    "message": "Об’єднати звук і відео"
+  },
+  "resources_mute": {
+    "message": "Без звуку"
+  },
+  "resources_preview": {
+    "message": "Перегляд"
+  },
+  "resources_preview_unavailable": {
+    "message": "Перегляд недоступний. Завантаження ще може працювати."
+  },
+  "resources_reload": {
+    "message": "Перезавантажити для захоплення спочатку"
+  },
+  "resources_screen": {
+    "message": "Запис екрана"
+  },
+  "resources_screenshot": {
+    "message": "Зберегти знімок"
+  },
+  "resources_sequence": {
+    "message": "Об’єднати сегменти"
+  },
+  "resources_sidebar": {
+    "message": "Відкрити бічну панель"
+  },
+  "resources_start": {
+    "message": "Почати"
+  },
+  "resources_start_time": {
+    "message": "Початок (секунди)"
+  },
+  "resources_end_time": {
+    "message": "Кінець (0: кінець джерела)"
+  },
+  "resources_stop": {
+    "message": "Зупинити"
+  },
+  "resources_test_keys": {
+    "message": "Перевірити знайдені ключі"
+  },
+  "resources_tools": {
+    "message": "Медіаінструменти"
+  },
+  "resources_volume": {
+    "message": "Гучність"
+  },
+  "resources_preserve": {
+    "message": "Зберігати джерела після переходу"
+  },
+  "resources_deep": {
+    "message": "Поглиблений пошук"
+  },
+  "resources_cache": {
+    "message": "Захоплення медіабуфера"
+  },
+  "resources_copy": {
+    "message": "Копіювати"
+  },
+  "resources_select_all": {
+    "message": "Вибрати все"
+  },
+  "resources_name": {
+    "message": "Назва"
+  },
+  "resources_size": {
+    "message": "Розмір"
+  },
+  "resources_type": {
+    "message": "Тип"
+  },
+  "resources_speed": {
+    "message": "Швидкість"
+  },
+  "resources_kind_image": {
+    "message": "Зображення"
+  },
+  "resources_all": {
+    "message": "Усі"
+  },
+  "resources_time": {
+    "message": "Час"
+  },
+  "resources_video": {
+    "message": "Почати запис"
+  },
+  "resources_kind_embedded": {
+    "message": "Джерело"
+  },
+  "resources_kind_file": {
+    "message": "Оригінальний файл"
+  },
+  "resources_kind_subtitle": {
+    "message": "Субтитри"
+  },
+  "resources_pause": {
+    "message": "Пауза"
+  },
+  "resources_play": {
+    "message": "Відтворити"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "Сортування"
+  },
+  "resources_auto": {
+    "message": "Автоматично завантажувати нові ресурси"
+  },
+  "resources_mobile": {
+    "message": "Використовувати мобільний User-Agent"
   }
 }

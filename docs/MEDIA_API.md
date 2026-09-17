@@ -1,4 +1,4 @@
-# Desktop media API v1
+# Desktop media API v2
 
 The desktop provides this versioned HTTP contract; the extension consumes it.
 Each repository owns its implementation and checks. Neither implementation imports
@@ -11,19 +11,19 @@ to verify the generated bundle. Semantic constraints below supplement JSON Schem
 
 ## Transport
 
-Base URL: `http://127.0.0.1:{configuredPort}/media/v1`.
+Base URL: `http://127.0.0.1:{configuredPort}/media/v2`.
 Requests and responses use JSON. Use the configured Extension API Bearer secret;
 it is independent of the engine RPC secret. Handle extension-origin CORS and browser
 local-network preflight. Browser-page origins must not gain control merely because
 the API listens on loopback. Apply the same authentication to every media endpoint.
 
 Return quickly (within five seconds). Inspection is asynchronous; network/manifest
-work must not hold the initial HTTP request open. No content or segments pass through
-the extension. Cap request size at 256 KiB and validate all input at the desktop boundary.
+work must not hold the initial HTTP request open. Manifest input is bounded to 4 MiB per JSON request. Capture uploads use bounded
+binary bodies; validate all input at the desktop boundary.
 
 | Method | Path                  | Result                                                                               |
 | ------ | --------------------- | ------------------------------------------------------------------------------------ |
-| GET    | `/capabilities`       | Actual engine-supported source kinds and `product: "rayburst"`, `protocolVersion: 1` |
+| GET    | `/capabilities`       | Actual engine-supported source kinds and `product: "rayburst"`, `protocolVersion: 2` |
 | POST   | `/probes`             | Create or retrieve an idempotent inspection                                          |
 | GET    | `/probes/{id}`        | Read inspection or submission state                                                  |
 | POST   | `/probes/{id}/submit` | Apply selection and create/start exactly one task                                    |
@@ -35,7 +35,7 @@ version or expose an unrestricted engine RPC proxy to the extension.
 ## Capabilities
 
 ```json
-{ "protocolVersion": 1, "sourceKinds": ["hls", "dash"], "requestContexts": true }
+{ "protocolVersion": 2, "sourceKinds": ["hls", "dash", "collection"], "requestContexts": true }
 ```
 
 Advertise actual running-engine capabilities. `requestContexts: true` requires
@@ -66,7 +66,7 @@ exact-origin custom-header forwarding for every native HTTP hop. The existing or
 
 - `id` is generated and persisted by the extension before sending. Identical ID/body
   replays return the same operation. A different body for the same ID returns 409.
-- `kind` is an HLS/DASH discovery hint. It must not silently become a raw manifest
+- `kind` is an HLS/DASH discovery hint or an explicit `collection` composition. It must not silently become a raw manifest
   download. Ordinary files use protocol 2 at `/add`, described in [DOWNLOADS.md](DOWNLOADS.md).
 - Preserve signed URL bytes. Do not sort, decode/re-encode, or strip query parameters.
 - `pageUrl`, `title`, and `filename` are untrusted metadata. The desktop validates the
@@ -250,3 +250,32 @@ engine logs, or unbounded exception strings in errors.
 within this repository. Local module tests use browser and HTTP fixtures only.
 There is no simulated desktop application or cross-repository E2E runner.
 The maintainer validates the real extension, desktop and engine together manually.
+
+## Captured inputs and uploads
+
+`source.input` contains `manifests`, `tracks` and `keys` arrays. At most 32 inline
+manifests retain their original HTTP URLs for relative resolution. Each track has
+an `id`, `type` (`video`, `audio`, `subtitle` or `muxed`), ordered HTTP `urls`, and
+optional `offsetMs`. At most 32 tracks and 10,000 URLs per track are accepted.
+Keys contain `url` (empty for a fallback), a 32-hex-character `key`, and `iv`
+(empty for the manifest/sequence IV). At most 64 candidate keys are accepted.
+
+| Method | Path                      | Meaning                                                         |
+| ------ | ------------------------- | --------------------------------------------------------------- |
+| POST   | `/assets/{uuid}`          | Create/retrieve a capture directory                             |
+| PUT    | `/assets/{uuid}/{stream}` | Append bytes with `X-Upload-Offset`; exact replays are accepted |
+| POST   | `/assets/{uuid}/seal`     | Freeze the capture and return stream sizes                      |
+| GET    | `/assets/{uuid}/{stream}` | Read a sealed stream with native HTTP range support             |
+| DELETE | `/assets/{uuid}`          | Discard an unsealed capture                                     |
+
+All routes require the Extension API secret. Streams are numbered 0-31; the server
+accepts at most 1 MiB per block and 64 GiB per stream. The extension sends 256 KiB
+blocks. Local capture URLs use scoped API authentication, never page-world credentials.
+The desktop protects pending task inputs and removes unclaimed captures after 24 hours.
+Input plans remain in native task options for retry, but are excluded from history.
+
+`startTimeSeconds` and `endTimeSeconds` select finite HLS/DASH segment ranges; zero
+means the source boundary. They are unavailable for live sources and collections.
+`format: "vtt"` requires a subtitle-only selection with a compatible codec. MP4/MKV
+retain their existing codec constraints. Negotiation requires `captured-inputs`;
+an older engine returns `integration_unavailable`.

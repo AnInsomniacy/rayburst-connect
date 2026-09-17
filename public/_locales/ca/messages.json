@@ -682,14 +682,6 @@
     "message": "Torna-ho a provar",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "Tanca",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "Localitza el reproductor",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "Sense vídeo",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "Segueix el flux, uneix les distàncies.",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "Pàgina actual"
+  },
+  "resources_other": {
+    "message": "Totes les pàgines"
+  },
+  "resources_controls": {
+    "message": "Controls del reproductor"
+  },
+  "resources_expand": {
+    "message": "Obre l’espai de treball"
+  },
+  "resources_fullscreen": {
+    "message": "Pantalla completa"
+  },
+  "resources_import": {
+    "message": "Afegeix una font"
+  },
+  "resources_invert": {
+    "message": "Inverteix la selecció"
+  },
+  "resources_key": {
+    "message": "Clau AES-128"
+  },
+  "resources_kind_collection": {
+    "message": "Contingut combinat"
+  },
+  "resources_kind_fragment": {
+    "message": "Segment"
+  },
+  "resources_loop": {
+    "message": "Repeteix"
+  },
+  "resources_manifest": {
+    "message": "Manifest o URL dels segments"
+  },
+  "resources_merge": {
+    "message": "Combina àudio i vídeo"
+  },
+  "resources_mute": {
+    "message": "Silencia"
+  },
+  "resources_preview": {
+    "message": "Previsualització"
+  },
+  "resources_preview_unavailable": {
+    "message": "Previsualització no disponible. La descàrrega encara pot funcionar."
+  },
+  "resources_reload": {
+    "message": "Recarrega per capturar des del principi"
+  },
+  "resources_screen": {
+    "message": "Enregistrament de pantalla"
+  },
+  "resources_screenshot": {
+    "message": "Desa la captura"
+  },
+  "resources_sequence": {
+    "message": "Uneix segments"
+  },
+  "resources_sidebar": {
+    "message": "Obre el panell lateral"
+  },
+  "resources_start": {
+    "message": "Inicia"
+  },
+  "resources_start_time": {
+    "message": "Inici (segons)"
+  },
+  "resources_end_time": {
+    "message": "Final (0: final de la font)"
+  },
+  "resources_stop": {
+    "message": "Atura"
+  },
+  "resources_test_keys": {
+    "message": "Comprova les claus detectades"
+  },
+  "resources_tools": {
+    "message": "Eines multimèdia"
+  },
+  "resources_volume": {
+    "message": "Volum"
+  },
+  "resources_preserve": {
+    "message": "Conserva les fonts en navegar"
+  },
+  "resources_deep": {
+    "message": "Cerca profunda"
+  },
+  "resources_cache": {
+    "message": "Captura la memòria intermèdia"
+  },
+  "resources_copy": {
+    "message": "Copiar"
+  },
+  "resources_select_all": {
+    "message": "Seleccionar-ho tot"
+  },
+  "resources_name": {
+    "message": "Nom"
+  },
+  "resources_size": {
+    "message": "Mida"
+  },
+  "resources_type": {
+    "message": "Tipus"
+  },
+  "resources_speed": {
+    "message": "Velocitat"
+  },
+  "resources_kind_image": {
+    "message": "Imatges"
+  },
+  "resources_all": {
+    "message": "Tot"
+  },
+  "resources_time": {
+    "message": "Hora"
+  },
+  "resources_video": {
+    "message": "Inicia la gravació"
+  },
+  "resources_kind_embedded": {
+    "message": "Font"
+  },
+  "resources_kind_file": {
+    "message": "Fitxer original"
+  },
+  "resources_kind_subtitle": {
+    "message": "Subtítols"
+  },
+  "resources_pause": {
+    "message": "Pausa"
+  },
+  "resources_play": {
+    "message": "Reprodueix"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "Ordena"
+  },
+  "resources_auto": {
+    "message": "Baixa automàticament els recursos nous"
+  },
+  "resources_mobile": {
+    "message": "Utilitza un User-Agent mòbil"
   }
 }

@@ -682,14 +682,6 @@
     "message": "Δοκιμή ξανά",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "Κλείσιμο",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "Εντοπισμός προγράμματος αναπαραγωγής",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "Χωρίς βίντεο",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "Ακολούθησε τη ροή, γεφύρωσε το κενό.",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "Τρέχουσα σελίδα"
+  },
+  "resources_other": {
+    "message": "Όλες οι σελίδες"
+  },
+  "resources_controls": {
+    "message": "Έλεγχος αναπαραγωγής"
+  },
+  "resources_expand": {
+    "message": "Άνοιγμα χώρου εργασίας"
+  },
+  "resources_fullscreen": {
+    "message": "Πλήρης οθόνη"
+  },
+  "resources_import": {
+    "message": "Προσθήκη πηγής"
+  },
+  "resources_invert": {
+    "message": "Αντιστροφή επιλογής"
+  },
+  "resources_key": {
+    "message": "Κλειδί AES-128"
+  },
+  "resources_kind_collection": {
+    "message": "Συνδυασμένα πολυμέσα"
+  },
+  "resources_kind_fragment": {
+    "message": "Τμήμα"
+  },
+  "resources_loop": {
+    "message": "Επανάληψη"
+  },
+  "resources_manifest": {
+    "message": "Manifest ή διευθύνσεις τμημάτων"
+  },
+  "resources_merge": {
+    "message": "Συγχώνευση ήχου και βίντεο"
+  },
+  "resources_mute": {
+    "message": "Σίγαση"
+  },
+  "resources_preview": {
+    "message": "Προεπισκόπηση"
+  },
+  "resources_preview_unavailable": {
+    "message": "Η προεπισκόπηση δεν είναι διαθέσιμη. Η λήψη ίσως λειτουργεί."
+  },
+  "resources_reload": {
+    "message": "Επαναφόρτωση για καταγραφή από την αρχή"
+  },
+  "resources_screen": {
+    "message": "Εγγραφή οθόνης"
+  },
+  "resources_screenshot": {
+    "message": "Αποθήκευση στιγμιότυπου"
+  },
+  "resources_sequence": {
+    "message": "Ένωση τμημάτων"
+  },
+  "resources_sidebar": {
+    "message": "Άνοιγμα πλαϊνού πίνακα"
+  },
+  "resources_start": {
+    "message": "Έναρξη"
+  },
+  "resources_start_time": {
+    "message": "Αρχή (δευτερόλεπτα)"
+  },
+  "resources_end_time": {
+    "message": "Τέλος (0: τέλος πηγής)"
+  },
+  "resources_stop": {
+    "message": "Διακοπή"
+  },
+  "resources_test_keys": {
+    "message": "Έλεγχος εντοπισμένων κλειδιών"
+  },
+  "resources_tools": {
+    "message": "Εργαλεία πολυμέσων"
+  },
+  "resources_volume": {
+    "message": "Ένταση"
+  },
+  "resources_preserve": {
+    "message": "Διατήρηση πηγών κατά την πλοήγηση"
+  },
+  "resources_deep": {
+    "message": "Βαθιά αναζήτηση"
+  },
+  "resources_cache": {
+    "message": "Καταγραφή προσωρινών δεδομένων"
+  },
+  "resources_copy": {
+    "message": "Αντιγραφή"
+  },
+  "resources_select_all": {
+    "message": "Επιλογή όλων"
+  },
+  "resources_name": {
+    "message": "Όνομα"
+  },
+  "resources_size": {
+    "message": "Μέγεθος"
+  },
+  "resources_type": {
+    "message": "Τύπος"
+  },
+  "resources_speed": {
+    "message": "Ταχύτητα"
+  },
+  "resources_kind_image": {
+    "message": "Εικόνες"
+  },
+  "resources_all": {
+    "message": "Όλα"
+  },
+  "resources_time": {
+    "message": "Ώρα"
+  },
+  "resources_video": {
+    "message": "Έναρξη εγγραφής"
+  },
+  "resources_kind_embedded": {
+    "message": "Πηγή"
+  },
+  "resources_kind_file": {
+    "message": "Αρχικό αρχείο"
+  },
+  "resources_kind_subtitle": {
+    "message": "Υπότιτλοι"
+  },
+  "resources_pause": {
+    "message": "Παύση"
+  },
+  "resources_play": {
+    "message": "Αναπαραγωγή"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "Ταξινόμηση"
+  },
+  "resources_auto": {
+    "message": "Αυτόματη λήψη νέων πόρων"
+  },
+  "resources_mobile": {
+    "message": "Χρήση User-Agent κινητού"
   }
 }

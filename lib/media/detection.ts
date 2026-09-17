@@ -9,6 +9,8 @@ import type { MediaCandidate } from '../schema';
 const HLS_MIMES = new Set([
   'application/vnd.apple.mpegurl',
   'application/x-mpegurl',
+  'application/mpegurl',
+  'application/octet-stream-m3u8',
   'audio/mpegurl',
   'audio/x-mpegurl',
 ]);
@@ -27,9 +29,19 @@ const FILE_EXTENSIONS = new Set([
   'opus',
   'wav',
   'flac',
+  'flv',
+  'f4v',
+  'avi',
+  'wmv',
+  'asf',
+  'mpeg',
+  'mpg',
+  'ogv',
+  'weba',
+  '3gp',
   'aac',
 ]);
-const DOCUMENT_MIMES = new Set(['text/html', 'application/xhtml+xml', 'application/json']);
+const DOCUMENT_MIMES = new Set(['text/html', 'application/xhtml+xml']);
 
 export interface MediaObservation {
   url: string;
@@ -91,18 +103,23 @@ export function detectMedia(
   const path = new URL(url).pathname;
   const extension = (filename || path).split('.').pop()?.toLowerCase() ?? '';
   let kind: MediaCandidate['kind'];
-  if (HLS_MIMES.has(mime) || extension === 'm3u8') kind = 'hls';
+  if (HLS_MIMES.has(mime) || ['m3u8', 'm3u'].includes(extension)) kind = 'hls';
   else if (mime === DASH_MIME || extension === 'mpd') kind = 'dash';
+  else if (
+    SEGMENT_EXTENSIONS.has(extension) ||
+    ['video/mp2t', 'video/iso.segment', 'audio/iso.segment'].includes(mime)
+  )
+    kind = 'fragment';
+  else if (
+    ['vtt', 'srt', 'ass', 'ssa', 'ttml'].includes(extension) ||
+    ['text/vtt', 'application/ttml+xml', 'application/x-subrip'].includes(mime)
+  )
+    kind = 'subtitle';
+  else if (mime.startsWith('image/') && input.evidence === 'script') kind = 'image';
+  else if (mime === 'application/json' && input.evidence === 'script') kind = 'json';
   else {
-    if (
-      SEGMENT_EXTENSIONS.has(extension) ||
-      ['video/mp2t', 'video/iso.segment', 'audio/iso.segment'].includes(mime)
-    )
-      return null;
     if (!FILE_EXTENSIONS.has(extension) && !/^(video|audio)\//.test(mime) && !input.elementType)
       return null;
-    // Timing entries alone cannot distinguish an AAC fragment from a complete audio file.
-    if (input.evidence === 'resource' && extension === 'aac') return null;
     kind = 'file';
   }
   const total = input.contentRange?.match(/^bytes \d+-\d+\/(\d+)$/i)?.[1];
@@ -120,9 +137,15 @@ export function detectMedia(
 }
 
 export function mediaIdentity(
-  candidate: Pick<MediaCandidate, 'tabId' | 'frameId' | 'documentId' | 'url'>,
+  candidate: Pick<MediaCandidate, 'tabId' | 'frameId' | 'documentId' | 'url' | 'variant'>,
 ): string {
-  return JSON.stringify([candidate.tabId, candidate.frameId, candidate.documentId, candidate.url]);
+  return JSON.stringify([
+    candidate.tabId,
+    candidate.frameId,
+    candidate.documentId,
+    candidate.url,
+    candidate.variant ?? '',
+  ]);
 }
 
 export function hostname(value: string): string {

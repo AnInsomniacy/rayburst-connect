@@ -1,386 +1,583 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { browser } from 'wxt/browser';
-import { NAlert, NButton, NEmpty, NInput, NSpace, NSpin, NSwitch } from 'naive-ui';
-import { sendMediaCommand, type MediaCommand, type MediaList } from '@/lib/media/messages';
-import { hostname } from '@/lib/media/detection';
+import { z } from 'zod';
+import {
+  NAlert,
+  NButton,
+  NCheckbox,
+  NEmpty,
+  NInput,
+  NSelect,
+  NSwitch,
+  NSpin,
+  NDropdown,
+  NIcon,
+  NTooltip,
+  NTag,
+} from 'naive-ui';
+import {
+  sendMediaCommand,
+  type MediaCommand,
+  type MediaItem,
+  type MediaList,
+} from '@/lib/media/messages';
 import { mediaFailureKey, mediaSize } from '@/lib/media/presentation';
 import { useI18n } from '@/shared/i18n/engine';
-const { t: i18n, effectiveLocale } = useI18n();
-import { MEDIA_SESSION_KEY } from '@/lib/schema';
 import { usePolling } from '@/shared/use-polling';
+import { MEDIA_SESSION_KEY } from '@/lib/schema';
 import MediaSelection from './MediaSelection.vue';
+import MediaTools from './MediaTools.vue';
+import MediaPreview from './MediaPreview.vue';
+import CollapsePanel from '@/shared/components/CollapsePanel.vue';
+import {
+  CopyOutline,
+  PlayCircleOutline,
+  OptionsOutline,
+  EllipsisHorizontalOutline,
+  RefreshOutline,
+  OpenOutline,
+  AlbumsOutline,
+} from '@vicons/ionicons5';
 
-const props = defineProps<{ frame?: boolean; playerUrl?: string; active?: boolean }>();
-const send = (value: MediaCommand) => sendMediaCommand(value, props.frame);
-const panelRoot = ref<InstanceType<typeof window.HTMLElement>>();
+const props = withDefaults(defineProps<{ active?: boolean; expanded?: boolean }>(), {
+  active: true,
+});
+const { t, effectiveLocale } = useI18n();
 const state = ref<MediaList | null>(null);
-const tabId = ref<number | null>(null);
-const selectedId = ref('');
+const tabId = ref<number>();
+const allTabs = ref(false);
 const query = ref('');
-const busy = ref(false);
+const kind = ref('all');
+const sort = ref('time');
+const selectedId = ref('');
+const checked = ref(new Set<string>());
 const error = ref('');
+const busy = ref(false);
 const loading = ref(true);
-let disposed = false;
-let polling = false;
-let revision = 0;
+const toolsOpen = ref(false);
+const preview = ref<MediaItem>();
 const selected = computed(() => state.value?.items.find((item) => item.id === selectedId.value));
-const needsPolling = computed(() => {
-  const operation = selected.value?.operation;
-  return (
-    props.active !== false &&
-    Boolean(
-      operation &&
-      ['probing', 'submitting', 'cancelling'].includes(operation.state) &&
-      !['connection_changed', 'privacy_changed', 'api_auth_failed', 'conflict'].includes(
-        operation.error ?? '',
-      ),
-    )
+const filtered = computed(() => {
+  const needle = query.value.toLowerCase();
+  const values = (state.value?.items ?? []).filter(
+    (item) =>
+      item.kind !== 'embedded' &&
+      (kind.value === 'all' || item.kind === kind.value) &&
+      `${item.title} ${item.filename} ${item.url} ${item.mime}`.toLowerCase().includes(needle),
+  );
+  return values.sort((a, b) =>
+    sort.value === 'size'
+      ? (b.size ?? 0) - (a.size ?? 0)
+      : sort.value === 'name'
+        ? (a.filename || a.title).localeCompare(b.filename || b.title)
+        : b.lastSeen - a.lastSeen,
   );
 });
-const visibleItems = computed(() => {
-  const items = state.value?.items ?? [];
-  const exact =
-    props.playerUrl &&
-    items.filter((item) => item.url === props.playerUrl && item.kind !== 'embedded');
-  return exact && exact.length ? exact : items;
-});
-const uncertain = computed(
-  () =>
-    props.frame &&
-    !visibleItems.value.some((item) => item.url === props.playerUrl && item.kind !== 'embedded'),
+const kinds = computed(() =>
+  [
+    'all',
+    ...new Set(
+      state.value?.items.filter((item) => item.kind !== 'embedded').map((item) => item.kind),
+    ),
+  ].map((value) => ({
+    value,
+    label:
+      value === 'all'
+        ? t('resources_all')
+        : ['hls', 'dash', 'json'].includes(value)
+          ? value.toUpperCase()
+          : t(`resources_kind_${value}`),
+  })),
 );
-const filtered = computed(
-  () =>
-    visibleItems.value.filter((item) =>
-      `${item.title} ${item.filename} ${hostname(item.url)} ${item.kind}`
-        .toLowerCase()
-        .includes(query.value.toLowerCase()),
-    ) ?? [],
+const pending = computed(() =>
+  Boolean(
+    selected.value?.operation &&
+    ['probing', 'submitting', 'cancelling'].includes(selected.value.operation.state),
+  ),
 );
-
-async function selectSource(id: string) {
-  selectedId.value = id;
-  await nextTick();
-  panelRoot.value
-    ?.querySelector<InstanceType<typeof window.HTMLElement>>('#media-options-heading')
-    ?.focus();
-  const item = selected.value;
-  if (
-    item &&
-    ['hls', 'dash'].includes(item.kind) &&
-    item.method === 'GET' &&
-    !item.operation &&
-    tabId.value !== null
-  )
-    await command({ type: 'MEDIA_PROBE', tabId: tabId.value, candidateId: id });
+let disposed = false;
+let refreshing = false;
+async function refresh() {
+  if (disposed || props.active === false || tabId.value === undefined || refreshing) return true;
+  refreshing = true;
+  try {
+    if (pending.value && selected.value)
+      await sendMediaCommand({
+        type: 'MEDIA_POLL',
+        tabId: selected.value.tabId,
+        candidateId: selected.value.id,
+      });
+    state.value = await sendMediaCommand({
+      type: 'MEDIA_LIST',
+      tabId: allTabs.value ? -1 : tabId.value,
+    });
+    const ids = new Set(state.value.items.map((item) => item.id));
+    checked.value = new Set([...checked.value].filter((id) => ids.has(id)));
+    return true;
+  } catch (cause) {
+    error.value = mediaFailureKey(cause instanceof Error ? cause.message : 'operation_failed');
+    return false;
+  } finally {
+    refreshing = false;
+    loading.value = false;
+  }
 }
-async function showSources() {
-  const id = selectedId.value;
+const poller = usePolling({ fn: refresh, baseIntervalMs: 1500, maxIntervalMs: 10000 });
+watch(pending, (value) => (value ? poller.start() : poller.stop()));
+watch([allTabs, () => props.active], () => {
   selectedId.value = '';
-  await nextTick();
-  const source = panelRoot.value?.querySelector(`button[data-media-id="${window.CSS.escape(id)}"]`);
-  if (source instanceof window.HTMLElement) source.focus();
-}
-
+  void refresh();
+});
 async function command(value: MediaCommand) {
   if (busy.value) return;
-  const current = ++revision;
   busy.value = true;
   error.value = '';
   try {
-    const data = await send(value);
-    if (!disposed && current === revision) state.value = data;
+    await sendMediaCommand(value);
+    await refresh();
   } catch (cause) {
-    if (!disposed && current === revision)
-      error.value = mediaFailureKey(cause instanceof Error ? cause.message : 'operation_failed');
+    error.value = mediaFailureKey(cause instanceof Error ? cause.message : 'operation_failed');
   } finally {
     busy.value = false;
   }
 }
-
-async function refresh(): Promise<boolean> {
-  if (props.active === false || disposed || polling || tabId.value === null || busy.value)
-    return true;
-  const current = revision;
-  polling = true;
-  try {
-    const active = needsPolling.value;
-    const data = await send(
-      active
-        ? { type: 'MEDIA_POLL', tabId: tabId.value, candidateId: selectedId.value }
-        : { type: 'MEDIA_LIST', tabId: tabId.value },
-    );
-    if (!disposed && current === revision) state.value = data;
-    return !active || !selected.value?.operation?.error;
-  } catch (cause) {
-    if (!disposed && current === revision)
+async function select(item: MediaItem) {
+  selectedId.value = item.id;
+  if (
+    ['hls', 'dash', 'collection'].includes(item.kind) &&
+    (!item.operation || ['submitted', 'cancelled', 'failed'].includes(item.operation.state))
+  )
+    await command({ type: 'MEDIA_PROBE', tabId: item.tabId, candidateId: item.id });
+}
+function toggle(id: string, value: boolean) {
+  const item = state.value?.items.find((candidate) => candidate.id === id);
+  if (value && (!item || item.kind === 'embedded' || item.method !== 'GET')) return;
+  const next = new Set(checked.value);
+  if (value) next.add(id);
+  else next.delete(id);
+  checked.value = next;
+}
+async function batch(action: 'download' | 'copy' | 'clear') {
+  const items = filtered.value.filter((item) => checked.value.has(item.id));
+  if (action === 'copy') {
+    await navigator.clipboard.writeText(items.map((item) => item.url).join('\n'));
+    return;
+  }
+  if (action === 'download') {
+    busy.value = true;
+    error.value = '';
+    try {
+      const result: unknown = await browser.runtime.sendMessage({
+        type: 'MEDIA_BATCH',
+        tabId: tabId.value,
+        ids: items.map((item) => item.id),
+      });
+      if (result && typeof result === 'object' && 'error' in result)
+        throw new Error(String(result.error));
+      z.object({ ok: z.literal(true) }).parse(result);
+      await refresh();
+    } catch (cause) {
       error.value = mediaFailureKey(cause instanceof Error ? cause.message : 'operation_failed');
-    return false;
+    } finally {
+      busy.value = false;
+    }
+  } else
+    for (const item of items)
+      await command({ type: 'MEDIA_CLEAR', tabId: item.tabId, candidateId: item.id });
+}
+async function merge(sequence: boolean) {
+  if (tabId.value === undefined) return;
+  busy.value = true;
+  try {
+    const result: unknown = await browser.runtime.sendMessage({
+      type: 'MEDIA_MERGE',
+      tabId: tabId.value,
+      ids: [...checked.value],
+      sequence,
+    });
+    if (result && typeof result === 'object' && 'id' in result && typeof result.id === 'string') {
+      await refresh();
+      selectedId.value = result.id;
+    } else error.value = 'media_unsupported';
   } finally {
-    polling = false;
-    loading.value = false;
+    busy.value = false;
   }
 }
-
-const poller = usePolling({ fn: refresh, baseIntervalMs: 1500, maxIntervalMs: 10_000 });
-watch(needsPolling, (pending) => {
-  if (pending && tabId.value !== null && !disposed) poller.start();
-  else poller.stop();
-});
-const changes: Parameters<typeof browser.storage.onChanged.addListener>[0] = (change, area) => {
+function copy(url: string) {
+  void navigator.clipboard.writeText(url);
+}
+const actions = computed(() => [
+  { key: 'all', label: t('resources_select_all') },
+  { key: 'invert', label: t('resources_invert') },
+  { key: 'copy', label: t('resources_copy'), disabled: !checked.value.size },
+  { key: 'merge', label: t('resources_merge'), disabled: !checked.value.size || allTabs.value },
+  {
+    key: 'sequence',
+    label: t('resources_sequence'),
+    disabled: !checked.value.size || allTabs.value,
+  },
+  { key: 'clear', label: t('media_clear'), disabled: !checked.value.size },
+]);
+function action(value: string) {
+  if (value === 'all') filtered.value.forEach((item) => toggle(item.id, true));
+  else if (value === 'invert')
+    filtered.value.forEach((item) => toggle(item.id, !checked.value.has(item.id)));
+  else if (value === 'merge' || value === 'sequence') void merge(value === 'sequence');
+  else if (value === 'copy' || value === 'clear') void batch(value);
+}
+async function openPage() {
+  await browser.tabs.create({ url: browser.runtime.getURL('/media.html') + `?tab=${tabId.value}` });
+}
+async function openSidebar() {
+  if (import.meta.env.FIREFOX) {
+    const sidebar: unknown = Reflect.get(browser, 'sidebarAction');
+    if (
+      sidebar &&
+      typeof sidebar === 'object' &&
+      'open' in sidebar &&
+      typeof sidebar.open === 'function'
+    )
+      await sidebar.open();
+  } else if (tabId.value !== undefined) await browser.sidePanel.open({ tabId: tabId.value });
+}
+const changed: Parameters<typeof browser.storage.onChanged.addListener>[0] = (change, area) => {
   if (area === 'session' && change[MEDIA_SESSION_KEY]) void refresh();
 };
-onMounted(async () => {
-  try {
-    const [tab] = props.frame
-      ? [{ id: 0, url: window.location.href }]
-      : await browser.tabs.query({ active: true, currentWindow: true });
-    if (disposed) return;
-    if (tab?.id !== undefined && (props.frame || (tab.url && /^https?:/.test(tab.url)))) {
-      tabId.value = tab.id;
-      await refresh();
-      if (disposed) return;
-      selectedId.value =
-        visibleItems.value.find(
-          (item) =>
-            item.operation &&
-            ['probing', 'ready', 'submitting', 'cancelling'].includes(item.operation.state),
-        )?.id ?? '';
-      browser.storage.onChanged.addListener(changes);
-    }
-  } finally {
-    loading.value = false;
+const activated: Parameters<typeof browser.tabs.onActivated.addListener>[0] = (info) => {
+  if (props.expanded && !new URL(window.location.href).searchParams.has('tab')) {
+    tabId.value = info.tabId;
+    selectedId.value = '';
+    void refresh();
   }
+};
+onMounted(async () => {
+  const supplied = Number(new URL(window.location.href).searchParams.get('tab'));
+  const tab =
+    supplied > 0
+      ? await browser.tabs.get(supplied)
+      : (await browser.tabs.query({ active: true, currentWindow: true }))[0];
+  if (disposed) return;
+  if (tab?.id !== undefined && tab.url?.startsWith('http')) tabId.value = tab.id;
+  await refresh();
+  loading.value = false;
+  browser.storage.onChanged.addListener(changed);
+  browser.tabs.onActivated.addListener(activated);
 });
 onUnmounted(() => {
   disposed = true;
-  revision++;
   poller.stop();
-  browser.storage.onChanged.removeListener(changes);
+  browser.storage.onChanged.removeListener(changed);
+  browser.tabs.onActivated.removeListener(activated);
 });
 </script>
-
 <template>
-  <section
-    ref="panelRoot"
-    class="media-panel"
-    :aria-label="i18n('media_sources')"
-    :aria-busy="loading || busy"
-  >
-    <div v-if="loading" class="media-loading" role="status">
-      <NSpin size="small" /> {{ i18n('media_loading') }}
-    </div>
-    <NEmpty v-else-if="tabId === null" :description="i18n('media_open_page')" />
+  <section class="resources" :class="{ expanded }" :aria-busy="busy || loading">
+    <NSpin v-if="loading" size="small" />
+    <NEmpty v-else-if="tabId === undefined" :description="t('media_open_page')" />
     <template v-else>
-      <div class="media-toolbar">
-        <span class="media-host">{{ state?.host || i18n('media_sources') }}</span>
+      <header class="resource-toolbar">
+        <NSelect
+          :value="allTabs ? 'all' : 'current'"
+          size="small"
+          :consistent-menu-width="false"
+          :options="[
+            { value: 'current', label: t('resources_current') },
+            { value: 'all', label: t('resources_other') },
+          ]"
+          :aria-label="t('media_sources')"
+          @update:value="allTabs = $event === 'all'"
+        />
+        <NTag size="small" round :bordered="false">{{
+          state?.items.filter((item) => item.kind !== 'embedded').length ?? 0
+        }}</NTag>
+        <span class="toolbar-space" />
         <NSwitch
-          v-if="!frame"
-          :value="state?.enabled ?? true"
-          :disabled="busy"
-          :aria-label="i18n('media_discover')"
+          size="small"
+          :value="state?.enabled"
+          :aria-label="t('media_discover')"
           @update:value="command({ type: 'MEDIA_ENABLE', tabId, enabled: $event })"
         />
-      </div>
-      <NAlert v-if="error" type="error" :show-icon="false" role="alert">{{ i18n(error) }}</NAlert>
-      <NAlert v-if="state?.excluded" type="info" :show-icon="false">{{
-        i18n('media_excluded')
-      }}</NAlert>
-      <NAlert v-else-if="state && !state.enabled" type="info" :show-icon="false">{{
-        i18n('media_paused')
-      }}</NAlert>
-      <div class="media-stage">
-        <Transition :name="selected ? 'media-forward' : 'media-back'"
-          ><MediaSelection
+        <NTooltip
+          ><template #trigger
+            ><NButton
+              size="small"
+              quaternary
+              circle
+              :aria-label="t('resources_tools')"
+              :aria-expanded="toolsOpen"
+              @click="toolsOpen = !toolsOpen"
+              ><template #icon
+                ><NIcon><OptionsOutline /></NIcon></template></NButton></template
+          >{{ t('resources_tools') }}</NTooltip
+        >
+      </header>
+      <NAlert v-if="error" type="error" closable @close="error = ''">{{ t(error) }}</NAlert>
+      <CollapsePanel :open="toolsOpen"
+        ><MediaTools
+          :tab-id="selected?.tabId ?? tabId"
+          :source="selected"
+          @created="refresh().then(() => (selectedId = $event))"
+      /></CollapsePanel>
+      <div class="resource-stage">
+        <Transition :name="selected ? 'media-forward' : 'media-back'">
+          <MediaSelection
             v-if="selected"
             :key="selected.id"
             :item="selected"
-            :frame="frame"
             :busy="busy"
-            @back="showSources"
-            @download-file="
-              command({ type: 'MEDIA_DOWNLOAD_FILE', tabId, candidateId: selected.id })
+            @back="selectedId = ''"
+            @advanced="toolsOpen = true"
+            @inspect="
+              command({ type: 'MEDIA_PROBE', tabId: selected.tabId, candidateId: selected.id })
             "
-            @inspect="command({ type: 'MEDIA_PROBE', tabId, candidateId: selected.id })"
-            @refresh="command({ type: 'MEDIA_POLL', tabId, candidateId: selected.id })"
-            @cancel="command({ type: 'MEDIA_CANCEL', tabId, candidateId: selected.id })"
+            @refresh="refresh"
+            @cancel="
+              command({ type: 'MEDIA_CANCEL', tabId: selected.tabId, candidateId: selected.id })
+            "
+            @download-file="
+              command({
+                type: 'MEDIA_DOWNLOAD_FILE',
+                tabId: selected.tabId,
+                candidateId: selected.id,
+              })
+            "
             @submit="
-              command({ type: 'MEDIA_SUBMIT', tabId, candidateId: selected.id, selection: $event })
+              command({
+                type: 'MEDIA_SUBMIT',
+                tabId: selected.tabId,
+                candidateId: selected.id,
+                selection: $event,
+              })
             "
           />
-          <div v-else key="sources" class="media-source-view">
-            <NSpace justify="space-between">
-              <NButton
-                size="small"
-                :disabled="busy || !state?.enabled || state.excluded"
-                @click="command({ type: 'MEDIA_RESCAN', tabId })"
-                >{{ i18n('media_scan') }}</NButton
-              >
-              <NButton
-                size="small"
-                :disabled="busy || !state?.items.length"
-                v-if="!frame"
-                @click="command({ type: 'MEDIA_CLEAR', tabId })"
-                >{{ i18n('media_clear') }}</NButton
-              >
-            </NSpace>
-            <NInput
-              v-if="state && state.items.length > 5"
-              v-model:value="query"
-              clearable
-              :placeholder="i18n('media_filter')"
-              :aria-label="i18n('media_filter')"
-            />
-            <p v-if="uncertain" class="media-hint">{{ i18n('media_ambiguous') }}</p>
-            <ul v-if="filtered.length" class="media-sources" :aria-label="i18n('media_sources')">
-              <li v-for="item in filtered" :key="item.id">
-                <button
-                  type="button"
-                  class="media-source"
-                  :data-media-id="item.id"
-                  @click="selectSource(item.id)"
-                >
-                  <span class="media-kind">{{
-                    item.kind === 'embedded' ? i18n('media_source') : item.kind.toUpperCase()
-                  }}</span>
-                  <span class="media-source-copy">
-                    <strong>{{ item.filename || item.title || i18n('media_source') }}</strong>
-                    <span
-                      >{{ hostname(item.url) || i18n('media_waiting') }} ·
-                      {{ mediaSize(item.size, effectiveLocale, i18n('media_size_unknown')) }}</span
-                    >
-                    <span v-if="item.operation?.state === 'submitted'" class="media-success">{{
-                      i18n('media_submitted')
-                    }}</span>
-                    <span v-else-if="item.operation?.state === 'ready'">{{
-                      i18n('media_ready')
-                    }}</span>
-                  </span>
-                  <span aria-hidden="true">›</span>
+          <div v-else key="catalog" class="resource-catalog">
+            <div class="resource-filters">
+              <NInput
+                v-model:value="query"
+                clearable
+                :placeholder="t('media_filter')"
+                :aria-label="t('media_filter')"
+              />
+              <NSelect v-model:value="kind" :options="kinds" :aria-label="t('resources_type')" />
+              <NSelect
+                v-model:value="sort"
+                :options="[
+                  { value: 'time', label: t('resources_time') },
+                  { value: 'size', label: t('resources_size') },
+                  { value: 'name', label: t('resources_name') },
+                ]"
+                :aria-label="t('resources_sort')"
+              />
+            </div>
+            <div class="resource-list">
+              <article v-for="item in filtered" :key="item.id" class="resource-row">
+                <NCheckbox
+                  :checked="checked.has(item.id)"
+                  :disabled="item.kind === 'embedded' || item.method !== 'GET'"
+                  :aria-label="item.filename || item.title"
+                  @update:checked="toggle(item.id, $event)"
+                />
+                <button class="resource-title" @click="select(item)">
+                  <strong>{{ item.filename || item.title || item.url }}</strong>
+                  <span
+                    >{{
+                      ['hls', 'dash'].includes(item.kind)
+                        ? item.kind.toUpperCase()
+                        : t(`resources_kind_${item.kind}`)
+                    }}
+                    · {{ mediaSize(item.size, effectiveLocale, t('media_size_unknown')) }}</span
+                  >
+                  <small v-if="allTabs">{{ item.title }}</small>
+                  <small v-if="item.downloadError || item.operation?.error">{{
+                    t(
+                      mediaFailureKey(
+                        item.downloadError || item.operation?.error || 'operation_failed',
+                      ),
+                    )
+                  }}</small>
+                  <small v-else-if="item.sentToDesktop || item.operation?.state === 'submitted'">{{
+                    t('media_submitted')
+                  }}</small>
+                  <small v-else-if="item.kind === 'embedded'">{{ t('media_waiting') }}</small>
                 </button>
                 <NButton
-                  size="tiny"
+                  size="small"
                   quaternary
-                  @click="command({ type: 'MEDIA_LOCATE', tabId, candidateId: item.id })"
-                  >{{ i18n('media_locate') }}</NButton
-                >
-              </li>
-            </ul>
-            <NEmpty v-else :description="i18n('media_none')" />
-            <p class="media-hint">
-              {{ i18n('media_hint') }}
-            </p>
-            <NButton
-              size="small"
-              :quaternary="frame"
-              :disabled="busy || !state?.host"
-              @click="command({ type: 'MEDIA_SITE', tabId, excluded: !state?.excluded })"
-              >{{
-                state?.excluded ? i18n('media_enable_site') : i18n('media_disable_site')
-              }}</NButton
-            >
+                  circle
+                  :aria-label="t('resources_copy')"
+                  @click="copy(item.url)"
+                  ><template #icon
+                    ><NIcon><CopyOutline /></NIcon></template
+                ></NButton>
+                <NButton
+                  size="small"
+                  quaternary
+                  circle
+                  :aria-label="t('resources_preview')"
+                  @click="preview = preview?.id === item.id ? undefined : item"
+                  ><template #icon
+                    ><NIcon><PlayCircleOutline /></NIcon></template
+                ></NButton>
+              </article>
+              <NEmpty v-if="!filtered.length" :description="t('media_none')" />
+            </div>
+            <MediaPreview v-if="preview" :item="preview" />
+            <footer class="resource-actions">
+              <NDropdown trigger="click" :options="actions" @select="action"
+                ><NButton size="small" quaternary circle :aria-label="t('resources_tools')"
+                  ><template #icon
+                    ><NIcon><EllipsisHorizontalOutline /></NIcon></template></NButton
+              ></NDropdown>
+              <NButton
+                size="small"
+                quaternary
+                circle
+                :aria-label="t('media_scan')"
+                @click="command({ type: 'MEDIA_RESCAN', tabId })"
+                ><template #icon
+                  ><NIcon><RefreshOutline /></NIcon></template
+              ></NButton>
+              <NButton
+                v-if="!expanded"
+                size="small"
+                quaternary
+                circle
+                :aria-label="t('resources_sidebar')"
+                @click="openSidebar"
+                ><template #icon
+                  ><NIcon><AlbumsOutline /></NIcon></template
+              ></NButton>
+              <NButton
+                v-if="!expanded"
+                size="small"
+                quaternary
+                circle
+                :aria-label="t('resources_expand')"
+                @click="openPage"
+                ><template #icon
+                  ><NIcon><OpenOutline /></NIcon></template
+              ></NButton>
+              <span class="toolbar-space" />
+              <NButton
+                size="small"
+                :disabled="!checked.size || busy"
+                type="primary"
+                :loading="busy"
+                @click="batch('download')"
+                >{{ t('media_download')
+                }}<span v-if="checked.size"> ({{ checked.size }})</span></NButton
+              >
+            </footer>
           </div></Transition
         >
       </div>
     </template>
   </section>
 </template>
-
 <style scoped>
-.media-stage {
+.resources {
+  display: grid;
+  gap: 12px;
+  padding: 4px 16px 12px;
+  max-height: 540px;
+  overflow: auto;
+}
+.resources.expanded {
+  max-height: none;
+  max-width: 1120px;
+  margin: auto;
+  padding: 16px 24px;
+}
+.resource-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 36px;
+}
+.resource-toolbar > .n-select {
+  width: 150px;
+}
+.toolbar-space {
+  flex: 1;
+}
+.resource-stage {
   position: relative;
-  min-height: 140px;
+  min-height: 160px;
 }
-.media-source-view {
+.resource-catalog {
   display: grid;
   gap: 12px;
 }
-.media-panel {
+.resource-filters {
   display: grid;
-  gap: 12px;
-  padding: 4px 16px 16px;
-  max-height: 500px;
-  overflow-y: auto;
-}
-.media-loading {
-  min-height: 140px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-.media-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  min-height: 40px;
-}
-.media-host {
-  font-size: 13px;
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.media-sources {
-  list-style: none;
-  display: grid;
+  grid-template-columns: minmax(100px, 1fr) 100px 110px;
   gap: 8px;
 }
-.media-source {
-  width: 100%;
+.resource-list {
+  display: grid;
+  gap: 2px;
+}
+.resource-row {
   display: flex;
+  gap: 8px;
   align-items: center;
-  gap: 10px;
-  padding: 12px;
-  border: 1px solid var(--color-outline-variant);
-  border-radius: 12px;
-  background: var(--color-surface-container-low);
-  color: inherit;
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--color-outline-variant);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 64px;
+}
+.resource-title {
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  gap: 3px;
   text-align: start;
+  background: none;
+  border: 0;
+  color: inherit;
   cursor: pointer;
   font: inherit;
 }
-.media-source:hover {
-  background: var(--color-surface-container-high);
-}
-.media-source:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-.media-source:active {
-  background: var(--color-surface-container-highest);
-}
-.media-kind {
-  font-size: 10px;
-  font-weight: 700;
-  background: var(--color-primary-container);
-  color: var(--color-on-primary-container);
-  border-radius: 6px;
-  padding: 4px 6px;
-  flex: none;
-}
-.media-source-copy {
-  display: grid;
-  gap: 3px;
-  flex: 1;
-  min-width: 0;
-}
-.media-source-copy strong {
+.resource-title strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 13px;
   font-weight: 600;
-  overflow-wrap: anywhere;
-  line-height: 1.4;
+  line-height: 1.5;
 }
-.media-source-copy > span,
-.media-hint {
+.resource-title span,
+.resource-title small {
   font-size: 12px;
   color: var(--color-on-surface-variant);
-  overflow-wrap: anywhere;
 }
-.media-source-copy > .media-success {
-  color: var(--color-success);
+.resource-title:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+.resource-row:has(.n-checkbox--checked) {
+  background: color-mix(in srgb, var(--color-primary-container) 30%, transparent);
+}
+.resource-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  position: sticky;
+  bottom: 0;
+  padding: 8px 0 0;
+  background: var(--color-surface);
+}
+@media (max-width: 440px) {
+  .resource-filters {
+    grid-template-columns: 1fr 1fr;
+  }
+  .resource-filters > :first-child {
+    grid-column: 1/-1;
+  }
+  .resources.expanded {
+    padding: 8px 16px;
+  }
 }
 </style>

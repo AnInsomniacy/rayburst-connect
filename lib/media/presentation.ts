@@ -13,6 +13,8 @@ const failures: Record<string, string> = {
   unsupported_selection: 'invalid',
 };
 export function mediaFailureKey(code: string): string {
+  if (code === 'duplicate_blocked') return 'notification_duplicate_guard_body';
+  if (code === 'api_auth_failed') return 'popup_error_auth';
   return `media_${failures[code] ?? 'failed'}`;
 }
 

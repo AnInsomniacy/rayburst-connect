@@ -682,14 +682,6 @@
     "message": "Thử lại",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "Đóng",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "Định vị trình phát",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "Không có video",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "Lần theo dòng chảy, nối liền khoảng không.",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "Trang hiện tại"
+  },
+  "resources_other": {
+    "message": "Tất cả trang"
+  },
+  "resources_controls": {
+    "message": "Điều khiển trình phát"
+  },
+  "resources_expand": {
+    "message": "Mở không gian làm việc"
+  },
+  "resources_fullscreen": {
+    "message": "Toàn màn hình"
+  },
+  "resources_import": {
+    "message": "Thêm nguồn"
+  },
+  "resources_invert": {
+    "message": "Đảo ngược lựa chọn"
+  },
+  "resources_key": {
+    "message": "Khóa AES-128"
+  },
+  "resources_kind_collection": {
+    "message": "Phương tiện kết hợp"
+  },
+  "resources_kind_fragment": {
+    "message": "Phân đoạn"
+  },
+  "resources_loop": {
+    "message": "Lặp lại"
+  },
+  "resources_manifest": {
+    "message": "Tệp kê khai hoặc URL phân đoạn"
+  },
+  "resources_merge": {
+    "message": "Ghép âm thanh và video"
+  },
+  "resources_mute": {
+    "message": "Tắt tiếng"
+  },
+  "resources_preview": {
+    "message": "Xem trước"
+  },
+  "resources_preview_unavailable": {
+    "message": "Không thể xem trước. Nguồn vẫn có thể tải được."
+  },
+  "resources_reload": {
+    "message": "Tải lại để thu từ đầu"
+  },
+  "resources_screen": {
+    "message": "Ghi màn hình"
+  },
+  "resources_screenshot": {
+    "message": "Lưu ảnh chụp"
+  },
+  "resources_sequence": {
+    "message": "Ghép phân đoạn"
+  },
+  "resources_sidebar": {
+    "message": "Mở thanh bên"
+  },
+  "resources_start": {
+    "message": "Bắt đầu"
+  },
+  "resources_start_time": {
+    "message": "Bắt đầu (giây)"
+  },
+  "resources_end_time": {
+    "message": "Kết thúc (0: cuối nguồn)"
+  },
+  "resources_stop": {
+    "message": "Dừng"
+  },
+  "resources_test_keys": {
+    "message": "Kiểm tra các khóa tìm được"
+  },
+  "resources_tools": {
+    "message": "Công cụ phương tiện"
+  },
+  "resources_volume": {
+    "message": "Âm lượng"
+  },
+  "resources_preserve": {
+    "message": "Giữ nguồn sau khi chuyển trang"
+  },
+  "resources_deep": {
+    "message": "Tìm kiếm sâu"
+  },
+  "resources_cache": {
+    "message": "Thu bộ đệm phương tiện"
+  },
+  "resources_copy": {
+    "message": "Sao chép"
+  },
+  "resources_select_all": {
+    "message": "Chọn tất cả"
+  },
+  "resources_name": {
+    "message": "Tên"
+  },
+  "resources_size": {
+    "message": "Kích thước"
+  },
+  "resources_type": {
+    "message": "Loại"
+  },
+  "resources_speed": {
+    "message": "Tốc độ"
+  },
+  "resources_kind_image": {
+    "message": "Hình ảnh"
+  },
+  "resources_all": {
+    "message": "Tất cả"
+  },
+  "resources_time": {
+    "message": "Thời gian"
+  },
+  "resources_video": {
+    "message": "Bắt đầu ghi"
+  },
+  "resources_kind_embedded": {
+    "message": "Nguồn"
+  },
+  "resources_kind_file": {
+    "message": "Tệp gốc"
+  },
+  "resources_kind_subtitle": {
+    "message": "Phụ đề"
+  },
+  "resources_pause": {
+    "message": "Tạm dừng"
+  },
+  "resources_play": {
+    "message": "Phát"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "Sắp xếp"
+  },
+  "resources_auto": {
+    "message": "Tự động tải tài nguyên mới"
+  },
+  "resources_mobile": {
+    "message": "Dùng User-Agent di động"
   }
 }

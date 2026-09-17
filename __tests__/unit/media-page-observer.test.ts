@@ -13,29 +13,6 @@ afterEach(() => {
 });
 
 describe('page media observation', () => {
-  it('locates only a unique connected player and rejects stale or ambiguous sources', async () => {
-    const found = vi.fn();
-    const observer = observePageMedia(async () => undefined, found);
-    const video = document.createElement('video');
-    video.src = 'https://example.com/one.mp4';
-    document.body.append(video);
-    const scroll = vi.spyOn(video, 'scrollIntoView').mockImplementation(() => undefined);
-    await vi.advanceTimersByTimeAsync(600);
-    expect(observer.locate(video.src)).toBe(true);
-    expect(scroll).toHaveBeenCalledOnce();
-    expect(found).toHaveBeenCalledWith(video);
-    const duplicate = document.createElement('video');
-    duplicate.src = video.src;
-    document.body.append(duplicate);
-    await vi.advanceTimersByTimeAsync(600);
-    expect(observer.locate(video.src)).toBe(false);
-    duplicate.remove();
-    video.src = 'https://example.com/two.mp4';
-    expect(observer.locate('https://example.com/one.mp4')).toBe(false);
-    video.remove();
-    expect(observer.locate(video.src)).toBe(false);
-    observer.stop();
-  });
   it('discovers dynamically inserted media in open shadow trees without modifying playback APIs', async () => {
     const send = vi
       .fn<(message: MediaObservations) => Promise<void>>()

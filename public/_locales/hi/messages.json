@@ -682,14 +682,6 @@
     "message": "फिर प्रयास करें",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "बंद करें",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "प्लेयर ढूँढें",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "वीडियो नहीं",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "प्रवाह का पता लगाओ, दूरियाँ मिटाओ।",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "वर्तमान पेज"
+  },
+  "resources_other": {
+    "message": "सभी पेज"
+  },
+  "resources_controls": {
+    "message": "प्लेयर नियंत्रण"
+  },
+  "resources_expand": {
+    "message": "कार्यस्थल खोलें"
+  },
+  "resources_fullscreen": {
+    "message": "पूर्ण स्क्रीन"
+  },
+  "resources_import": {
+    "message": "स्रोत जोड़ें"
+  },
+  "resources_invert": {
+    "message": "चयन उलटें"
+  },
+  "resources_key": {
+    "message": "AES-128 कुंजी"
+  },
+  "resources_kind_collection": {
+    "message": "संयुक्त मीडिया"
+  },
+  "resources_kind_fragment": {
+    "message": "खंड"
+  },
+  "resources_loop": {
+    "message": "दोहराएँ"
+  },
+  "resources_manifest": {
+    "message": "मैनिफ़ेस्ट या खंड URL"
+  },
+  "resources_merge": {
+    "message": "ऑडियो और वीडियो मिलाएँ"
+  },
+  "resources_mute": {
+    "message": "म्यूट"
+  },
+  "resources_preview": {
+    "message": "पूर्वावलोकन"
+  },
+  "resources_preview_unavailable": {
+    "message": "पूर्वावलोकन उपलब्ध नहीं है। डाउनलोड फिर भी संभव हो सकता है।"
+  },
+  "resources_reload": {
+    "message": "शुरू से कैप्चर करने के लिए फिर लोड करें"
+  },
+  "resources_screen": {
+    "message": "स्क्रीन रिकॉर्डिंग"
+  },
+  "resources_screenshot": {
+    "message": "स्क्रीनशॉट सहेजें"
+  },
+  "resources_sequence": {
+    "message": "खंड जोड़ें"
+  },
+  "resources_sidebar": {
+    "message": "साइडबार खोलें"
+  },
+  "resources_start": {
+    "message": "शुरू करें"
+  },
+  "resources_start_time": {
+    "message": "शुरुआत (सेकंड)"
+  },
+  "resources_end_time": {
+    "message": "अंत (0: स्रोत का अंत)"
+  },
+  "resources_stop": {
+    "message": "रोकें"
+  },
+  "resources_test_keys": {
+    "message": "मिली कुंजियाँ जाँचें"
+  },
+  "resources_tools": {
+    "message": "मीडिया उपकरण"
+  },
+  "resources_volume": {
+    "message": "आवाज़"
+  },
+  "resources_preserve": {
+    "message": "नेविगेशन के बाद स्रोत रखें"
+  },
+  "resources_deep": {
+    "message": "गहन खोज"
+  },
+  "resources_cache": {
+    "message": "मीडिया बफ़र कैप्चर करें"
+  },
+  "resources_copy": {
+    "message": "कॉपी करें"
+  },
+  "resources_select_all": {
+    "message": "सब चुनें"
+  },
+  "resources_name": {
+    "message": "नाम"
+  },
+  "resources_size": {
+    "message": "आकार"
+  },
+  "resources_type": {
+    "message": "प्रकार"
+  },
+  "resources_speed": {
+    "message": "Speed"
+  },
+  "resources_kind_image": {
+    "message": "चित्र"
+  },
+  "resources_all": {
+    "message": "सभी"
+  },
+  "resources_time": {
+    "message": "समय"
+  },
+  "resources_video": {
+    "message": "रिकॉर्डिंग शुरू करें"
+  },
+  "resources_kind_embedded": {
+    "message": "स्रोत"
+  },
+  "resources_kind_file": {
+    "message": "मूल फ़ाइल"
+  },
+  "resources_kind_subtitle": {
+    "message": "उपशीर्षक"
+  },
+  "resources_pause": {
+    "message": "विराम"
+  },
+  "resources_play": {
+    "message": "चलाएँ"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "क्रमबद्ध करें"
+  },
+  "resources_auto": {
+    "message": "नए संसाधन अपने आप डाउनलोड करें"
+  },
+  "resources_mobile": {
+    "message": "मोबाइल User-Agent इस्तेमाल करें"
   }
 }

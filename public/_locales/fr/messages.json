@@ -682,14 +682,6 @@
     "message": "Réessayer",
     "description": "Media discovery: retry"
   },
-  "media_close": {
-    "message": "Fermer",
-    "description": "Media discovery: close"
-  },
-  "media_locate": {
-    "message": "Localiser le lecteur",
-    "description": "Media discovery: locate"
-  },
   "media_no_video": {
     "message": "Sans vidéo",
     "description": "Media discovery: no video"
@@ -812,5 +804,164 @@
   "brand_tagline": {
     "message": "Suivez le flux, franchissez le vide.",
     "description": "Localized Rayburst Connect brand slogan"
+  },
+  "resources_current": {
+    "message": "Page actuelle"
+  },
+  "resources_other": {
+    "message": "Toutes les pages"
+  },
+  "resources_controls": {
+    "message": "Commandes du lecteur"
+  },
+  "resources_expand": {
+    "message": "Ouvrir l’espace de travail"
+  },
+  "resources_fullscreen": {
+    "message": "Plein écran"
+  },
+  "resources_import": {
+    "message": "Ajouter une source"
+  },
+  "resources_invert": {
+    "message": "Inverser la sélection"
+  },
+  "resources_key": {
+    "message": "Clé AES-128"
+  },
+  "resources_kind_collection": {
+    "message": "Médias combinés"
+  },
+  "resources_kind_fragment": {
+    "message": "Segment"
+  },
+  "resources_loop": {
+    "message": "Boucle"
+  },
+  "resources_manifest": {
+    "message": "Manifeste ou URL des segments"
+  },
+  "resources_merge": {
+    "message": "Fusionner l’audio et la vidéo"
+  },
+  "resources_mute": {
+    "message": "Couper le son"
+  },
+  "resources_preview": {
+    "message": "Aperçu"
+  },
+  "resources_preview_unavailable": {
+    "message": "Aperçu indisponible. Le téléchargement peut rester possible."
+  },
+  "resources_reload": {
+    "message": "Recharger pour capturer depuis le début"
+  },
+  "resources_screen": {
+    "message": "Enregistrement de l’écran"
+  },
+  "resources_screenshot": {
+    "message": "Enregistrer une capture"
+  },
+  "resources_sequence": {
+    "message": "Assembler les segments"
+  },
+  "resources_sidebar": {
+    "message": "Ouvrir le panneau latéral"
+  },
+  "resources_start": {
+    "message": "Démarrer"
+  },
+  "resources_start_time": {
+    "message": "Début (secondes)"
+  },
+  "resources_end_time": {
+    "message": "Fin (0 : fin de la source)"
+  },
+  "resources_stop": {
+    "message": "Arrêter"
+  },
+  "resources_test_keys": {
+    "message": "Tester les clés découvertes"
+  },
+  "resources_tools": {
+    "message": "Outils multimédias"
+  },
+  "resources_volume": {
+    "message": "Volume"
+  },
+  "resources_preserve": {
+    "message": "Conserver les sources après navigation"
+  },
+  "resources_deep": {
+    "message": "Recherche approfondie"
+  },
+  "resources_cache": {
+    "message": "Capturer les données en mémoire"
+  },
+  "resources_copy": {
+    "message": "Copier"
+  },
+  "resources_select_all": {
+    "message": "Tout sélectionner"
+  },
+  "resources_name": {
+    "message": "Nom"
+  },
+  "resources_size": {
+    "message": "Taille"
+  },
+  "resources_type": {
+    "message": "Type"
+  },
+  "resources_speed": {
+    "message": "Vitesse"
+  },
+  "resources_kind_image": {
+    "message": "Images"
+  },
+  "resources_all": {
+    "message": "Tous"
+  },
+  "resources_time": {
+    "message": "Heure"
+  },
+  "resources_video": {
+    "message": "Démarrer l’enregistrement"
+  },
+  "resources_kind_embedded": {
+    "message": "Source"
+  },
+  "resources_kind_file": {
+    "message": "Fichier original"
+  },
+  "resources_kind_subtitle": {
+    "message": "Sous-titres"
+  },
+  "resources_pause": {
+    "message": "Pause"
+  },
+  "resources_play": {
+    "message": "Lire"
+  },
+  "resources_rtc": {
+    "message": "WebRTC"
+  },
+  "resources_kind_json": {
+    "message": "JSON"
+  },
+  "resources_url": {
+    "message": "URL"
+  },
+  "resources_pip": {
+    "message": "PiP"
+  },
+  "resources_sort": {
+    "message": "Trier"
+  },
+  "resources_auto": {
+    "message": "Télécharger automatiquement les nouvelles ressources"
+  },
+  "resources_mobile": {
+    "message": "Utiliser un User-Agent mobile"
   }
 }

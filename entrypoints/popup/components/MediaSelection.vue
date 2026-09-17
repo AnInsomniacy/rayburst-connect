@@ -30,6 +30,7 @@ const emit = defineEmits<{
   cancel: [];
   submit: [selection: MediaSelection];
   back: [];
+  advanced: [];
 }>();
 const operation = computed(() => props.item.operation);
 const presentation = computed(() =>
@@ -52,7 +53,10 @@ const videoOptions = computed(
     presentation.value?.tracks
       .filter((track) => ['video', 'muxed'].includes(track.type))
       .map((track) => ({
-        label: mediaTrackLabel(track, effectiveLocale.value, i18n('media_includes_audio')),
+        label:
+          props.item.kind === 'collection'
+            ? i18n('resources_kind_collection')
+            : mediaTrackLabel(track, effectiveLocale.value, i18n('media_includes_audio')),
         value: track.id,
       })) ?? [],
 );
@@ -65,7 +69,10 @@ const audioOptions = computed(
         return track.type === 'audio' || (!video && track.type === 'muxed');
       })
       .map((track) => ({
-        label: mediaTrackLabel(track, effectiveLocale.value, i18n('media_includes_audio')),
+        label:
+          props.item.kind === 'collection'
+            ? i18n('resources_kind_collection')
+            : mediaTrackLabel(track, effectiveLocale.value, i18n('media_includes_audio')),
         value: track.id,
       })) ?? [],
 );
@@ -74,7 +81,10 @@ const subtitleOptions = computed(
     presentation.value?.tracks
       .filter((track) => track.type === 'subtitle')
       .map((track) => ({
-        label: mediaTrackLabel(track, effectiveLocale.value, i18n('media_includes_audio')),
+        label:
+          props.item.kind === 'collection'
+            ? i18n('resources_kind_collection')
+            : mediaTrackLabel(track, effectiveLocale.value, i18n('media_includes_audio')),
         value: track.id,
       })) ?? [],
 );
@@ -98,6 +108,16 @@ watch(
     }
   },
 );
+watch(
+  () => form.value?.format,
+  (format) => {
+    if (format === 'vtt' && form.value) {
+      form.value.videoId = null;
+      form.value.audioId = null;
+      form.value.subtitleId ??= subtitleOptions.value[0]?.value ?? null;
+    }
+  },
+);
 const invalid = computed(() =>
   presentation.value && form.value ? selectionError(presentation.value, form.value) : null,
 );
@@ -106,7 +126,7 @@ const pending = computed(
 );
 const canInspect = computed(
   () =>
-    ['hls', 'dash'].includes(props.item.kind) &&
+    ['hls', 'dash', 'collection'].includes(props.item.kind) &&
     (!operation.value || ['failed', 'cancelled'].includes(operation.value.state)),
 );
 const unsupported = computed(() => props.item.kind === 'embedded' || props.item.method !== 'GET');
@@ -120,6 +140,13 @@ function submit() {
     <NButton size="small" :quaternary="frame" @click="emit('back')">{{
       i18n('media_back')
     }}</NButton>
+    <NButton
+      v-if="['hls', 'dash'].includes(item.kind)"
+      size="small"
+      quaternary
+      @click="emit('advanced')"
+      >{{ i18n('resources_key') }} / {{ i18n('resources_manifest') }}</NButton
+    >
     <h3 id="media-options-heading" tabindex="-1">
       {{ item.filename || item.title || i18n('media_source') }}
     </h3>
@@ -209,6 +236,30 @@ function submit() {
           ><template #empty><NEmpty :description="i18n('media_none')" /></template
         ></NSelect>
       </NFormItem>
+      <NFormItem
+        v-if="!presentation.live && presentation.kind !== 'collection'"
+        :label="i18n('resources_start_time')"
+      >
+        <NInputNumber
+          :value="form.startTimeSeconds ?? 0"
+          :min="0"
+          :max="31536000"
+          :precision="0"
+          @update:value="form.startTimeSeconds = $event ?? 0"
+        />
+      </NFormItem>
+      <NFormItem
+        v-if="!presentation.live && presentation.kind !== 'collection'"
+        :label="i18n('resources_end_time')"
+      >
+        <NInputNumber
+          :value="form.endTimeSeconds ?? 0"
+          :min="0"
+          :max="31536000"
+          :precision="0"
+          @update:value="form.endTimeSeconds = $event ?? 0"
+        />
+      </NFormItem>
       <NFormItem v-if="presentation.live" :label="i18n('media_record_limit')">
         <NInputNumber
           :value="form.recordTimeSeconds"
@@ -237,14 +288,22 @@ function submit() {
       </NSpace>
     </NForm>
     <NButton
-      v-else-if="item.kind === 'file' && !item.sentToDesktop && !unsupported"
+      v-else-if="
+        ['file', 'fragment', 'subtitle', 'image', 'json'].includes(item.kind) &&
+        !item.sentToDesktop &&
+        !unsupported
+      "
       type="primary"
       :loading="busy"
       @click="emit('downloadFile')"
       >{{ i18n('media_download') }} · {{ i18n('media_original') }}</NButton
     >
     <NSpace
-      v-else-if="item.kind !== 'file' && !unsupported && operation?.state !== 'submitted'"
+      v-else-if="
+        !['file', 'fragment', 'subtitle', 'image', 'json'].includes(item.kind) &&
+        !unsupported &&
+        operation?.state !== 'submitted'
+      "
       justify="end"
     >
       <NButton v-if="pending" :disabled="busy" @click="emit('cancel')">{{

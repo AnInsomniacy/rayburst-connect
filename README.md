@@ -35,7 +35,7 @@
 
 ## Features
 
-- **Page media discovery** — Detect HLS/DASH manifests and audio/video sources without interrupting playback. Inspect and choose native tracks from the player button or the extension's Media tab through Rayburst's [media API](docs/MEDIA_API.md). See [scope and local testing](docs/MEDIA.md).
+- **Page media discovery** — Detect HLS/DASH manifests and audio/video sources without interrupting playback. Inspect and choose native tracks from the extension's Media tab, sidebar or full-page workspace through Rayburst's [media API](docs/MEDIA_API.md). See [scope and local testing](docs/MEDIA.md).
 
 - **Download interception** — Automatically captures browser downloads and routes them to Rayburst for multi-threaded acceleration
 - **Smart filtering** — Ordered checks for interception settings, extension-owned downloads, URL schemes, site rules, MIME types, file extensions, and minimum file size
@@ -130,7 +130,7 @@ The broad host permissions (`*://*/*`) are required so cookie forwarding works i
 
 <br>
 
-No personal data is sent to the developer or third parties. Settings, diagnostics and discovered media context are stored locally. All communication occurs exclusively between your browser and the Rayburst app on your local machine (`127.0.0.1`). No analytics, no telemetry, no external requests. See the [full Privacy Policy](PRIVACY_POLICY.md).
+No personal data is sent to the developer or third parties. Settings, diagnostics and discovered media context are stored locally. Task handoff and capture storage use the local Rayburst API (`127.0.0.1`). User-requested previews connect directly to the selected media source. No analytics or telemetry. See the [full Privacy Policy](PRIVACY_POLICY.md).
 
 </details>
 
@@ -167,7 +167,7 @@ rayburst-connect/
 ├── entrypoints/                # Extension entry points
 │   ├── background.ts           #   Service worker — orchestrator wiring, listeners
 │   ├── content.ts              #   Protocol links, media discovery and player controls
-│   ├── media/App.vue           #   In-page media selection panel
+│   ├── media/App.vue           #   Media sidebar and full-page workspace
 │   ├── popup/App.vue           #   Browser action popup — status, speed, task dashboard
 │   └── options/App.vue         #   Full-page settings — one staged-snapshot state model
 ├── lib/                        # Core logic

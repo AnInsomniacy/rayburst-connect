@@ -66,7 +66,13 @@ export function submissionContext(
   settings: DownloadSettings,
 ): MediaCapturedContext {
   return {
-    ...captureMediaContext(candidate.url, candidate.context?.headers ?? [], settings),
+    ...captureMediaContext(
+      candidate.url,
+      candidate.context?.headers ?? [],
+      candidate.evidence === 'capture'
+        ? { forwardCookies: false, forwardRequestHeaders: true }
+        : settings,
+    ),
     capturedAt: candidate.context?.capturedAt ?? Date.now(),
   };
 }

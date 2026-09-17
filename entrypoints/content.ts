@@ -1,117 +1,99 @@
+import { encodeCaptureChunk } from '@/lib/media/capture';
+import { createPlayerControls } from '@/lib/media/player-controls';
 import { browser } from 'wxt/browser';
 import {
   createExternalProtocolClickHandler,
   type ExternalProtocolDisposition,
 } from '@/lib/browser';
-import { parseDownloadSettings, type DownloadSettings } from '@/lib/schema';
+import { parseDownloadSettings } from '@/lib/schema';
 import { observePageMedia } from '@/lib/media/page-observer';
-import { createPlayerOverlay } from '@/lib/media/player-overlay';
-import { z } from 'zod';
 
-/**
- * One frame-local lifecycle for protocol clicks and passive media discovery.
- *
- * Protocol links (magnet/ed2k/thunder) are not HTTP downloads —
- * `browser.downloads` and `browser.webRequest` cannot intercept them. Clicks
- * are captured at the DOM level and routed to the background worker.
- */
 export default defineContentScript({
   matches: ['http://*/*', 'https://*/*'],
   allFrames: true,
   matchOriginAsFallback: true,
   runAt: 'document_start',
-
   main(ctx) {
-    let settings: DownloadSettings = parseDownloadSettings(null);
+    let settings = parseDownloadSettings(null);
     let observer: ReturnType<typeof observePageMedia> | undefined;
-    let invalidated = false;
-    let overlay: Awaited<ReturnType<typeof createPlayerOverlay>> | undefined;
-    let overlayPending: Promise<void> | undefined;
-    let labels: Record<string, string> = {};
-    let pageUrl = window.location.href;
-    async function updateLabels() {
-      const result: unknown = await browser.runtime.sendMessage({ type: 'MEDIA_OVERLAY_LABELS' });
-      const parsed = z
-        .object({ download: z.string(), close: z.string(), options: z.string() })
-        .safeParse(result);
-      if (parsed.success) labels = parsed.data;
-      overlay?.localize();
-    }
-    async function showPlayer(player: HTMLMediaElement) {
-      if (!overlay && !overlayPending)
-        overlayPending = (async () => {
-          await updateLabels();
-          const created = await createPlayerOverlay(
-            ctx,
-            (key) => labels[key.replace('media_', '')] ?? 'Rayburst',
-          );
-          if (invalidated || !settings.mediaDiscovery.enabled) created.stop();
-          else overlay = created;
-        })().finally(() => {
-          overlayPending = undefined;
-        });
-      await overlayPending;
-      await overlay?.show(player);
-    }
+    let disposed = false;
+    let sessionId: unknown;
+    const players = createPlayerControls();
     function configure(value: unknown) {
       settings = parseDownloadSettings(value);
-      if (settings.mediaDiscovery.enabled && !observer && !invalidated)
-        observer = observePageMedia(
-          (message) => browser.runtime.sendMessage(message),
-          (player) => {
-            void showPlayer(player).catch(() => undefined);
-          },
-        );
-      overlay?.stop();
-      overlay = undefined;
+      if (settings.mediaDiscovery.enabled && !observer && !disposed)
+        observer = observePageMedia((message) => browser.runtime.sendMessage(message));
       if (!settings.mediaDiscovery.enabled) {
+        window.postMessage(
+          { channel: 'rayburst-control', mode: 'stop', sessionId },
+          location.origin,
+        );
         observer?.stop();
         observer = undefined;
       }
     }
-
     void browser.storage.local.get('settings').then((data) => {
-      configure(data.settings);
+      if (!disposed) configure(data.settings);
     });
-
-    const storageChanged: Parameters<typeof browser.storage.onChanged.addListener>[0] = (
+    const changed: Parameters<typeof browser.storage.onChanged.addListener>[0] = (
       changes,
       area,
     ) => {
-      if (area !== 'local') return;
-      if (changes.settings) configure(changes.settings.newValue);
-      if (changes.uiPrefs) void updateLabels().catch(() => undefined);
+      if (area === 'local' && changes.settings) configure(changes.settings.newValue);
     };
-    const rescan: Parameters<typeof browser.runtime.onMessage.addListener>[0] = (
-      message: unknown,
-    ) => {
-      if (
-        message &&
-        typeof message === 'object' &&
-        'type' in message &&
-        message.type === 'MEDIA_RESCAN'
-      ) {
-        if (pageUrl !== window.location.href) {
-          pageUrl = window.location.href;
-          overlay?.stop();
-          overlay = undefined;
-        }
-        observer?.rescan();
+    const message: Parameters<typeof browser.runtime.onMessage.addListener>[0] = (raw: unknown) => {
+      if (!raw || typeof raw !== 'object' || !('type' in raw)) return;
+      if (raw.type === 'MEDIA_PLAYER' && 'command' in raw)
+        return players(raw.command).catch(() => ({ error: 'operation_failed' }));
+      if (raw.type === 'MEDIA_RESCAN') observer?.rescan();
+      if (raw.type === 'MEDIA_CONTROL' && 'mode' in raw) {
+        sessionId = 'sessionId' in raw ? raw.sessionId : undefined;
+        window.postMessage({ ...raw, channel: 'rayburst-control' }, location.origin);
       }
-      if (
-        message &&
-        typeof message === 'object' &&
-        'type' in message &&
-        message.type === 'MEDIA_LOCATE_PLAYER' &&
-        'url' in message &&
-        typeof message.url === 'string'
-      )
-        return Promise.resolve(observer?.locate(message.url) ?? false);
     };
-    browser.storage.onChanged.addListener(storageChanged);
-    browser.runtime.onMessage.addListener(rescan);
-
-    const handleProtocolClick = createExternalProtocolClickHandler({
+    let windowStart = Date.now();
+    let events = 0;
+    ctx.addEventListener(window, 'message', (event: MessageEvent<unknown>) => {
+      if (
+        !settings.mediaDiscovery.enabled ||
+        event.source !== window ||
+        event.origin !== location.origin ||
+        !event.data ||
+        typeof event.data !== 'object'
+      )
+        return;
+      const data = event.data as Record<string, unknown>;
+      if (data.channel !== 'rayburst-observation') return;
+      if (Date.now() - windowStart > 1000) {
+        windowStart = Date.now();
+        events = 0;
+      }
+      if (++events > 128) return;
+      void (async () => {
+        let payload = data;
+        if (data.type === 'chunk')
+          payload = { ...(await encodeCaptureChunk(data)), sessionId: data.sessionId };
+        const result: unknown = await browser.runtime.sendMessage({
+          type: 'MEDIA_SCRIPT_DATA',
+          data: payload,
+        });
+        if (typeof data.id === 'string')
+          window.postMessage(
+            {
+              channel: 'rayburst-ack',
+              id: data.id,
+              ok: Boolean(result && typeof result === 'object' && 'ok' in result && result.ok),
+            },
+            location.origin,
+          );
+      })().catch(() => {
+        if (typeof data.id === 'string')
+          window.postMessage({ channel: 'rayburst-ack', id: data.id, ok: false }, location.origin);
+      });
+    });
+    browser.storage.onChanged.addListener(changed);
+    browser.runtime.onMessage.addListener(message);
+    const click = createExternalProtocolClickHandler({
       shouldIntercept: (link) => settings.enabled && settings.interceptionScope[link.protocol],
       sendProtocol: async ({ protocol, url }): Promise<ExternalProtocolDisposition> => {
         const response: unknown = await browser.runtime.sendMessage({
@@ -128,16 +110,13 @@ export default defineContentScript({
       },
       openInBrowser: (url) => window.location.assign(url),
     });
-
-    // Capture phase — intercept before any page-level handlers.
-    ctx.addEventListener(document, 'click', handleProtocolClick, { capture: true });
+    ctx.addEventListener(document, 'click', click, { capture: true });
     ctx.addEventListener(window, 'pageshow', () => observer?.rescan());
     ctx.onInvalidated(() => {
-      invalidated = true;
+      disposed = true;
       observer?.stop();
-      overlay?.stop();
-      browser.storage.onChanged.removeListener(storageChanged);
-      browser.runtime.onMessage.removeListener(rescan);
+      browser.storage.onChanged.removeListener(changed);
+      browser.runtime.onMessage.removeListener(message);
     });
   },
 });

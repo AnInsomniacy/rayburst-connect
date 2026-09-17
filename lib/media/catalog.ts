@@ -16,12 +16,14 @@ export function createMediaCatalog() {
   let committed = '';
   let queue: Promise<unknown> = Promise.resolve();
 
-  function run<T>(action: (state: MediaSession) => T | Promise<T>, write = false): Promise<T> {
+  function transact<T>(action: (state: MediaSession) => T | Promise<T>, write = false): Promise<T> {
     const work = queue.then(async () => {
       if (!session) {
         const saved = await browser.storage.session.get(MEDIA_SESSION_KEY);
         const parsed = MediaSessionSchema.safeParse(saved[MEDIA_SESSION_KEY]);
-        session = parsed.success ? parsed.data : { candidates: [], operations: [], contexts: [] };
+        session = parsed.success
+          ? parsed.data
+          : { candidates: [], operations: [], contexts: [], keys: [] };
         committed = JSON.stringify(session);
       }
       if (!write) return structuredClone(await action(session));
@@ -46,6 +48,7 @@ export function createMediaCatalog() {
 
   function prune(state: MediaSession) {
     const cutoff = Date.now() - MEDIA_RETENTION_MS;
+    state.keys = state.keys.filter((key) => key.capturedAt >= cutoff).slice(-256);
     const activeIds = new Set(
       state.operations
         .filter(
@@ -94,22 +97,53 @@ export function createMediaCatalog() {
     }
   }
 
-  async function observe(candidate: MediaCandidate): Promise<void> {
-    await run((state) => {
-      const key = mediaIdentity(candidate);
-      const existing = state.candidates.find((item) => mediaIdentity(item) === key);
-      if (!existing) state.candidates.push(candidate);
-      else {
-        existing.lastSeen = candidate.lastSeen;
-        existing.title = candidate.title || existing.title;
-        existing.pageUrl = candidate.pageUrl;
-        if (candidate.evidence === 'network' || existing.evidence !== 'network') {
-          const { id, firstSeen } = existing;
-          const context = candidate.context ?? existing.context;
-          Object.assign(existing, candidate, { id, firstSeen, context });
+  const observations = new Map<string, MediaCandidate>();
+  let flush: Promise<void> | undefined;
+  async function run<T>(
+    action: (state: MediaSession) => T | Promise<T>,
+    write = false,
+  ): Promise<T> {
+    await flush;
+    return transact(action, write);
+  }
+  function merge(existing: MediaCandidate, incoming: MediaCandidate) {
+    const { id, firstSeen, context, input } = existing;
+    if (incoming.evidence === 'network' || existing.evidence !== 'network')
+      Object.assign(existing, incoming);
+    Object.assign(existing, {
+      id,
+      firstSeen,
+      lastSeen: Math.max(existing.lastSeen, incoming.lastSeen),
+      title: incoming.title || existing.title,
+      pageUrl: incoming.pageUrl,
+      context: incoming.context ?? context,
+      input: incoming.input ?? input,
+    });
+    if (incoming.input?.manifests.length) existing.kind = incoming.kind;
+  }
+  function observe(candidate: MediaCandidate): Promise<void> {
+    const identity = mediaIdentity(candidate);
+    const pending = observations.get(identity);
+    if (pending) merge(pending, candidate);
+    else observations.set(identity, structuredClone(candidate));
+    flush ??= new Promise<void>((resolve) => setTimeout(resolve, 80)).then(async () => {
+      const batch = [...observations.values()];
+      observations.clear();
+      flush = undefined;
+      await transact((state) => {
+        for (const candidate of batch) {
+          const existing = state.candidates.find(
+            (item) => mediaIdentity(item) === mediaIdentity(candidate),
+          );
+          if (!existing) {
+            state.candidates.push(candidate);
+            continue;
+          }
+          merge(existing, candidate);
         }
-      }
-    }, true);
+      }, true);
+    });
+    return flush;
   }
 
   async function remove(tabId: number, candidateId?: string): Promise<void> {
@@ -117,6 +151,7 @@ export function createMediaCatalog() {
       state.candidates = state.candidates.filter(
         (item) => item.tabId !== tabId || (candidateId !== undefined && item.id !== candidateId),
       );
+      if (!candidateId) state.keys = state.keys.filter((key) => key.tabId !== tabId);
       if (!candidateId) state.contexts = state.contexts.filter((item) => item.tabId !== tabId);
     }, true);
   }

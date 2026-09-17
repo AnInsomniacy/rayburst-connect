@@ -1,3 +1,7 @@
+import type {
+  DuplicateDownloadGuard,
+  DuplicateDownloadReservation,
+} from '../download/duplicate-guard';
 import {
   ApiAuthError,
   ApiTimeoutError,
@@ -8,6 +12,7 @@ import {
 import type { DownloadSettings, MediaCandidate, MediaOperation } from '../schema';
 import {
   MediaSourceSchema,
+  emptyMediaInput,
   selectionError,
   type MediaProbe,
   type MediaSelection,
@@ -29,6 +34,7 @@ export const MEDIA_OPERATION_TTL_MS = 5 * 60_000;
 /** Client operation identity survives popup closure, network ambiguity, and worker restarts. */
 export function createMediaWorkflow(options: {
   catalog: MediaCatalog;
+  duplicateGuard: DuplicateDownloadGuard;
   client: DesktopApiClient;
   getSettings: () => DownloadSettings;
   connectionKey: () => Promise<string>;
@@ -58,8 +64,11 @@ export function createMediaWorkflow(options: {
         operation.error = 'connection_changed';
       }
     }
-    if (operation.probe || ['submitted', 'cancelled'].includes(operation.state))
+    if (operation.probe || ['submitted', 'cancelled'].includes(operation.state)) {
       operation.request.source.requestContexts = [];
+      // The desktop owns accepted input; retain bodies only while creation is ambiguous.
+      operation.request.source.input = undefined;
+    }
     await catalog.run((state) => {
       if (!state.candidates.some((item) => item.id === operation.candidateId))
         throw new MediaApiError('source_expired');
@@ -168,9 +177,9 @@ export function createMediaWorkflow(options: {
   function probe(tabId: number, candidateId: string) {
     return exclusive(candidateId, async () => {
       const { candidate, operation: previous } = await load(tabId, candidateId);
-      if (!['hls', 'dash'].includes(candidate.kind) || candidate.method !== 'GET')
+      if (!['hls', 'dash', 'collection'].includes(candidate.kind) || candidate.method !== 'GET')
         throw new MediaApiError('unsupported_source');
-      if (previous && !['failed', 'cancelled'].includes(previous.state)) return;
+      if (previous && !['failed', 'cancelled', 'submitted'].includes(previous.state)) return;
       const active = await catalog.run(
         (state) =>
           state.operations.filter(
@@ -197,6 +206,31 @@ export function createMediaWorkflow(options: {
           .slice(0, 7),
       );
       if (!(await options.validateCandidate(candidate))) throw new MediaApiError('source_expired');
+      const input = structuredClone(candidate.input ?? emptyMediaInput());
+      if (candidate.input?.manifests.length) {
+        const manifests = await catalog.run((state) =>
+          state.candidates
+            .filter(
+              (item) =>
+                item.tabId === tabId &&
+                item.frameId === candidate.frameId &&
+                item.documentId === candidate.documentId,
+            )
+            .flatMap((item) => item.input?.manifests ?? []),
+        );
+        let size = new TextEncoder().encode(JSON.stringify(input)).byteLength;
+        for (const manifest of manifests) {
+          if (
+            input.manifests.length >= 32 ||
+            input.manifests.some((item) => item.url === manifest.url)
+          )
+            continue;
+          const bytes = new TextEncoder().encode(JSON.stringify(manifest)).byteLength;
+          if (size + bytes > 2 * 1024 * 1024) continue;
+          input.manifests.push(manifest);
+          size += bytes;
+        }
+      }
       const operation: MediaOperation = {
         candidateId,
         connectionKey: await options.connectionKey(),
@@ -211,6 +245,7 @@ export function createMediaWorkflow(options: {
             title: candidate.title,
             filename: candidate.filename,
             mime: candidate.mime,
+            ...(candidate.input ? { input } : {}),
             requestContexts: [context, ...related]
               .filter((item) => item.headers.length)
               .map(({ url, headers }) => ({ url, headers })),
@@ -274,13 +309,26 @@ export function createMediaWorkflow(options: {
 
   function submit(tabId: number, candidateId: string, selection: MediaSelection) {
     return exclusive(candidateId, async () => {
-      const { operation } = await load(tabId, candidateId);
+      const { candidate, operation } = await load(tabId, candidateId);
       if (!operation || operation.state !== 'ready' || operation.probe?.state !== 'ready')
         throw new MediaApiError('conflict');
       if (selectionError(operation.probe.presentation, selection))
         throw new MediaApiError('unsupported_selection');
+      let reservation: DuplicateDownloadReservation | undefined;
       try {
         await checkConnection(operation);
+        const duplicate = options.duplicateGuard.reserve(
+          {
+            url: candidate.url,
+            filename: candidate.filename,
+            fileSize: candidate.size ?? -1,
+            totalBytes: candidate.size ?? -1,
+            mime: candidate.mime,
+          },
+          options.getSettings().duplicateGuard,
+        );
+        if (duplicate.blocked) throw new MediaApiError('duplicate_blocked');
+        reservation = duplicate.reservation;
         operation.selection = selection;
         operation.submissionId = crypto.randomUUID();
         operation.state = 'submitting';
@@ -288,6 +336,8 @@ export function createMediaWorkflow(options: {
         await submitOperation(operation);
       } catch (error) {
         await fail(operation, error);
+        if (['failed', 'ready'].includes(operation.state))
+          options.duplicateGuard.release(reservation);
       }
     });
   }
@@ -321,10 +371,12 @@ export function createMediaWorkflow(options: {
   function downloadFile(tabId: number, candidateId: string) {
     return exclusive(candidateId, async () => {
       const { candidate } = await load(tabId, candidateId);
-      if (candidate.kind !== 'file' || candidate.method !== 'GET')
+      if (
+        !['file', 'fragment', 'subtitle', 'image', 'json'].includes(candidate.kind) ||
+        candidate.method !== 'GET'
+      )
         throw new MediaApiError('unsupported_source');
-      if (candidate.sentToDesktop) return;
-      if (!(await options.sendFile(candidate))) return;
+      if (!(await options.sendFile(candidate))) throw new MediaApiError('operation_failed');
       await catalog.run((state) => {
         const current = state.candidates.find((item) => item.id === candidateId);
         if (current) current.sentToDesktop = true;

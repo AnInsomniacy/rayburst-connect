@@ -1,6 +1,6 @@
 # Privacy Policy — Rayburst Connect
 
-**Last updated:** September 15, 2026
+**Last updated:** September 17, 2026
 
 ## Overview
 
@@ -12,7 +12,7 @@ This privacy policy explains what data the Extension accesses, how it is used, a
 
 **The Extension does not collect, store, transmit, or share any personal data with the developer or any third party.**
 
-The Extension operates entirely on your local machine. All communication occurs exclusively between your browser and the locally running Rayburst desktop application.
+The Extension operates entirely on your local machine. Task handoff and capture storage use the locally running Rayburst desktop application. User-requested previews also connect directly to the selected media source.
 
 ## Data Access
 
@@ -22,8 +22,9 @@ When media discovery is enabled, the Extension observes HTTP(S) request/response
 metadata and public media elements/resource timing in browser frames. It stores
 media candidate URLs, page titles, frame identity, MIME types, file-size hints and
 filtered request context in browser session memory. This supports the local Media
-list and user-requested desktop format inspection. It does not read response bodies,
-record playback, instrument player functions, or upload browsing activity.
+list and user-requested desktop format inspection. Explicit deep-search modes inspect bounded response bodies and page decoding/key APIs.
+Buffer and recording modes capture browser media after activation. Playlists, candidate
+keys and recorded bytes are sent to the local desktop, not a developer service.
 
 Discovery can be disabled independently, globally or by page host. Records expire
 after 30 minutes without observation and are bounded by count and memory limits.
@@ -94,14 +95,14 @@ backup is complete. The Extension never uploads backup files.
 
 ## Network Communication
 
-The Extension makes network requests **only** to the following local addresses:
+Task handoff, control and capture storage use the following local addresses:
 
 - `http://127.0.0.1:{port}` — Rayburst HTTP API
 - `http://localhost:{port}` — Rayburst HTTP API (alternative)
 
 Where `{port}` is the user-configured API port (default: 29110).
 
-**The Extension does not communicate with any remote servers, cloud services, analytics platforms, or third-party APIs.**
+Previews request the selected source and its manifests/segments directly. There are no analytics, remote processing services or telemetry endpoints.
 
 ## Permissions Explained
 
@@ -120,9 +121,14 @@ Where `{port}` is the user-configured API port (default: 29110).
 | `http://127.0.0.1/*`, `http://localhost/*` | Communicate with the local Rayburst HTTP API                                        |
 | `https://*/*`, `http://*/*`                | Read cookies and request/response metadata for delegated downloads                  |
 
+Page capture uses `scripting`; the resource workspace uses `tabs` and Chromium
+`sidePanel` (Firefox uses its native sidebar). Mobile User-Agent rules use
+`declarativeNetRequest`. Firefox deep search also uses `webRequestFilterResponse`.
+Rayburst removes unclaimed capture files after 24 hours and protects pending task inputs.
+
 ## Third-Party Services
 
-The Extension does not integrate with, send data to, or receive data from any third-party services. There are no analytics, telemetry, advertising, or tracking mechanisms.
+Bundled playback libraries request the media source selected by the user. There are no analytics, remote download processors, advertising or tracking mechanisms.
 
 ## Data Retention
 

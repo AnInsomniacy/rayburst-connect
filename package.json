@@ -35,9 +35,11 @@
     "content-disposition": "^1.1.0",
     "ky": "^2.0.2",
     "lettercoder": "^0.1.1",
+    "mpegts.js": "1.8.2",
     "naive-ui": "^2.44.1",
     "picomatch": "^4.0.4",
     "sanitize-filename": "^1.6.4",
+    "shaka-player": "4.16.49",
     "vue": "^3.5.29",
     "zod": "^4.3.6"
   },
