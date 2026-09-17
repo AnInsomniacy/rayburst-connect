@@ -1,10 +1,11 @@
 {
-  "chromiumPublicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArilolLixnpupXeLA2BlVywCFS2WigHtK3uITfdCIrsPMA8VABPjUUqa5QeGra5kANSv5nJX29Oy9sx8nasKMdP3S0slSAahraxDPRq2QPShq6uDNJxISkjPBDy9zbIBcE4o+Ojl/VSQm4xsQt0EERqTj6nrvWflveBvRtV4EacoDKPuPy872JGaLQycAVfEJDzz+aet1fnE+41A03grpJ9DXQ5HcjMCyuftUINJ+4w8CKbvYY2uQrJpQrloj47rZhYAn30GJnHOIMNDCMHzJ7t+oMbwHpSgOItWKLsyx9M+59wSfRIEy4Wyl5tISjzBsF9QDbh7FHgMh+IuWsdN8QQIDAQAB",
-  "chromiumId": "boebhodahhhchhcaoepghhlhddbgdmci",
+  "chromiumPublicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxCnWi95LaR4hmUK5XWjZ1ukXDuzdsYOW4u+YCXDCK2xY4KvgO9zZPaJyfk1+cQjYyItGoaCPUleSF3ITE3nIHdEXfU9fYO8a2e0lbdn5YCWsUWI1KdU/hGjqxACWspkSfV2DAyWqaALQWM2bsMBBJSBbLCrXTpIJ4YPiEXHq8h+spEhjGh119rBzc+CUYq55o/oSgIumLdpwEdnQDIUDSnSv29M7BZyLNDSvEI/4CC/hrJKNARAZyms6yYt18UDxsOLO3Lo9rEVQCZbFzCemfPUsGOFSqR4c2bHI40sK1/ilLAKJk5YL38JX/n92PGDl/9e2cZmACD59DkuHqrnkqQIDAQAB",
+  "chromiumId": "ofeajdebdjajhkmcmamagokecnbephhl",
   "firefoxId": "rayburst-connect@aninsomniacy.dev",
   "stores": {
-    "chromeId": null,
-    "edgeId": null,
-    "firefoxSlug": null
+    "chromeId": "ofeajdebdjajhkmcmamagokecnbephhl",
+    "edgeId": "loojjolhejmakcdlbidigoniobfanjlb",
+    "firefoxSlug": "rayburst-connect",
+    "edgeProductId": "4c9b219d-e5fd-4f28-bda3-1316c2788fbd"
   }
 }

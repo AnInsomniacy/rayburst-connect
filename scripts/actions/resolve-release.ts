@@ -1,4 +1,4 @@
-import { runText, setOutput } from './workflow-utils';
+import { requiredEnv, runText, setOutput } from './workflow-utils';
 
 export function normalizeReleaseInput(input: string): string {
   const value = input.trim();
@@ -66,6 +66,10 @@ export function main(): void {
   );
   setOutput('tag', release.tag);
   setOutput('version', release.version);
+  const repo = process.env.GH_REPO || requiredEnv('GITHUB_REPOSITORY');
+  const sha = runText('gh', ['api', `repos/${repo}/commits/${release.tag}`, '--jq', '.sha']);
+  if (!/^[a-f0-9]{40}$/.test(sha)) throw new Error('Invalid release commit');
+  setOutput('sha', sha);
   console.log(`Resolved production release: ${release.tag}`);
 }
 

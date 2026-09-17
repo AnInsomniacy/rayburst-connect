@@ -105,7 +105,7 @@ export function escapeCode(value: string): string {
 }
 
 export function requireStoreIdentity(
-  store: 'chromeId' | 'edgeId' | 'firefoxSlug',
+  store: 'chromeId' | 'edgeId' | 'edgeProductId' | 'firefoxSlug',
   value: string,
 ): void {
   const configuredIdentity: string | null = identity.stores[store];
@@ -114,4 +114,32 @@ export function requireStoreIdentity(
       `Rayburst Connect ${store} is unset or does not match the requested store target`,
     );
   }
+}
+
+export function validatePackageManifest(
+  value: unknown,
+  version: string,
+  browser: 'chromium' | 'firefox',
+): void {
+  if (!isRecord(value) || value.version !== version || value.manifest_version !== 3) {
+    throw new Error('Package version or manifest format does not match the release');
+  }
+  if (browser === 'chromium') {
+    if (value.key !== identity.chromiumPublicKey)
+      throw new Error('Package Chromium identity does not match');
+  } else {
+    const settings = value.browser_specific_settings;
+    const gecko = isRecord(settings) ? settings.gecko : undefined;
+    if (stringField(gecko, 'id') !== identity.firefoxId)
+      throw new Error('Package Firefox identity does not match');
+  }
+}
+
+export function validatePackage(
+  zipPath: string,
+  version: string,
+  browser: 'chromium' | 'firefox',
+): void {
+  const manifest: unknown = JSON.parse(runText('unzip', ['-p', zipPath, 'manifest.json']));
+  validatePackageManifest(manifest, version, browser);
 }

@@ -1,4 +1,10 @@
-import { requireStoreIdentity } from './workflow-utils';
+import identity from '../../browser-identity.json';
+import {
+  requireStoreIdentity,
+  validatePackage,
+  findZipByNamePart,
+  fetchJson,
+} from './workflow-utils';
 import { createAmoJwt, getFirefoxVersions } from './store-api';
 
 import { requiredEnv, runCommand, stringField } from './workflow-utils';
@@ -27,7 +33,13 @@ async function publishFirefoxFromEnv(): Promise<void> {
   const apiSecret = requiredEnv('FIREFOX_API_SECRET');
   const version = requiredEnv('VERSION');
   const slug = requiredEnv('FIREFOX_ADDON_SLUG');
+  validatePackage(findZipByNamePart('firefox-mv3'), version, 'firefox');
   requireStoreIdentity('firefoxSlug', slug);
+  const addon = await fetchJson(
+    `https://addons.mozilla.org/api/v5/addons/addon/${encodeURIComponent(slug)}/`,
+  );
+  if (stringField(addon, 'guid') !== identity.firefoxId)
+    throw new Error('AMO listing identity does not match the package');
   const authHeader = createAmoJwt({ apiKey, apiSecret });
   const versions = await getFirefoxVersions(slug, authHeader, 'all_without_unlisted');
   const decision = decideFirefoxPublishAction(versions, version);

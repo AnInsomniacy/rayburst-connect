@@ -1,157 +1,44 @@
 # Privacy Policy — Rayburst Connect
 
-**Last updated:** September 17, 2026
+Last updated: September 17, 2026
 
-## Overview
+Rayburst Connect is the browser companion to the Rayburst desktop download manager. It processes browser downloads and media on your device. The developer does not receive this data or operate an analytics, advertising or remote processing service.
 
-Rayburst Connect ("the Extension") is a browser extension that intercepts browser downloads and redirects them to the [Rayburst](https://github.com/AnInsomniacy/rayburst) desktop application for accelerated downloading via aria2.
+## Data the extension handles
 
-This privacy policy explains what data the Extension accesses, how it is used, and how it is protected.
+The extension reads download URLs, filenames, page and tab information, and selected request and response metadata to identify resources and route downloads. Sniffer keeps resource information in browser session storage. Optional deep search inspects page responses and media-related data; capture modes can record media buffers, playback, a user-selected screen or WebRTC media. These capture modes must be enabled by the user.
 
-## Data Collection
+When cookie forwarding is enabled, the extension reads cookies for the selected download URL and passes them to the local Rayburst app. Selected request headers may also be forwarded. These features let Rayburst request resources that require authentication. You can disable cookie and request-header forwarding in settings. Cookies and request context are not sent to the developer.
 
-**The Extension does not collect, store, transmit, or share any personal data with the developer or any third party.**
+## Where data goes
 
-The Extension operates entirely on your local machine. Task handoff and capture storage use the locally running Rayburst desktop application. User-requested previews also connect directly to the selected media source.
+Download tasks, request context and captured media go to the Rayburst HTTP API on your computer, normally at `http://127.0.0.1:29110`. The port is configurable. Media operations require the local API secret. Native Messaging only asks the installed desktop app to start; it does not carry URLs, cookies or media.
 
-## Data Access
+User-requested previews contact the selected media source directly. Rayburst contacts the relevant source to download or inspect the requested resource and may use the forwarded authentication context for that request. Those source sites receive normal network information, such as your IP address, and have their own privacy practices.
 
-### Page Media Discovery
+Clipboard, QR-code and export actions share the selected content only when you request them. Source URLs may contain private access parameters; anyone receiving such a URL may be able to use it.
 
-When media discovery is enabled, the Extension observes HTTP(S) request/response
-metadata and public media elements/resource timing in browser frames. It stores
-media candidate URLs, page titles, frame identity, MIME types, file-size hints and
-filtered request context in browser session memory. This supports the local Sniffer
-list and user-requested desktop format inspection. Explicit deep-search modes inspect bounded response bodies and page decoding/key APIs.
-Buffer and recording modes capture browser media after activation. Playlists, candidate
-keys and recorded bytes are sent to the local desktop, not a developer service.
+## Storage and retention
 
-Discovery can be disabled independently, globally or by page host. Records expire
-after 30 minutes without observation and are bounded by count and memory limits.
-Browser restart or extension reload clears them. Settings backups exclude this data.
-The popup receives metadata and operation status, not credential header values.
+- Connection settings, including the local API secret, download preferences, site rules, appearance and diagnostic settings are stored in the browser's local extension storage.
+- Discovered resources and request context are temporary browser session data. Inactive resource metadata expires after 30 minutes; browser restart or extension reload clears discovery state.
+- Pending download requests can remain in browser session storage until the desktop acknowledges them or the session ends. Tasks and confirmations accepted by Rayburst follow the desktop app's storage policy.
+- User-initiated captures are stored by Rayburst on your computer. Unclaimed captures expire after 24 hours; inputs needed by pending tasks are retained.
+- Diagnostic logs are stored locally with a configurable limit. Logged URLs exclude credentials, query parameters and fragments.
+- Settings backups are local JSON files and include the API secret. They exclude captured media data. The extension does not upload these files.
 
-Cookie and request-header forwarding controls also apply to media inspection. When
-exposed by the browser, Authorization and site-specific end-to-end headers may be
-sent to the local desktop for the selected media. Observed media contexts
-are separated by origin and document. Media submission uses observed outgoing
-headers; it does not synthesize cookies from a different cookie store. The desktop uses source
-credentials only for their intended resource origins when fetching the user's media.
+You can change forwarding and capture settings, clear diagnostic logs, reset preferences or uninstall the extension. Uninstalling removes its browser storage; files and tasks already saved by Rayburst remain under the desktop app's control. Manually exported backups remain wherever you saved them.
 
-Native Messaging remains activation-only. Missing media integration is reported;
-the Extension does not silently save a manifest as a finished video.
+## Permissions
 
-The Extension accesses the following data solely to perform its core functionality:
+Download and context-menu permissions support task handoff. Site, request and cookie permissions provide resource discovery and authentication context. Navigation, tab and alarm permissions maintain resource state; scripting and response filtering support explicitly enabled capture tools. The sidebar displays the workspace, and declarative request rules support the selected mobile User-Agent mode. Native Messaging starts Rayburst. The optional Chromium download-bar permission is requested only when that feature is enabled.
 
-### Download Metadata
+## Data use
 
-When a browser download is initiated and intercepted by the Extension, it reads:
+Data is used for the download, media and capture features described above. It is not sold, used for advertising, used to assess creditworthiness, or transferred to developer-operated servers. The use of information received from Google APIs adheres to the Chrome Web Store User Data Policy, including its Limited Use requirements.
 
-- **Download URL** — to forward to the local Rayburst HTTP API
-- **Filename** — to pass to Rayburst when the browser provides a reliable name
-- **HTTP Referer** — to include with the task submission when available
+## Contact and changes
 
-This data is sent only to the Rayburst HTTP API running on `127.0.0.1` (localhost) — **never to any external server**.
+Source code and support: https://github.com/AnInsomniacy/rayburst-connect
 
-### Request Context
-
-When request header forwarding is enabled, the Extension reads a limited allowlist of request
-headers for intercepted downloads, such as User-Agent, Accept, language, client hints, fetch
-metadata, DNT, and Origin. This helps the local Rayburst desktop application reproduce
-browser-authenticated downloads more accurately.
-
-The Extension does not forward Host, Connection, Content-Length, Transfer-Encoding, Range,
-Proxy headers, conditional request headers, or Cookie through request header forwarding. Cookies
-are handled separately as described below. Request header forwarding can be disabled in Settings.
-
-Request context is sent only to the local Rayburst HTTP API running on `127.0.0.1`
-(localhost) — **never to any external server**.
-
-### Cookies
-
-Cookie forwarding is enabled by default and uses the required cookie and site permissions declared by the Extension:
-
-- The Extension reads cookies for the download URL's domain
-- These cookies are forwarded to the local Rayburst HTTP API
-- This enables authenticated downloads (e.g., from file hosting services that require login)
-- **Cookies are never sent to any external server** — only to the locally running Rayburst instance
-- Cookies are never sent to the activation-only Native Messaging host
-
-The user can disable cookie forwarding in Settings at any time.
-
-### Local Storage
-
-The Extension stores the following user-configured preferences in `chrome.storage.local`:
-
-- Extension API connection settings (port number, secret token)
-- Download behavior preferences (enabled/disabled, auto-launch, cookie forwarding, download bar visibility)
-- Site rules (per-domain interception settings)
-- Appearance settings (theme, color scheme, language)
-- Diagnostic event log (a local ring buffer of recent extension events for troubleshooting)
-
-This data never leaves your browser and is not accessible to any external service.
-User-initiated settings backups are downloaded locally as JSON and include the API secret so the
-backup is complete. The Extension never uploads backup files.
-
-## Network Communication
-
-Task handoff, control and capture storage use the following local addresses:
-
-- `http://127.0.0.1:{port}` — Rayburst HTTP API
-- `http://localhost:{port}` — Rayburst HTTP API (alternative)
-
-Where `{port}` is the user-configured API port (default: 29110).
-
-Previews request the selected source and its manifests/segments directly. There are no analytics, remote processing services or telemetry endpoints.
-
-## Permissions Explained
-
-| Permission                                 | Why It's Needed                                                                     |
-| ------------------------------------------ | ----------------------------------------------------------------------------------- |
-| `downloads`                                | Intercept, cancel, and erase browser downloads that are delegated to Rayburst       |
-| `storage`                                  | Save user settings, site rules, and diagnostic logs locally                         |
-| `contextMenus`                             | Add "Download with Rayburst" to the right-click menu                                |
-| `notifications`                            | Show desktop notifications for download events                                      |
-| `webRequest`                               | Read filtered request headers and filename response headers for delegated downloads |
-| `webNavigation`                            | Associate media with its source frame and invalidate stale navigation data          |
-| `alarms`                                   | Expire bounded media session data after worker suspension                           |
-| `cookies`                                  | Forward cookies to local Rayburst for authenticated downloads                       |
-| `nativeMessaging`                          | Activate the installed Rayburst desktop application                                 |
-| `downloads.ui` _(optional)_                | Hide the browser download bar after interception                                    |
-| `http://127.0.0.1/*`, `http://localhost/*` | Communicate with the local Rayburst HTTP API                                        |
-| `https://*/*`, `http://*/*`                | Read cookies and request/response metadata for delegated downloads                  |
-
-Page capture uses `scripting`; the resource workspace uses `tabs` and Chromium
-`sidePanel` (Firefox uses its native sidebar). Mobile User-Agent rules use
-`declarativeNetRequest`. Firefox deep search also uses `webRequestFilterResponse`.
-Rayburst removes unclaimed capture files after 24 hours and protects pending task inputs.
-
-## Third-Party Services
-
-Bundled playback libraries request the media source selected by the user. There are no analytics, remote download processors, advertising or tracking mechanisms.
-
-## Data Retention
-
-- **Pending download requests** and their original connection are held in `browser.storage.session` until a matching receipt arrives or the browser session ends. Desktop confirmations can remain in its local database until submitted or cancelled.
-- **User settings** remain in local storage until the user clears them or uninstalls the Extension
-- **Diagnostic logs** use a configurable event limit (100 by default, up to 500). Logged URLs exclude credentials, query parameters, and fragments. The oldest event is overwritten when the configured limit is reached.
-
-## Children's Privacy
-
-The Extension does not knowingly collect any information from children under the age of 13.
-
-## Changes to This Policy
-
-If this privacy policy is updated, the changes will be reflected in this document with an updated "Last updated" date. Continued use of the Extension after changes constitutes acceptance of the updated policy.
-
-## Open Source
-
-The Extension is open source under the MIT License. The complete source code is available for inspection at:
-
-https://github.com/AnInsomniacy/rayburst-connect
-
-## Contact
-
-For privacy-related questions or concerns, please open an issue on the GitHub repository:
-
-https://github.com/AnInsomniacy/rayburst-connect/issues
+For privacy questions, contact qq1326555262@gmail.com. Updates to this policy are published here with a revised date.

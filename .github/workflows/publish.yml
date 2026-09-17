@@ -21,6 +21,7 @@ jobs:
     outputs:
       tag: ${{ steps.resolve.outputs.tag }}
       version: ${{ steps.resolve.outputs.version }}
+      sha: ${{ steps.resolve.outputs.sha }}
 
     steps:
       - uses: actions/checkout@v6
@@ -43,6 +44,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.resolve-version.outputs.sha }}
 
       - uses: ./.github/actions/setup-node-pnpm
 
@@ -71,6 +74,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.resolve-version.outputs.sha }}
 
       - uses: ./.github/actions/setup-node-pnpm
 
@@ -82,7 +87,7 @@ jobs:
         run: |
           gh release download "$RELEASE_TAG" --pattern "rayburst-connect-${VERSION}-firefox-mv3.zip" --dir .output
           unzip -q ".output/rayburst-connect-${VERSION}-firefox-mv3.zip" -d .output/firefox-mv3
-          gh api "repos/${GITHUB_REPOSITORY}/zipball/${RELEASE_TAG}" > source-code.zip
+          git archive --format=zip HEAD > source-code.zip
 
       - name: Sign and submit to AMO
         env:
@@ -100,6 +105,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.resolve-version.outputs.sha }}
 
       - uses: ./.github/actions/setup-node-pnpm
 

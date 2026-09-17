@@ -1,4 +1,4 @@
-import { requireStoreIdentity } from './workflow-utils';
+import { requireStoreIdentity, validatePackage } from './workflow-utils';
 import { readFile } from 'node:fs/promises';
 import {
   getGoogleAccessToken,
@@ -83,6 +83,7 @@ async function publishChromeFromEnv(): Promise<void> {
   requireStoreIdentity('chromeId', config.extensionId);
   const version = requiredEnv('VERSION');
   const zipPath = optionalEnv('ZIP_PATH') || findZipByNamePart('chromium-mv3');
+  validatePackage(zipPath, version, 'chromium');
   const token = await getGoogleAccessToken(config);
   const status = await fetchChromeStatus(config, token);
   const decision = decideChromePublishAction(status, version);

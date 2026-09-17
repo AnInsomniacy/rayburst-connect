@@ -1,3 +1,5 @@
+import identity from '../../browser-identity.json';
+import { validatePackageManifest } from '@/scripts/actions/workflow-utils';
 import { describe, expect, it, vi } from 'vitest';
 import {
   buildDecision,
@@ -193,5 +195,36 @@ describe('release workflow decisions', () => {
       },
     ];
     expect(buildDecision('1.2.3', rows)).toContain('incomplete publishability data');
+  });
+});
+
+describe('store package validation', () => {
+  it('rejects a stale package even when its filename matches the release', () => {
+    expect(() =>
+      validatePackageManifest(
+        { manifest_version: 3, version: '1.3.7', key: identity.chromiumPublicKey },
+        '2.0.1',
+        'chromium',
+      ),
+    ).toThrow('version');
+  });
+  it('rejects another Firefox identity and accepts the intended listing', () => {
+    const manifest = {
+      manifest_version: 3,
+      version: '2.0.1',
+      browser_specific_settings: { gecko: { id: 'unrelated@example.org' } },
+    };
+    expect(() => validatePackageManifest(manifest, '2.0.1', 'firefox')).toThrow('identity');
+    manifest.browser_specific_settings.gecko.id = identity.firefoxId;
+    expect(() => validatePackageManifest(manifest, '2.0.1', 'firefox')).not.toThrow();
+  });
+  it('rejects a different Chromium key', () => {
+    expect(() =>
+      validatePackageManifest(
+        { manifest_version: 3, version: '2.0.1', key: 'wrong' },
+        '2.0.1',
+        'chromium',
+      ),
+    ).toThrow('identity');
   });
 });

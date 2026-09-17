@@ -1,4 +1,4 @@
-import { requireStoreIdentity } from './workflow-utils';
+import { requireStoreIdentity, validatePackage } from './workflow-utils';
 import { readFile } from 'node:fs/promises';
 
 import {
@@ -129,10 +129,12 @@ export function decideEdgePreflightAction(
 async function publishEdgeFromEnv(): Promise<void> {
   requireStoreIdentity('edgeId', requiredEnv('EDGE_EXTENSION_ID'));
   const productId = requiredEnv('EDGE_PRODUCT_ID');
+  requireStoreIdentity('edgeProductId', productId);
   const clientId = requiredEnv('EDGE_CLIENT_ID');
   const apiKey = requiredEnv('EDGE_API_KEY');
   const version = requiredEnv('VERSION');
   const zipPath = optionalEnv('ZIP_PATH') || findZipByNamePart('chromium-mv3');
+  validatePackage(zipPath, version, 'chromium');
   const authHeaders = {
     Authorization: `ApiKey ${apiKey}`,
     'X-ClientID': clientId,
@@ -258,12 +260,6 @@ async function submitForReview(input: {
   );
   const text = await response.text();
   console.log(`Publish HTTP status: ${response.status}`);
-
-  if (response.status === 404) {
-    console.log('::notice::Edge Add-ons: another submission is currently in review');
-    process.exitCode = 0;
-    return '';
-  }
 
   if (response.status !== 202 && response.status !== 200) {
     throw new Error(`Edge Add-ons publish failed: HTTP ${response.status} ${text.slice(0, 240)}`);
