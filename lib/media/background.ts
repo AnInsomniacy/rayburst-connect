@@ -1,9 +1,10 @@
+import { mediaSiteAllowed, selectMedia } from './rules';
 import type { DuplicateDownloadGuard } from '../download/duplicate-guard';
 import { startMediaTools } from './tools';
 import { browser, type Browser } from 'wxt/browser';
 import type { DesktopApiClient } from '../api';
 import { MediaApiError } from '../api';
-import { updateSettings } from '../storage';
+import { updateMediaSettings } from '../storage';
 import {
   type ConnectionConfig,
   type DownloadSettings,
@@ -43,8 +44,7 @@ export function startMediaBackground(options: {
   function allowed(pageUrl: string, url: string): boolean {
     const settings = options.settings();
     return (
-      settings.mediaDiscovery.enabled &&
-      !settings.mediaDiscovery.excludedHosts.includes(hostname(pageUrl)) &&
+      mediaSiteAllowed(settings.mediaDiscovery, pageUrl) &&
       matchSiteRule(options.siteRules(), [pageUrl, url]) !== 'always-skip'
     );
   }
@@ -126,7 +126,7 @@ export function startMediaBackground(options: {
     return catalog.run((state) => ({
       host,
       enabled: settings.mediaDiscovery.enabled,
-      excluded: settings.mediaDiscovery.excludedHosts.includes(host),
+      excluded: !mediaSiteAllowed(settings.mediaDiscovery, tab.url ?? ''),
       items: state.candidates
         .filter((item) => item.tabId === tabId)
         .map(({ context, ...candidate }) => {
@@ -185,9 +185,7 @@ export function startMediaBackground(options: {
       const message = command.data;
       switch (message.type) {
         case 'MEDIA_ENABLE':
-          await updateSettings({
-            mediaDiscovery: { ...options.settings().mediaDiscovery, enabled: message.enabled },
-          });
+          await updateMediaSettings({ enabled: message.enabled });
           break;
         case 'MEDIA_SITE': {
           const host = hostname((await browser.tabs.get(message.tabId)).url ?? '');
@@ -195,11 +193,10 @@ export function startMediaBackground(options: {
           const excluded = options
             .settings()
             .mediaDiscovery.excludedHosts.filter((value) => value !== host);
-          if (message.excluded) excluded.push(host);
+          if (message.excluded === (options.settings().mediaDiscovery.siteMode === 'exclude'))
+            excluded.push(host);
           if (excluded.length > 100) throw new MediaApiError('site_limit');
-          await updateSettings({
-            mediaDiscovery: { ...options.settings().mediaDiscovery, excludedHosts: excluded },
-          });
+          await updateMediaSettings({ excludedHosts: excluded });
           break;
         }
         case 'MEDIA_RESCAN':
@@ -236,7 +233,22 @@ export function startMediaBackground(options: {
     const openIds = new Set(tabs.flatMap((tab) => (tab.id === undefined ? [] : [tab.id])));
     await catalog.run((state) => {
       state.candidates = state.candidates.filter(
-        (item) => openIds.has(item.tabId) && allowed(item.pageUrl, item.url),
+        (item) =>
+          openIds.has(item.tabId) &&
+          allowed(item.pageUrl, item.url) &&
+          (item.evidence === 'capture' ||
+            item.kind === 'collection' ||
+            item.variant ||
+            state.operations.some((operation) => operation.candidateId === item.id) ||
+            selectMedia(
+              {
+                url: item.url,
+                mime: item.mime,
+                evidence: item.evidence,
+                length: item.size === null ? undefined : String(item.size),
+              },
+              options.settings().mediaDiscovery,
+            )),
       );
       for (const item of state.candidates)
         if (item.context && item.evidence !== 'capture')

@@ -9,7 +9,7 @@
  *                changes stay local until Save writes the whole snapshot
  *
  * Two persistence classes:
- *   - immediate (enabled, scope, site rules, uiPrefs) — written
+ *   - immediate (enabled, scope, media, site rules, uiPrefs) — written
  *     on change unless `staged`
  *   - draft-tracked (connection + behavior/rules details) — written on Save,
  *     compared through `draftView()` for the dirty flag
@@ -24,6 +24,7 @@ import {
   saveSiteRules,
   saveSnapshot,
   updateSettings,
+  updateMediaSettings,
   updateUiPrefs,
 } from '@/lib/storage';
 import {
@@ -35,6 +36,7 @@ import {
   parseSiteRules,
   parseUiPrefs,
   type DownloadSettings,
+  type MediaSettings,
   type DiagnosticEvent,
   type InterceptionScope,
   type SiteRule,
@@ -54,6 +56,7 @@ import { deepEqual, jsonClone } from '@/shared/json';
 import { useAppTheme } from '@/shared/theme';
 import { createI18n, I18N_KEY, useNaiveLocale } from '@/shared/i18n/engine';
 
+import MediaSettingsSection from './components/MediaSettingsSection.vue';
 import OptionsNav from './components/OptionsNav.vue';
 import ConnectionSection from './components/ConnectionSection.vue';
 import BehaviorSection from './components/BehaviorSection.vue';
@@ -95,13 +98,17 @@ const { message: toast } = createDiscreteApi(['message'], {
 const SECTION_ORDER = [
   'connection',
   'behavior',
+  'media',
   'rules',
   'appearance',
   'language',
   'diagnostics',
 ] as const;
 
-const activeSection = ref<string>('connection');
+const initialSection = new URL(window.location.href).hash.slice(1);
+const activeSection = ref<string>(
+  SECTION_ORDER.some((id) => id === initialSection) ? initialSection : 'connection',
+);
 // 'section-down' when moving toward a later tab, 'section-up' otherwise.
 const sectionTransition = ref<'section-down' | 'section-up'>('section-down');
 
@@ -123,7 +130,7 @@ const staged = ref<null | 'factory-reset' | 'backup-import'>(null);
 
 /** The draft-tracked (Save/Discard) subset of a snapshot. */
 function draftView(s: StorageSnapshot) {
-  const { enabled: _e, interceptionScope: _s, ...tracked } = s.settings;
+  const { enabled: _e, interceptionScope: _s, mediaDiscovery: _m, ...tracked } = s.settings;
   return { connection: s.connection, diagnostics: s.diagnostics, ...tracked };
 }
 
@@ -142,6 +149,17 @@ async function persistImmediate(persist: () => Promise<void>, revert?: () => voi
     revert?.();
     toast.error(i18n('options_save_error', 'Failed to save settings'));
   }
+}
+
+async function handleMediaChange(patch: Partial<MediaSettings>): Promise<void> {
+  const previous = draft.value.settings.mediaDiscovery;
+  draft.value.settings.mediaDiscovery = { ...previous, ...patch };
+  await persistImmediate(
+    () => updateMediaSettings(patch),
+    () => {
+      draft.value.settings.mediaDiscovery = previous;
+    },
+  );
 }
 
 async function handleEnabledChange(value: boolean): Promise<void> {
@@ -269,7 +287,12 @@ async function handleSave(): Promise<void> {
     } else {
       await saveConnectionConfig(draft.value.connection);
       await saveDiagnosticSettings(draft.value.diagnostics);
-      const { enabled: _e, interceptionScope: _s, ...tracked } = draft.value.settings;
+      const {
+        enabled: _e,
+        interceptionScope: _s,
+        mediaDiscovery: _m,
+        ...tracked
+      } = draft.value.settings;
       await updateSettings({
         ...tracked,
         hideDownloadBar: canControlDownloadUi && tracked.hideDownloadBar,
@@ -444,6 +467,7 @@ function bindStorageChanges(): void {
         if (dirty) {
           draft.value.settings.enabled = settings.enabled;
           draft.value.settings.interceptionScope = settings.interceptionScope;
+          draft.value.settings.mediaDiscovery = settings.mediaDiscovery;
         } else {
           draft.value.settings = jsonClone(settings);
         }
@@ -559,7 +583,6 @@ onUnmounted(() => {
                   :desktop-unavailable="draft.settings.desktopUnavailable"
                   :forward-request-headers="draft.settings.forwardRequestHeaders"
                   :forward-cookies="draft.settings.forwardCookies"
-                  :media-discovery="draft.settings.mediaDiscovery"
                   @update:enabled="handleEnabledChange"
                   @update:scope="handleInterceptionScopeChange"
                   @update:hide-download-bar="handleHideDownloadBarChange"
@@ -571,9 +594,6 @@ onUnmounted(() => {
                   "
                   @update:forward-request-headers="draft.settings.forwardRequestHeaders = $event"
                   @update:forward-cookies="handleForwardCookiesChange"
-                  @update:media-discovery="
-                    draft.settings.mediaDiscovery = { ...draft.settings.mediaDiscovery, ...$event }
-                  "
                 />
               </div>
             </div>
@@ -604,6 +624,17 @@ onUnmounted(() => {
                   "
                   @add-site-rule="handleAddSiteRule"
                   @remove-site-rule="handleRemoveSiteRule"
+                />
+              </div>
+            </div>
+
+            <div v-else-if="activeSection === 'media'" key="media" class="section-wrapper">
+              <h2 class="section-title">{{ i18n('media_tab') }}</h2>
+              <div class="card">
+                <MediaSettingsSection
+                  :value="draft.settings.mediaDiscovery"
+                  :staged="staged !== null"
+                  @change="handleMediaChange"
                 />
               </div>
             </div>

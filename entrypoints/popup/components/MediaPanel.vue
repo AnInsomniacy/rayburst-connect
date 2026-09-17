@@ -25,13 +25,16 @@ import {
 import { mediaFailureKey, mediaSize } from '@/lib/media/presentation';
 import { useI18n } from '@/shared/i18n/engine';
 import { usePolling } from '@/shared/use-polling';
-import { MEDIA_SESSION_KEY } from '@/lib/schema';
+import { MEDIA_SESSION_KEY, parseMediaSettings, parseDownloadSettings } from '@/lib/schema';
+import { loadSnapshot } from '@/lib/storage';
 import MediaSelection from './MediaSelection.vue';
 import MediaTools from './MediaTools.vue';
 import MediaPreview from './MediaPreview.vue';
 import CollapsePanel from '@/shared/components/CollapsePanel.vue';
 import {
   CopyOutline,
+  DownloadOutline,
+  ListOutline,
   PlayCircleOutline,
   OptionsOutline,
   EllipsisHorizontalOutline,
@@ -54,6 +57,9 @@ const selectedId = ref('');
 const checked = ref(new Set<string>());
 const error = ref('');
 const busy = ref(false);
+const rowBusy = ref(new Set<string>());
+const downloadIntent = ref('');
+const preferences = ref(parseMediaSettings({}));
 const loading = ref(true);
 const toolsOpen = ref(false);
 const preview = ref<MediaItem>();
@@ -71,7 +77,9 @@ const filtered = computed(() => {
       ? (b.size ?? 0) - (a.size ?? 0)
       : sort.value === 'name'
         ? (a.filename || a.title).localeCompare(b.filename || b.title)
-        : b.lastSeen - a.lastSeen,
+        : preferences.value.newestFirst
+          ? b.firstSeen - a.firstSeen
+          : a.firstSeen - b.firstSeen,
   );
 });
 const kinds = computed(() =>
@@ -130,8 +138,10 @@ watch([allTabs, () => props.active], () => {
   void refresh();
 });
 async function command(value: MediaCommand) {
-  if (busy.value) return;
-  busy.value = true;
+  const id = 'candidateId' in value ? value.candidateId : undefined;
+  if (id ? rowBusy.value.has(id) : busy.value) return;
+  if (id) rowBusy.value = new Set([...rowBusy.value, id]);
+  else busy.value = true;
   error.value = '';
   try {
     await sendMediaCommand(value);
@@ -139,16 +149,85 @@ async function command(value: MediaCommand) {
   } catch (cause) {
     error.value = mediaFailureKey(cause instanceof Error ? cause.message : 'operation_failed');
   } finally {
-    busy.value = false;
+    if (id) {
+      const next = new Set(rowBusy.value);
+      next.delete(id);
+      rowBusy.value = next;
+    } else busy.value = false;
   }
 }
 async function select(item: MediaItem) {
+  downloadIntent.value = '';
   selectedId.value = item.id;
   if (
     ['hls', 'dash', 'collection'].includes(item.kind) &&
     (!item.operation || ['submitted', 'cancelled', 'failed'].includes(item.operation.state))
   )
     await command({ type: 'MEDIA_PROBE', tabId: item.tabId, candidateId: item.id });
+}
+async function download(item: MediaItem) {
+  if (rowBusy.value.has(item.id)) return;
+  if (['hls', 'dash', 'collection'].includes(item.kind)) {
+    await select(item);
+    if (preferences.value.quickDownload) downloadIntent.value = item.id;
+  } else await command({ type: 'MEDIA_DOWNLOAD_FILE', tabId: item.tabId, candidateId: item.id });
+}
+watch([downloadIntent, selected], async () => {
+  const item = selected.value;
+  if (!item || downloadIntent.value !== item.id || item.operation?.probe?.state !== 'ready') return;
+  const presentation = item.operation.probe.presentation;
+  downloadIntent.value = '';
+  if (
+    presentation.live ||
+    presentation.tracks.filter((track) => ['video', 'muxed'].includes(track.type)).length > 1 ||
+    presentation.tracks.filter((track) => track.type === 'audio').length > 1 ||
+    presentation.tracks.some((track) => track.type === 'subtitle')
+  )
+    return;
+  await command({
+    type: 'MEDIA_SUBMIT',
+    tabId: item.tabId,
+    candidateId: item.id,
+    selection: presentation.defaults,
+  });
+  if (selected.value?.operation?.state === 'submitted') selectedId.value = '';
+});
+function sourceName(item: MediaItem) {
+  const value = item.filename || item.title || item.url;
+  const characters = Array.from(value);
+  return characters.length > 32
+    ? {
+        prefix: characters.slice(0, -16).join(''),
+        suffix: characters.slice(-16).join(''),
+        full: value,
+      }
+    : { prefix: value, suffix: '', full: value };
+}
+function rowActions(item: MediaItem) {
+  return [
+    { key: 'copy', icon: CopyOutline, label: t('resources_copy'), run: () => copy(item.url) },
+    ...(['hls', 'dash', 'collection'].includes(item.kind)
+      ? [{ key: 'inspect', icon: ListOutline, label: t('media_inspect'), run: () => select(item) }]
+      : []),
+    ...(!['json', 'subtitle', 'embedded', 'collection'].includes(item.kind)
+      ? [
+          {
+            key: 'preview',
+            icon: PlayCircleOutline,
+            label: t('resources_preview'),
+            run: () => {
+              preview.value = preview.value?.id === item.id ? undefined : item;
+            },
+          },
+        ]
+      : []),
+    {
+      key: 'download',
+      icon: DownloadOutline,
+      label: t('media_download'),
+      run: () => download(item),
+    },
+  ];
 }
 function toggle(id: string, value: boolean) {
   const item = state.value?.items.find((candidate) => candidate.id === id);
@@ -208,6 +287,7 @@ function copy(url: string) {
   void navigator.clipboard.writeText(url);
 }
 const actions = computed(() => [
+  { key: 'settings', label: t('media_settings_title') },
   { key: 'all', label: t('resources_select_all') },
   { key: 'invert', label: t('resources_invert') },
   { key: 'copy', label: t('resources_copy'), disabled: !checked.value.size },
@@ -220,7 +300,9 @@ const actions = computed(() => [
   { key: 'clear', label: t('media_clear'), disabled: !checked.value.size },
 ]);
 function action(value: string) {
-  if (value === 'all') filtered.value.forEach((item) => toggle(item.id, true));
+  if (value === 'settings')
+    void browser.tabs.create({ url: browser.runtime.getURL('/options.html') + '#media' });
+  else if (value === 'all') filtered.value.forEach((item) => toggle(item.id, true));
   else if (value === 'invert')
     filtered.value.forEach((item) => toggle(item.id, !checked.value.has(item.id)));
   else if (value === 'merge' || value === 'sequence') void merge(value === 'sequence');
@@ -243,6 +325,8 @@ async function openSidebar() {
 }
 const changed: Parameters<typeof browser.storage.onChanged.addListener>[0] = (change, area) => {
   if (area === 'session' && change[MEDIA_SESSION_KEY]) void refresh();
+  if (area === 'local' && change.settings)
+    preferences.value = parseDownloadSettings(change.settings.newValue).mediaDiscovery;
 };
 const activated: Parameters<typeof browser.tabs.onActivated.addListener>[0] = (info) => {
   if (props.expanded && !new URL(window.location.href).searchParams.has('tab')) {
@@ -252,6 +336,7 @@ const activated: Parameters<typeof browser.tabs.onActivated.addListener>[0] = (i
   }
 };
 onMounted(async () => {
+  preferences.value = (await loadSnapshot()).settings.mediaDiscovery;
   const supplied = Number(new URL(window.location.href).searchParams.get('tab'));
   const tab =
     supplied > 0
@@ -325,8 +410,11 @@ onUnmounted(() => {
             v-if="selected"
             :key="selected.id"
             :item="selected"
-            :busy="busy"
-            @back="selectedId = ''"
+            :busy="busy || rowBusy.has(selected.id)"
+            @back="
+              selectedId = '';
+              downloadIntent = '';
+            "
             @advanced="toolsOpen = true"
             @inspect="
               command({ type: 'MEDIA_PROBE', tabId: selected.tabId, candidateId: selected.id })
@@ -371,58 +459,81 @@ onUnmounted(() => {
               />
             </div>
             <div class="resource-list">
-              <article v-for="item in filtered" :key="item.id" class="resource-row">
-                <NCheckbox
-                  :checked="checked.has(item.id)"
-                  :disabled="item.kind === 'embedded' || item.method !== 'GET'"
-                  :aria-label="item.filename || item.title"
-                  @update:checked="toggle(item.id, $event)"
+              <template v-for="item in filtered" :key="item.id">
+                <article class="resource-row">
+                  <NCheckbox
+                    :checked="checked.has(item.id)"
+                    :disabled="item.kind === 'embedded' || item.method !== 'GET'"
+                    :aria-label="item.filename || item.title"
+                    @update:checked="toggle(item.id, $event)"
+                  />
+                  <button class="resource-title" @click="select(item)">
+                    <strong :title="sourceName(item).full"
+                      ><span class="name-prefix">{{ sourceName(item).prefix }}</span
+                      ><span class="name-suffix">{{ sourceName(item).suffix }}</span></strong
+                    >
+                    <span
+                      >{{
+                        ['hls', 'dash'].includes(item.kind)
+                          ? item.kind.toUpperCase()
+                          : t(`resources_kind_${item.kind}`)
+                      }}
+                      <template v-if="!['hls', 'dash'].includes(item.kind)">
+                        ·
+                        {{
+                          mediaSize(item.size, effectiveLocale, t('media_size_unknown'))
+                        }}</template
+                      ></span
+                    >
+                    <small v-if="allTabs">{{ item.title }}</small>
+                    <small v-if="item.downloadError || item.operation?.error">{{
+                      t(
+                        mediaFailureKey(
+                          item.downloadError || item.operation?.error || 'operation_failed',
+                        ),
+                      )
+                    }}</small>
+                    <small
+                      v-else-if="item.sentToDesktop || item.operation?.state === 'submitted'"
+                      >{{ t('media_submitted') }}</small
+                    >
+                    <small v-else-if="item.kind === 'embedded'">{{ t('media_waiting') }}</small>
+                  </button>
+                  <div class="row-actions">
+                    <NTooltip
+                      v-for="rowAction in rowActions(item)"
+                      :key="rowAction.key"
+                      trigger="hover"
+                    >
+                      <template #trigger>
+                        <NButton
+                          size="small"
+                          quaternary
+                          circle
+                          :type="rowAction.key === 'download' ? 'primary' : 'default'"
+                          :aria-label="rowAction.label"
+                          :title="rowAction.label"
+                          :loading="rowAction.key === 'download' && rowBusy.has(item.id)"
+                          :disabled="rowAction.key === 'download' && item.method !== 'GET'"
+                          @click="rowAction.run()"
+                        >
+                          <template #icon
+                            ><NIcon><component :is="rowAction.icon" /></NIcon
+                          ></template>
+                        </NButton>
+                      </template>
+                      {{ rowAction.label }}
+                    </NTooltip>
+                  </div>
+                </article>
+                <MediaPreview
+                  v-if="preview?.id === item.id"
+                  :item="item"
+                  @close="preview = undefined"
                 />
-                <button class="resource-title" @click="select(item)">
-                  <strong>{{ item.filename || item.title || item.url }}</strong>
-                  <span
-                    >{{
-                      ['hls', 'dash'].includes(item.kind)
-                        ? item.kind.toUpperCase()
-                        : t(`resources_kind_${item.kind}`)
-                    }}
-                    · {{ mediaSize(item.size, effectiveLocale, t('media_size_unknown')) }}</span
-                  >
-                  <small v-if="allTabs">{{ item.title }}</small>
-                  <small v-if="item.downloadError || item.operation?.error">{{
-                    t(
-                      mediaFailureKey(
-                        item.downloadError || item.operation?.error || 'operation_failed',
-                      ),
-                    )
-                  }}</small>
-                  <small v-else-if="item.sentToDesktop || item.operation?.state === 'submitted'">{{
-                    t('media_submitted')
-                  }}</small>
-                  <small v-else-if="item.kind === 'embedded'">{{ t('media_waiting') }}</small>
-                </button>
-                <NButton
-                  size="small"
-                  quaternary
-                  circle
-                  :aria-label="t('resources_copy')"
-                  @click="copy(item.url)"
-                  ><template #icon
-                    ><NIcon><CopyOutline /></NIcon></template
-                ></NButton>
-                <NButton
-                  size="small"
-                  quaternary
-                  circle
-                  :aria-label="t('resources_preview')"
-                  @click="preview = preview?.id === item.id ? undefined : item"
-                  ><template #icon
-                    ><NIcon><PlayCircleOutline /></NIcon></template
-                ></NButton>
-              </article>
+              </template>
               <NEmpty v-if="!filtered.length" :description="t('media_none')" />
             </div>
-            <MediaPreview v-if="preview" :item="preview" />
             <footer class="resource-actions">
               <NDropdown trigger="click" :options="actions" @select="action"
                 ><NButton size="small" quaternary circle :aria-label="t('resources_tools')"
@@ -539,7 +650,17 @@ onUnmounted(() => {
   cursor: pointer;
   font: inherit;
 }
+.row-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.row-actions .n-button {
+  width: 32px;
+  height: 32px;
+}
 .resource-title strong {
+  display: flex;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -579,5 +700,17 @@ onUnmounted(() => {
   .resources.expanded {
     padding: 8px 16px;
   }
+}
+.resource-title strong span {
+  font: inherit;
+  color: inherit;
+}
+.name-prefix {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.name-suffix {
+  flex-shrink: 0;
 }
 </style>

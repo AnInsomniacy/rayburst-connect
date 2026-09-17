@@ -963,5 +963,98 @@
   },
   "resources_mobile": {
     "message": "Usa uno User-Agent mobile"
+  },
+  "media_settings_title": {
+    "message": "Impostazioni multimediali"
+  },
+  "media_settings_any_size": {
+    "message": "Qualsiasi dimensione"
+  },
+  "media_settings_capture": {
+    "message": "Rileva"
+  },
+  "media_settings_edit": {
+    "message": "Modifica"
+  },
+  "media_settings_remove": {
+    "message": "Rimuovi"
+  },
+  "media_settings_invalid_rule": {
+    "message": "Controlla sintassi, valori e tipi duplicati."
+  },
+  "media_settings_between": {
+    "message": "Tra"
+  },
+  "media_settings_upper": {
+    "message": "Limite superiore"
+  },
+  "media_settings_pattern": {
+    "message": "Schema"
+  },
+  "media_settings_action": {
+    "message": "Azione"
+  },
+  "media_settings_enabled": {
+    "message": "Attivo"
+  },
+  "media_settings_ignore": {
+    "message": "Ignora"
+  },
+  "media_settings_regex": {
+    "message": "Espressioni regolari"
+  },
+  "media_settings_regex_hint": {
+    "message": "La prima corrispondenza prevale sulle regole dei tipi."
+  },
+  "media_settings_flags": {
+    "message": "Flag regex"
+  },
+  "media_settings_group": {
+    "message": "Gruppo URL (0: URL originale)"
+  },
+  "media_settings_test_url": {
+    "message": "URL di prova"
+  },
+  "media_settings_no_match": {
+    "message": "Nessuna corrispondenza"
+  },
+  "media_settings_behavior": {
+    "message": "Comportamento"
+  },
+  "media_settings_capture_hint": {
+    "message": "I filtri non limitano i download delle playlist."
+  },
+  "media_settings_newest": {
+    "message": "Più recenti prima"
+  },
+  "media_settings_quick": {
+    "message": "Download rapido"
+  },
+  "media_settings_quick_hint": {
+    "message": "Scegliere le tracce se esistono più opzioni."
+  },
+  "media_settings_deep": {
+    "message": "Attiva sempre la ricerca approfondita"
+  },
+  "media_settings_deep_hint": {
+    "message": "Ricarica le pagine. Può influire sulla riproduzione."
+  },
+  "media_settings_include": {
+    "message": "Solo i siti elencati"
+  },
+  "media_settings_exclude": {
+    "message": "Escludi i siti elencati"
+  },
+  "media_settings_autosave": {
+    "message": "Le modifiche vengono salvate automaticamente."
+  },
+  "media_settings_restore": {
+    "message": "Ripristina impostazioni multimediali"
+  },
+  "media_settings_restore_hint": {
+    "message": "Ripristinare solo i media? La connessione resta invariata."
+  },
+  "media_settings_close_preview": {
+    "message": "Chiudi anteprima"
   }
 }

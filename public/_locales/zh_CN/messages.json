@@ -963,5 +963,98 @@
   },
   "resources_mobile": {
     "message": "使用移动端 User-Agent"
+  },
+  "media_settings_title": {
+    "message": "媒体设置"
+  },
+  "media_settings_any_size": {
+    "message": "不限大小"
+  },
+  "media_settings_capture": {
+    "message": "捕获"
+  },
+  "media_settings_edit": {
+    "message": "编辑"
+  },
+  "media_settings_remove": {
+    "message": "移除"
+  },
+  "media_settings_invalid_rule": {
+    "message": "请检查语法、数值和重复类型。"
+  },
+  "media_settings_between": {
+    "message": "范围"
+  },
+  "media_settings_upper": {
+    "message": "上限"
+  },
+  "media_settings_pattern": {
+    "message": "表达式"
+  },
+  "media_settings_action": {
+    "message": "操作"
+  },
+  "media_settings_enabled": {
+    "message": "启用"
+  },
+  "media_settings_ignore": {
+    "message": "忽略"
+  },
+  "media_settings_regex": {
+    "message": "正则表达式"
+  },
+  "media_settings_regex_hint": {
+    "message": "优先采用首条匹配规则，覆盖类型规则。"
+  },
+  "media_settings_flags": {
+    "message": "正则标志"
+  },
+  "media_settings_group": {
+    "message": "URL 捕获组（0：原始地址）"
+  },
+  "media_settings_test_url": {
+    "message": "测试地址"
+  },
+  "media_settings_no_match": {
+    "message": "未匹配"
+  },
+  "media_settings_behavior": {
+    "message": "行为"
+  },
+  "media_settings_capture_hint": {
+    "message": "捕获筛选不影响清单内资源的下载。"
+  },
+  "media_settings_newest": {
+    "message": "最新优先"
+  },
+  "media_settings_quick": {
+    "message": "快捷下载"
+  },
+  "media_settings_quick_hint": {
+    "message": "有多个选项时先选择画质和音轨。"
+  },
+  "media_settings_deep": {
+    "message": "始终开启深度搜索"
+  },
+  "media_settings_deep_hint": {
+    "message": "刷新页面后生效，可能影响播放。"
+  },
+  "media_settings_include": {
+    "message": "仅启用所列网站"
+  },
+  "media_settings_exclude": {
+    "message": "排除所列网站"
+  },
+  "media_settings_autosave": {
+    "message": "更改自动保存。"
+  },
+  "media_settings_restore": {
+    "message": "恢复媒体默认设置"
+  },
+  "media_settings_restore_hint": {
+    "message": "仅重置媒体设置？连接设置保持不变。"
+  },
+  "media_settings_close_preview": {
+    "message": "关闭预览"
   }
 }

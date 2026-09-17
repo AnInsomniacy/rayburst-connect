@@ -963,5 +963,98 @@
   },
   "resources_mobile": {
     "message": "Використовувати мобільний User-Agent"
+  },
+  "media_settings_title": {
+    "message": "Налаштування медіа"
+  },
+  "media_settings_any_size": {
+    "message": "Будь-який розмір"
+  },
+  "media_settings_capture": {
+    "message": "Захоплення"
+  },
+  "media_settings_edit": {
+    "message": "Змінити"
+  },
+  "media_settings_remove": {
+    "message": "Видалити"
+  },
+  "media_settings_invalid_rule": {
+    "message": "Перевірте синтаксис, значення та повторювані типи."
+  },
+  "media_settings_between": {
+    "message": "Між"
+  },
+  "media_settings_upper": {
+    "message": "Верхня межа"
+  },
+  "media_settings_pattern": {
+    "message": "Шаблон"
+  },
+  "media_settings_action": {
+    "message": "Дія"
+  },
+  "media_settings_enabled": {
+    "message": "Увімкнено"
+  },
+  "media_settings_ignore": {
+    "message": "Ігнорувати"
+  },
+  "media_settings_regex": {
+    "message": "Регулярні вирази"
+  },
+  "media_settings_regex_hint": {
+    "message": "Перший збіг має пріоритет над правилами типів."
+  },
+  "media_settings_flags": {
+    "message": "Прапорці виразу"
+  },
+  "media_settings_group": {
+    "message": "Група URL (0: початковий URL)"
+  },
+  "media_settings_test_url": {
+    "message": "Тестова URL-адреса"
+  },
+  "media_settings_no_match": {
+    "message": "Немає збігів"
+  },
+  "media_settings_behavior": {
+    "message": "Поведінка"
+  },
+  "media_settings_capture_hint": {
+    "message": "Фільтри захоплення не обмежують завантаження списків відтворення."
+  },
+  "media_settings_newest": {
+    "message": "Спочатку нові"
+  },
+  "media_settings_quick": {
+    "message": "Швидке завантаження"
+  },
+  "media_settings_quick_hint": {
+    "message": "Вибирати доріжки за наявності кількох варіантів."
+  },
+  "media_settings_deep": {
+    "message": "Завжди вмикати глибокий пошук"
+  },
+  "media_settings_deep_hint": {
+    "message": "Перезавантажте сторінки. Може вплинути на відтворення."
+  },
+  "media_settings_include": {
+    "message": "Лише вказані сайти"
+  },
+  "media_settings_exclude": {
+    "message": "Виключити вказані сайти"
+  },
+  "media_settings_autosave": {
+    "message": "Зміни зберігаються автоматично."
+  },
+  "media_settings_restore": {
+    "message": "Відновити налаштування медіа"
+  },
+  "media_settings_restore_hint": {
+    "message": "Скинути лише медіа? Налаштування з’єднання не зміняться."
+  },
+  "media_settings_close_preview": {
+    "message": "Закрити попередній перегляд"
   }
 }

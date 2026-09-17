@@ -963,5 +963,98 @@
   },
   "resources_mobile": {
     "message": "Use a mobile User-Agent"
+  },
+  "media_settings_title": {
+    "message": "Media settings"
+  },
+  "media_settings_any_size": {
+    "message": "Any size"
+  },
+  "media_settings_capture": {
+    "message": "Capture"
+  },
+  "media_settings_edit": {
+    "message": "Edit"
+  },
+  "media_settings_remove": {
+    "message": "Remove"
+  },
+  "media_settings_invalid_rule": {
+    "message": "Check syntax, values and duplicate types."
+  },
+  "media_settings_between": {
+    "message": "Between"
+  },
+  "media_settings_upper": {
+    "message": "Upper limit"
+  },
+  "media_settings_pattern": {
+    "message": "Pattern"
+  },
+  "media_settings_action": {
+    "message": "Action"
+  },
+  "media_settings_enabled": {
+    "message": "Enabled"
+  },
+  "media_settings_ignore": {
+    "message": "Ignore"
+  },
+  "media_settings_regex": {
+    "message": "Regular expressions"
+  },
+  "media_settings_regex_hint": {
+    "message": "First match wins and overrides type rules."
+  },
+  "media_settings_flags": {
+    "message": "Regex flags"
+  },
+  "media_settings_group": {
+    "message": "URL capture group (0: original URL)"
+  },
+  "media_settings_test_url": {
+    "message": "Test URL"
+  },
+  "media_settings_no_match": {
+    "message": "No match"
+  },
+  "media_settings_behavior": {
+    "message": "Behavior"
+  },
+  "media_settings_capture_hint": {
+    "message": "Capture filters do not limit playlist downloads."
+  },
+  "media_settings_newest": {
+    "message": "Newest first"
+  },
+  "media_settings_quick": {
+    "message": "Quick download"
+  },
+  "media_settings_quick_hint": {
+    "message": "Ask for tracks when choices are available."
+  },
+  "media_settings_deep": {
+    "message": "Always enable deep search"
+  },
+  "media_settings_deep_hint": {
+    "message": "Reload pages to apply. May affect playback."
+  },
+  "media_settings_include": {
+    "message": "Only listed sites"
+  },
+  "media_settings_exclude": {
+    "message": "Exclude listed sites"
+  },
+  "media_settings_autosave": {
+    "message": "Changes save automatically."
+  },
+  "media_settings_restore": {
+    "message": "Restore media defaults"
+  },
+  "media_settings_restore_hint": {
+    "message": "Reset media settings only? Connection settings stay unchanged."
+  },
+  "media_settings_close_preview": {
+    "message": "Close preview"
   }
 }

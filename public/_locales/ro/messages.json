@@ -963,5 +963,98 @@
   },
   "resources_mobile": {
     "message": "Folosește un User-Agent mobil"
+  },
+  "media_settings_title": {
+    "message": "Setări media"
+  },
+  "media_settings_any_size": {
+    "message": "Orice dimensiune"
+  },
+  "media_settings_capture": {
+    "message": "Detectează"
+  },
+  "media_settings_edit": {
+    "message": "Editează"
+  },
+  "media_settings_remove": {
+    "message": "Elimină"
+  },
+  "media_settings_invalid_rule": {
+    "message": "Verifică sintaxa, valorile și tipurile duplicate."
+  },
+  "media_settings_between": {
+    "message": "Între"
+  },
+  "media_settings_upper": {
+    "message": "Limită superioară"
+  },
+  "media_settings_pattern": {
+    "message": "Model"
+  },
+  "media_settings_action": {
+    "message": "Acțiune"
+  },
+  "media_settings_enabled": {
+    "message": "Activat"
+  },
+  "media_settings_ignore": {
+    "message": "Ignoră"
+  },
+  "media_settings_regex": {
+    "message": "Expresii regulate"
+  },
+  "media_settings_regex_hint": {
+    "message": "Prima potrivire înlocuiește regulile de tip."
+  },
+  "media_settings_flags": {
+    "message": "Indicatori regex"
+  },
+  "media_settings_group": {
+    "message": "Grup URL (0: URL original)"
+  },
+  "media_settings_test_url": {
+    "message": "URL de test"
+  },
+  "media_settings_no_match": {
+    "message": "Nicio potrivire"
+  },
+  "media_settings_behavior": {
+    "message": "Comportament"
+  },
+  "media_settings_capture_hint": {
+    "message": "Filtrele nu limitează descărcarea listelor de redare."
+  },
+  "media_settings_newest": {
+    "message": "Cele mai noi întâi"
+  },
+  "media_settings_quick": {
+    "message": "Descărcare rapidă"
+  },
+  "media_settings_quick_hint": {
+    "message": "Alege pistele când există mai multe opțiuni."
+  },
+  "media_settings_deep": {
+    "message": "Activează mereu căutarea aprofundată"
+  },
+  "media_settings_deep_hint": {
+    "message": "Reîncarcă paginile. Poate afecta redarea."
+  },
+  "media_settings_include": {
+    "message": "Doar site-urile enumerate"
+  },
+  "media_settings_exclude": {
+    "message": "Exclude site-urile enumerate"
+  },
+  "media_settings_autosave": {
+    "message": "Modificările se salvează automat."
+  },
+  "media_settings_restore": {
+    "message": "Restabilește setările media"
+  },
+  "media_settings_restore_hint": {
+    "message": "Resetezi doar setările media? Conexiunea rămâne neschimbată."
+  },
+  "media_settings_close_preview": {
+    "message": "Închide previzualizarea"
   }
 }

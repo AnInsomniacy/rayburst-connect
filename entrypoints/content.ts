@@ -21,6 +21,8 @@ export default defineContentScript({
     const players = createPlayerControls();
     function configure(value: unknown) {
       settings = parseDownloadSettings(value);
+      if (settings.mediaDiscovery.enabled)
+        void browser.runtime.sendMessage({ type: 'MEDIA_FRAME_READY' }).catch(() => undefined);
       if (settings.mediaDiscovery.enabled && !observer && !disposed)
         observer = observePageMedia((message) => browser.runtime.sendMessage(message));
       if (!settings.mediaDiscovery.enabled) {

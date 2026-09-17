@@ -963,5 +963,98 @@
   },
   "resources_mobile": {
     "message": "मोबाइल User-Agent इस्तेमाल करें"
+  },
+  "media_settings_title": {
+    "message": "मीडिया सेटिंग"
+  },
+  "media_settings_any_size": {
+    "message": "कोई भी आकार"
+  },
+  "media_settings_capture": {
+    "message": "खोजें"
+  },
+  "media_settings_edit": {
+    "message": "संपादित करें"
+  },
+  "media_settings_remove": {
+    "message": "हटाएँ"
+  },
+  "media_settings_invalid_rule": {
+    "message": "सिंटैक्स, मान और दोहराए गए प्रकार जाँचें।"
+  },
+  "media_settings_between": {
+    "message": "के बीच"
+  },
+  "media_settings_upper": {
+    "message": "ऊपरी सीमा"
+  },
+  "media_settings_pattern": {
+    "message": "पैटर्न"
+  },
+  "media_settings_action": {
+    "message": "क्रिया"
+  },
+  "media_settings_enabled": {
+    "message": "सक्रिय"
+  },
+  "media_settings_ignore": {
+    "message": "अनदेखा करें"
+  },
+  "media_settings_regex": {
+    "message": "रेगुलर एक्सप्रेशन"
+  },
+  "media_settings_regex_hint": {
+    "message": "पहला मिलान प्रकार के नियमों से प्राथमिकता लेता है।"
+  },
+  "media_settings_flags": {
+    "message": "रेगुलर एक्सप्रेशन फ़्लैग"
+  },
+  "media_settings_group": {
+    "message": "URL समूह (0: मूल URL)"
+  },
+  "media_settings_test_url": {
+    "message": "परीक्षण URL"
+  },
+  "media_settings_no_match": {
+    "message": "कोई मिलान नहीं"
+  },
+  "media_settings_behavior": {
+    "message": "व्यवहार"
+  },
+  "media_settings_capture_hint": {
+    "message": "कैप्चर फ़िल्टर प्लेलिस्ट डाउनलोड को सीमित नहीं करते।"
+  },
+  "media_settings_newest": {
+    "message": "नवीनतम पहले"
+  },
+  "media_settings_quick": {
+    "message": "त्वरित डाउनलोड"
+  },
+  "media_settings_quick_hint": {
+    "message": "एक से अधिक विकल्प होने पर ट्रैक चुनें।"
+  },
+  "media_settings_deep": {
+    "message": "गहन खोज हमेशा सक्रिय रखें"
+  },
+  "media_settings_deep_hint": {
+    "message": "लागू करने के लिए पृष्ठ फिर लोड करें। प्लेबैक प्रभावित हो सकता है।"
+  },
+  "media_settings_include": {
+    "message": "केवल सूचीबद्ध साइटें"
+  },
+  "media_settings_exclude": {
+    "message": "सूचीबद्ध साइटें छोड़ें"
+  },
+  "media_settings_autosave": {
+    "message": "बदलाव अपने आप सहेजे जाते हैं।"
+  },
+  "media_settings_restore": {
+    "message": "मीडिया के डिफ़ॉल्ट बहाल करें"
+  },
+  "media_settings_restore_hint": {
+    "message": "केवल मीडिया सेटिंग रीसेट करें? कनेक्शन नहीं बदलेगा।"
+  },
+  "media_settings_close_preview": {
+    "message": "पूर्वावलोकन बंद करें"
   }
 }

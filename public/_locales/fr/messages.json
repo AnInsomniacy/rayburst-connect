@@ -963,5 +963,98 @@
   },
   "resources_mobile": {
     "message": "Utiliser un User-Agent mobile"
+  },
+  "media_settings_title": {
+    "message": "Paramètres des médias"
+  },
+  "media_settings_any_size": {
+    "message": "Toute taille"
+  },
+  "media_settings_capture": {
+    "message": "Détecter"
+  },
+  "media_settings_edit": {
+    "message": "Modifier"
+  },
+  "media_settings_remove": {
+    "message": "Supprimer"
+  },
+  "media_settings_invalid_rule": {
+    "message": "Vérifiez la syntaxe, les valeurs et les types en double."
+  },
+  "media_settings_between": {
+    "message": "Entre"
+  },
+  "media_settings_upper": {
+    "message": "Limite supérieure"
+  },
+  "media_settings_pattern": {
+    "message": "Motif"
+  },
+  "media_settings_action": {
+    "message": "Action"
+  },
+  "media_settings_enabled": {
+    "message": "Activé"
+  },
+  "media_settings_ignore": {
+    "message": "Ignorer"
+  },
+  "media_settings_regex": {
+    "message": "Expressions régulières"
+  },
+  "media_settings_regex_hint": {
+    "message": "La première correspondance remplace les règles de type."
+  },
+  "media_settings_flags": {
+    "message": "Indicateurs regex"
+  },
+  "media_settings_group": {
+    "message": "Groupe URL (0 : URL originale)"
+  },
+  "media_settings_test_url": {
+    "message": "URL de test"
+  },
+  "media_settings_no_match": {
+    "message": "Aucune correspondance"
+  },
+  "media_settings_behavior": {
+    "message": "Comportement"
+  },
+  "media_settings_capture_hint": {
+    "message": "Les filtres ne limitent pas le téléchargement des listes de lecture."
+  },
+  "media_settings_newest": {
+    "message": "Plus récents en premier"
+  },
+  "media_settings_quick": {
+    "message": "Téléchargement rapide"
+  },
+  "media_settings_quick_hint": {
+    "message": "Choisir les pistes si plusieurs options existent."
+  },
+  "media_settings_deep": {
+    "message": "Toujours activer la recherche approfondie"
+  },
+  "media_settings_deep_hint": {
+    "message": "Rechargez les pages. La lecture peut être affectée."
+  },
+  "media_settings_include": {
+    "message": "Uniquement les sites listés"
+  },
+  "media_settings_exclude": {
+    "message": "Exclure les sites listés"
+  },
+  "media_settings_autosave": {
+    "message": "Modifications enregistrées automatiquement."
+  },
+  "media_settings_restore": {
+    "message": "Rétablir les paramètres des médias"
+  },
+  "media_settings_restore_hint": {
+    "message": "Réinitialiser uniquement les médias ? La connexion reste inchangée."
+  },
+  "media_settings_close_preview": {
+    "message": "Fermer l’aperçu"
   }
 }

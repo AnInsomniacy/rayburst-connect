@@ -963,5 +963,98 @@
   },
   "resources_mobile": {
     "message": "Използване на мобилен User-Agent"
+  },
+  "media_settings_title": {
+    "message": "Настройки за медия"
+  },
+  "media_settings_any_size": {
+    "message": "Всеки размер"
+  },
+  "media_settings_capture": {
+    "message": "Откриване"
+  },
+  "media_settings_edit": {
+    "message": "Редактиране"
+  },
+  "media_settings_remove": {
+    "message": "Премахване"
+  },
+  "media_settings_invalid_rule": {
+    "message": "Проверете синтаксиса, стойностите и дублираните типове."
+  },
+  "media_settings_between": {
+    "message": "Между"
+  },
+  "media_settings_upper": {
+    "message": "Горна граница"
+  },
+  "media_settings_pattern": {
+    "message": "Шаблон"
+  },
+  "media_settings_action": {
+    "message": "Действие"
+  },
+  "media_settings_enabled": {
+    "message": "Включено"
+  },
+  "media_settings_ignore": {
+    "message": "Игнориране"
+  },
+  "media_settings_regex": {
+    "message": "Регулярни изрази"
+  },
+  "media_settings_regex_hint": {
+    "message": "Първото съвпадение отменя правилата за тип."
+  },
+  "media_settings_flags": {
+    "message": "Флагове на израза"
+  },
+  "media_settings_group": {
+    "message": "URL група (0: оригинален URL)"
+  },
+  "media_settings_test_url": {
+    "message": "Тестов URL"
+  },
+  "media_settings_no_match": {
+    "message": "Няма съвпадение"
+  },
+  "media_settings_behavior": {
+    "message": "Поведение"
+  },
+  "media_settings_capture_hint": {
+    "message": "Филтрите не ограничават изтеглянето на плейлисти."
+  },
+  "media_settings_newest": {
+    "message": "Първо най-новите"
+  },
+  "media_settings_quick": {
+    "message": "Бързо изтегляне"
+  },
+  "media_settings_quick_hint": {
+    "message": "Избор на потоци при няколко възможности."
+  },
+  "media_settings_deep": {
+    "message": "Винаги включено задълбочено търсене"
+  },
+  "media_settings_deep_hint": {
+    "message": "Презаредете страниците. Може да повлияе на възпроизвеждането."
+  },
+  "media_settings_include": {
+    "message": "Само изброените сайтове"
+  },
+  "media_settings_exclude": {
+    "message": "Изключване на изброените сайтове"
+  },
+  "media_settings_autosave": {
+    "message": "Промените се запазват автоматично."
+  },
+  "media_settings_restore": {
+    "message": "Възстановяване на медийните настройки"
+  },
+  "media_settings_restore_hint": {
+    "message": "Нулиране само на медията? Връзката остава непроменена."
+  },
+  "media_settings_close_preview": {
+    "message": "Затваряне на прегледа"
   }
 }

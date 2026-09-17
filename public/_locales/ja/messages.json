@@ -963,5 +963,98 @@
   },
   "resources_mobile": {
     "message": "モバイルの User-Agent を使用"
+  },
+  "media_settings_title": {
+    "message": "メディア設定"
+  },
+  "media_settings_any_size": {
+    "message": "サイズ制限なし"
+  },
+  "media_settings_capture": {
+    "message": "検出"
+  },
+  "media_settings_edit": {
+    "message": "編集"
+  },
+  "media_settings_remove": {
+    "message": "削除"
+  },
+  "media_settings_invalid_rule": {
+    "message": "構文、値、種類の重複を確認してください。"
+  },
+  "media_settings_between": {
+    "message": "範囲"
+  },
+  "media_settings_upper": {
+    "message": "上限"
+  },
+  "media_settings_pattern": {
+    "message": "パターン"
+  },
+  "media_settings_action": {
+    "message": "操作"
+  },
+  "media_settings_enabled": {
+    "message": "有効"
+  },
+  "media_settings_ignore": {
+    "message": "無視"
+  },
+  "media_settings_regex": {
+    "message": "正規表現"
+  },
+  "media_settings_regex_hint": {
+    "message": "最初の一致を優先し、種類のルールを上書きします。"
+  },
+  "media_settings_flags": {
+    "message": "正規表現フラグ"
+  },
+  "media_settings_group": {
+    "message": "URL取得グループ（0：元のURL）"
+  },
+  "media_settings_test_url": {
+    "message": "テストURL"
+  },
+  "media_settings_no_match": {
+    "message": "一致なし"
+  },
+  "media_settings_behavior": {
+    "message": "動作"
+  },
+  "media_settings_capture_hint": {
+    "message": "検出フィルターはプレイリストのダウンロードを制限しません。"
+  },
+  "media_settings_newest": {
+    "message": "新しい順"
+  },
+  "media_settings_quick": {
+    "message": "クイックダウンロード"
+  },
+  "media_settings_quick_hint": {
+    "message": "選択肢がある場合はトラックを選びます。"
+  },
+  "media_settings_deep": {
+    "message": "詳細検索を常に有効にする"
+  },
+  "media_settings_deep_hint": {
+    "message": "再読み込みで反映します。再生に影響する場合があります。"
+  },
+  "media_settings_include": {
+    "message": "指定サイトのみ"
+  },
+  "media_settings_exclude": {
+    "message": "指定サイトを除外"
+  },
+  "media_settings_autosave": {
+    "message": "変更は自動保存されます。"
+  },
+  "media_settings_restore": {
+    "message": "メディア設定を初期化"
+  },
+  "media_settings_restore_hint": {
+    "message": "メディア設定のみ初期化しますか？接続設定は変わりません。"
+  },
+  "media_settings_close_preview": {
+    "message": "プレビューを閉じる"
   }
 }

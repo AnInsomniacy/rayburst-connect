@@ -963,5 +963,98 @@
   },
   "resources_mobile": {
     "message": "Gunakan User-Agent seluler"
+  },
+  "media_settings_title": {
+    "message": "Pengaturan media"
+  },
+  "media_settings_any_size": {
+    "message": "Semua ukuran"
+  },
+  "media_settings_capture": {
+    "message": "Tangkap"
+  },
+  "media_settings_edit": {
+    "message": "Edit"
+  },
+  "media_settings_remove": {
+    "message": "Hapus"
+  },
+  "media_settings_invalid_rule": {
+    "message": "Periksa sintaks, nilai, dan jenis duplikat."
+  },
+  "media_settings_between": {
+    "message": "Antara"
+  },
+  "media_settings_upper": {
+    "message": "Batas atas"
+  },
+  "media_settings_pattern": {
+    "message": "Pola"
+  },
+  "media_settings_action": {
+    "message": "Tindakan"
+  },
+  "media_settings_enabled": {
+    "message": "Aktif"
+  },
+  "media_settings_ignore": {
+    "message": "Abaikan"
+  },
+  "media_settings_regex": {
+    "message": "Ekspresi reguler"
+  },
+  "media_settings_regex_hint": {
+    "message": "Kecocokan pertama mengesampingkan aturan jenis."
+  },
+  "media_settings_flags": {
+    "message": "Flag regex"
+  },
+  "media_settings_group": {
+    "message": "Grup URL (0: URL asli)"
+  },
+  "media_settings_test_url": {
+    "message": "URL pengujian"
+  },
+  "media_settings_no_match": {
+    "message": "Tidak cocok"
+  },
+  "media_settings_behavior": {
+    "message": "Perilaku"
+  },
+  "media_settings_capture_hint": {
+    "message": "Filter penangkapan tidak membatasi unduhan daftar putar."
+  },
+  "media_settings_newest": {
+    "message": "Terbaru dahulu"
+  },
+  "media_settings_quick": {
+    "message": "Unduh cepat"
+  },
+  "media_settings_quick_hint": {
+    "message": "Pilih trek jika tersedia beberapa pilihan."
+  },
+  "media_settings_deep": {
+    "message": "Selalu aktifkan pencarian mendalam"
+  },
+  "media_settings_deep_hint": {
+    "message": "Muat ulang halaman. Dapat memengaruhi pemutaran."
+  },
+  "media_settings_include": {
+    "message": "Hanya situs terdaftar"
+  },
+  "media_settings_exclude": {
+    "message": "Kecualikan situs terdaftar"
+  },
+  "media_settings_autosave": {
+    "message": "Perubahan disimpan otomatis."
+  },
+  "media_settings_restore": {
+    "message": "Pulihkan pengaturan media"
+  },
+  "media_settings_restore_hint": {
+    "message": "Reset media saja? Pengaturan koneksi tetap sama."
+  },
+  "media_settings_close_preview": {
+    "message": "Tutup pratinjau"
   }
 }

@@ -12,8 +12,8 @@ import { MediaApiError } from '../api';
 import type { MediaCatalog } from './catalog';
 import { emptyMediaInput, MediaInputPlanSchema, type MediaInputPlan } from './contracts';
 import type { DownloadSettings, MediaCandidate, MediaCapturedContext } from '../schema';
-import { matchMediaRule } from './rules';
-import { detectMedia, mediaOrigin } from './detection';
+import { selectMedia } from './rules';
+import { mediaOrigin } from './detection';
 
 const ModeSchema = z.enum(['deep', 'cache', 'video', 'screen', 'rtc', 'stop']);
 const SessionSchema = z.object({
@@ -22,6 +22,7 @@ const SessionSchema = z.object({
   captureId: z.uuid().optional(),
   frameId: z.number().int().optional(),
   documentId: z.string().optional(),
+  automatic: z.boolean().optional(),
   streams: z.record(
     z.string(),
     z.object({
@@ -50,6 +51,12 @@ const ObservationSchema = z
   ])
   .and(z.object({ sessionId: z.uuid() }));
 export const MediaToolSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('MEDIA_FRAME_READY'),
+    tabId: z.number().int(),
+    frameId: z.number().int(),
+    url: z.string(),
+  }),
   z.object({ type: z.literal('MEDIA_AUTOMATIC'), tabId: z.number().int(), enabled: z.boolean() }),
   z.object({ type: z.literal('MEDIA_MOBILE'), tabId: z.number().int(), enabled: z.boolean() }),
   z.object({
@@ -269,18 +276,21 @@ export function startMediaTools(options: {
           });
       }, true);
     } else if (data.type === 'url' && ['deep', 'cache'].includes(session.mode)) {
-      const detected = detectMedia({ url: data.url, evidence: 'script' });
-      const rule = matchMediaRule(options.settings().mediaDiscovery.rules, { url: data.url });
-      if (rule !== 'ignore' && (rule || detected))
-        await candidate(tabId, frameId, data.url, rule || detected!.kind);
+      const detected = selectMedia(
+        { url: data.url, evidence: 'script' },
+        options.settings().mediaDiscovery,
+      );
+      if (detected) await candidate(tabId, frameId, detected.url, detected.kind);
     } else if (data.type === 'manifest' && ['deep', 'cache'].includes(session.mode)) {
-      if (
-        matchMediaRule(options.settings().mediaDiscovery.rules, {
+      const detected = selectMedia(
+        {
           url: data.url,
+          evidence: 'script',
           mime: data.kind === 'hls' ? 'application/vnd.apple.mpegurl' : 'application/dash+xml',
-        }) === 'ignore'
-      )
-        return { ok: true };
+        },
+        options.settings().mediaDiscovery,
+      );
+      if (!detected) return { ok: true };
       const input = emptyMediaInput();
       input.manifests.push({ url: data.url, content: data.content });
       await candidate(tabId, frameId, data.url, data.kind, input);
@@ -332,24 +342,29 @@ export function startMediaTools(options: {
           operation: state.operations.find((value) => value.candidateId === entry.candidateId),
         }));
         if (!item.source) continue;
-        if (item.operation?.state === 'failed')
-          throw new MediaApiError(item.operation.error ?? 'operation_failed');
+        if (item.operation?.state === 'submitted') continue;
         if (item.source.kind === 'embedded' || item.source.method !== 'GET')
           throw new MediaApiError('unsupported_source');
         if (['hls', 'dash', 'collection'].includes(item.source.kind)) {
-          if (!item.operation || ['submitted', 'cancelled'].includes(item.operation.state))
+          if (!item.operation || ['cancelled', 'failed'].includes(item.operation.state))
             await options.workflow.probe(entry.tabId, entry.candidateId);
           else await options.workflow.poll(entry.tabId, entry.candidateId);
           item = await options.catalog.run((state) => ({
             source: state.candidates.find((value) => value.id === entry.candidateId),
             operation: state.operations.find((value) => value.candidateId === entry.candidateId),
           }));
-          if (item.operation?.probe?.state === 'ready' && !item.operation.probe.presentation.live)
+          if (item.operation?.probe?.state === 'ready' && !item.operation.probe.presentation.live) {
             await options.workflow.submit(
               entry.tabId,
               entry.candidateId,
               item.operation.probe.presentation.defaults,
             );
+            const result = await options.catalog.run((state) =>
+              state.operations.find((op) => op.candidateId === entry.candidateId),
+            );
+            if (result?.state === 'submitting') remaining.push(entry);
+            else if (result?.error) throw new MediaApiError(result.error);
+          } else if (item.operation?.state === 'submitted') continue;
           else if (item.operation?.state === 'failed')
             throw new MediaApiError(item.operation.error ?? 'operation_failed');
           else if (item.operation?.probe?.state === 'ready')
@@ -416,11 +431,28 @@ export function startMediaTools(options: {
       'data' in raw
     )
       return run(() => observation(raw.data, sender)).catch(() => ({ ok: false }));
-    const parsed = MediaToolSchema.safeParse(raw);
+    const frameReady =
+      raw &&
+      typeof raw === 'object' &&
+      'type' in raw &&
+      raw.type === 'MEDIA_FRAME_READY' &&
+      sender.id === browser.runtime.id &&
+      sender.tab?.id !== undefined &&
+      sender.frameId !== undefined;
+    const parsed = MediaToolSchema.safeParse(
+      frameReady
+        ? {
+            type: 'MEDIA_FRAME_READY',
+            tabId: sender.tab!.id,
+            frameId: sender.frameId,
+            url: sender.url ?? '',
+          }
+        : raw,
+    );
     if (
       !parsed.success ||
       sender.id !== browser.runtime.id ||
-      !sender.url?.startsWith(browser.runtime.getURL(''))
+      (!frameReady && !sender.url?.startsWith(browser.runtime.getURL('')))
     )
       return;
     return run(async () => {
@@ -485,6 +517,11 @@ export function startMediaTools(options: {
         await options.catalog.run((state) => {
           for (const item of state.candidates)
             if (command.ids.includes(item.id)) item.downloadError = undefined;
+          state.operations = state.operations.filter(
+            (operation) =>
+              !command.ids.includes(operation.candidateId) ||
+              !['submitted', 'cancelled', 'failed'].includes(operation.state),
+          );
         }, true);
         const items = await options.catalog.run((state) =>
           state.candidates.filter((item) => command.ids.includes(item.id)),
@@ -496,7 +533,7 @@ export function startMediaTools(options: {
           if (!queue.some((entry) => entry.candidateId === item.id))
             queue.push({ tabId: item.tabId, candidateId: item.id });
         await browser.storage.session.set({ mediaQueue: queue });
-        await processQueue();
+        void run(processQueue).catch(() => undefined);
         return { ok: true };
       }
       if (command.type === 'MEDIA_PLAYER') {
@@ -542,6 +579,25 @@ export function startMediaTools(options: {
         }
         return result;
       }
+      if (command.type === 'MEDIA_FRAME_READY') {
+        const tab = await browser.tabs.get(command.tabId);
+        if (!tab.url || !options.allowed(tab.url, command.url)) return { ok: true };
+        let session = all[String(command.tabId)];
+        if (session?.automatic && !options.settings().mediaDiscovery.alwaysDeepSearch) {
+          await inject(command.tabId, command.frameId, 'stop');
+          delete all[String(command.tabId)];
+          await browser.storage.session.set({ mediaTools: all });
+          return { ok: true };
+        }
+        if (!session && options.settings().mediaDiscovery.alwaysDeepSearch) {
+          session = { id: crypto.randomUUID(), mode: 'deep', automatic: true, streams: {} };
+          all[String(command.tabId)] = session;
+          await browser.storage.session.set({ mediaTools: all });
+        }
+        if (session && session.mode !== 'stop')
+          await inject(command.tabId, command.frameId, session.mode);
+        return { ok: true };
+      }
       if (command.type === 'MEDIA_TOOLS')
         return {
           automatic: z
@@ -576,7 +632,11 @@ export function startMediaTools(options: {
           (frames ?? []).map((frame) => inject(command.tabId, frame.frameId, command.mode)),
         );
         if (command.mode === 'stop' && !all[String(command.tabId)]?.captureId) {
-          delete all[String(command.tabId)];
+          const current = all[String(command.tabId)];
+          if (current) {
+            current.mode = 'stop';
+            current.automatic = false;
+          }
           await browser.storage.session.set({ mediaTools: all });
         }
         const session = all[String(command.tabId)];
@@ -806,7 +866,7 @@ export function startMediaTools(options: {
         await finishCapture(details.tabId, details.frameId, all);
         return;
       }
-      await inject(details.tabId, details.frameId, session.mode);
+      // The new content frame requests injection once its message listener is installed.
     }).catch(() => undefined);
   });
 }

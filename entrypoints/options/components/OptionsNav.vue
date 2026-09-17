@@ -5,6 +5,7 @@ import {
   LinkOutline,
   SettingsOutline,
   ListOutline,
+  VideocamOutline,
   ColorPaletteOutline,
   GlobeOutline,
   ConstructOutline,
@@ -36,6 +37,7 @@ const sections = [
     icon: SettingsOutline,
     label: () => t('options_section_behavior', 'Download'),
   },
+  { id: 'media', icon: VideocamOutline, label: () => t('media_tab') },
   { id: 'rules', icon: ListOutline, label: () => t('options_section_rules', 'Rules') },
   {
     id: 'appearance',

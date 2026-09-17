@@ -289,9 +289,7 @@ function submit() {
     </NForm>
     <NButton
       v-else-if="
-        ['file', 'fragment', 'subtitle', 'image', 'json'].includes(item.kind) &&
-        !item.sentToDesktop &&
-        !unsupported
+        ['file', 'fragment', 'subtitle', 'image', 'json'].includes(item.kind) && !unsupported
       "
       type="primary"
       :loading="busy"

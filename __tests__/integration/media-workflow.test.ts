@@ -1,3 +1,5 @@
+import { browser } from 'wxt/browser';
+import { startMediaTools } from '@/lib/media/tools';
 import { DuplicateDownloadGuard } from '@/lib/download/duplicate-guard';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fakeBrowser } from 'wxt/testing';
@@ -262,5 +264,62 @@ describe('media probe and selection lifecycle', () => {
     expect(await f.operation()).toMatchObject({ state: 'submitting', error: 'invalid_response' });
     await f.workflow.probe(1, f.candidate.id);
     expect(f.create).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('queued media delivery', () => {
+  it('reconciles a delayed receipt once and reserves a fresh probe for an explicit resend', async () => {
+    const f = await fixture();
+    const tab = await fakeBrowser.tabs.create({ url: f.candidate.pageUrl });
+    vi.spyOn(browser.tabs, 'get').mockResolvedValue({ ...tab, id: 1 });
+    f.submit.mockRejectedValueOnce(new ApiTimeoutError(5000));
+    f.get.mockImplementation(async (id) => {
+      const operation = await f.operation();
+      if (!operation?.submissionId) throw new Error('Missing submission');
+      return {
+        id,
+        expiresAt: Date.now() + 300_000,
+        state: 'submitted',
+        submissionId: operation.submissionId,
+        gid: 'native-gid',
+      };
+    });
+    startMediaTools({
+      ensureConfig: async () => undefined,
+      catalog: f.catalog,
+      client: f.client,
+      allowed: () => true,
+      workflow: f.workflow,
+      probe: f.workflow.probe,
+      observe: f.catalog.observe,
+      contextFor: () => undefined,
+      settings: f.args.getSettings,
+    });
+    const send = () =>
+      fakeBrowser.runtime.onMessage.trigger(
+        { type: 'MEDIA_BATCH', tabId: 1, ids: [f.candidate.id] },
+        { id: browser.runtime.id, url: browser.runtime.getURL('/popup.html') },
+      );
+    await send();
+    await vi.waitFor(async () =>
+      expect(await f.operation()).toMatchObject({ state: 'submitting' }),
+    );
+    await vi.waitFor(async () =>
+      expect((await browser.storage.session.get('mediaQueue')).mediaQueue).toHaveLength(1),
+    );
+    await fakeBrowser.alarms.onAlarm.trigger({ name: 'media-queue', scheduledTime: Date.now() });
+    await vi.waitFor(async () =>
+      expect((await browser.storage.session.get('mediaQueue')).mediaQueue).toEqual([]),
+    );
+    expect((await f.operation())?.state).toBe('submitted');
+    expect(f.create).toHaveBeenCalledTimes(1);
+    expect(f.submit).toHaveBeenCalledTimes(1);
+    f.args.getSettings().duplicateGuard.enabled = false;
+    await send();
+    await vi.waitFor(() => expect(f.submit).toHaveBeenCalledTimes(2));
+    expect(f.create).toHaveBeenCalledTimes(2);
+    await vi.waitFor(async () =>
+      expect((await browser.storage.session.get('mediaQueue')).mediaQueue).toEqual([]),
+    );
   });
 });

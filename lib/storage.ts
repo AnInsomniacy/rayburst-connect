@@ -18,6 +18,8 @@ import {
   type DiagnosticSettings,
   type DiagnosticEvent,
   type DownloadSettings,
+  parseMediaSettings,
+  type MediaSettings,
   type SiteRule,
   type StorageSnapshot,
   type UiPrefs,
@@ -67,7 +69,20 @@ async function saveSettings(settings: DownloadSettings): Promise<void> {
 }
 
 export async function updateSettings(patch: Partial<DownloadSettings>): Promise<void> {
-  await saveSettings({ ...(await loadSettings()), ...patch });
+  await navigator.locks.request('rayburst-settings', async () => {
+    await saveSettings({ ...(await loadSettings()), ...patch });
+  });
+}
+
+/** Native Web Locks serialize read/modify/write across the popup, options and worker. */
+export async function updateMediaSettings(patch: Partial<MediaSettings>): Promise<void> {
+  await navigator.locks.request('rayburst-settings', async () => {
+    const settings = await loadSettings();
+    await saveSettings({
+      ...settings,
+      mediaDiscovery: parseMediaSettings({ ...settings.mediaDiscovery, ...patch }),
+    });
+  });
 }
 
 export async function saveSiteRules(rules: SiteRule[]): Promise<void> {
@@ -92,7 +107,9 @@ export async function saveDiagnosticEvents(events: DiagnosticEvent[]): Promise<v
 
 export async function saveSnapshot(snapshot: StorageSnapshot): Promise<void> {
   const validated = parseSnapshot(snapshot);
-  await storage.setItems(
-    SETTINGS_STORAGE_KEYS.map((key) => ({ key: local(key), value: validated[key] })),
+  await navigator.locks.request('rayburst-settings', () =>
+    storage.setItems(
+      SETTINGS_STORAGE_KEYS.map((key) => ({ key: local(key), value: validated[key] })),
+    ),
   );
 }

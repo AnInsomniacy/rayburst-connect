@@ -963,5 +963,98 @@
   },
   "resources_mobile": {
     "message": "استفاده از User-Agent موبایل"
+  },
+  "media_settings_title": {
+    "message": "تنظیمات رسانه"
+  },
+  "media_settings_any_size": {
+    "message": "هر اندازه‌ای"
+  },
+  "media_settings_capture": {
+    "message": "شناسایی"
+  },
+  "media_settings_edit": {
+    "message": "ویرایش"
+  },
+  "media_settings_remove": {
+    "message": "حذف"
+  },
+  "media_settings_invalid_rule": {
+    "message": "نحو، مقادیر و نوع‌های تکراری را بررسی کنید."
+  },
+  "media_settings_between": {
+    "message": "بین"
+  },
+  "media_settings_upper": {
+    "message": "حد بالا"
+  },
+  "media_settings_pattern": {
+    "message": "الگو"
+  },
+  "media_settings_action": {
+    "message": "عملکرد"
+  },
+  "media_settings_enabled": {
+    "message": "فعال"
+  },
+  "media_settings_ignore": {
+    "message": "نادیده گرفتن"
+  },
+  "media_settings_regex": {
+    "message": "عبارت‌های منظم"
+  },
+  "media_settings_regex_hint": {
+    "message": "اولین تطبیق بر قوانین نوع اولویت دارد."
+  },
+  "media_settings_flags": {
+    "message": "پرچم‌های عبارت منظم"
+  },
+  "media_settings_group": {
+    "message": "گروه نشانی (0: نشانی اصلی)"
+  },
+  "media_settings_test_url": {
+    "message": "نشانی آزمایشی"
+  },
+  "media_settings_no_match": {
+    "message": "بدون تطبیق"
+  },
+  "media_settings_behavior": {
+    "message": "رفتار"
+  },
+  "media_settings_capture_hint": {
+    "message": "فیلترهای شناسایی دانلود فهرست پخش را محدود نمی‌کنند."
+  },
+  "media_settings_newest": {
+    "message": "جدیدترین ابتدا"
+  },
+  "media_settings_quick": {
+    "message": "دانلود سریع"
+  },
+  "media_settings_quick_hint": {
+    "message": "در صورت وجود چند گزینه، ترک‌ها انتخاب شوند."
+  },
+  "media_settings_deep": {
+    "message": "جستجوی عمیق همیشه فعال باشد"
+  },
+  "media_settings_deep_hint": {
+    "message": "صفحات را دوباره بارگیری کنید. ممکن است بر پخش اثر بگذارد."
+  },
+  "media_settings_include": {
+    "message": "فقط سایت‌های فهرست‌شده"
+  },
+  "media_settings_exclude": {
+    "message": "حذف سایت‌های فهرست‌شده"
+  },
+  "media_settings_autosave": {
+    "message": "تغییرات خودکار ذخیره می‌شوند."
+  },
+  "media_settings_restore": {
+    "message": "بازنشانی تنظیمات رسانه"
+  },
+  "media_settings_restore_hint": {
+    "message": "فقط تنظیمات رسانه بازنشانی شوند؟ اتصال تغییر نمی‌کند."
+  },
+  "media_settings_close_preview": {
+    "message": "بستن پیش‌نمایش"
   }
 }

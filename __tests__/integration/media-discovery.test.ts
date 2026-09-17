@@ -133,7 +133,9 @@ describe('browser discovery integration', () => {
       { type: 'MEDIA_BATCH', tabId, ids: [source.id] },
       { id: browser.runtime.id, url: browser.runtime.getURL('/popup.html') },
     );
-    expect((await snapshot()).candidates[0]?.downloadError).toBe('unsupported_source');
+    await vi.waitFor(async () =>
+      expect((await snapshot()).candidates[0]?.downloadError).toBe('unsupported_source'),
+    );
     expect((await browser.storage.session.get('mediaQueue')).mediaQueue).toEqual([]);
   });
 
@@ -267,6 +269,19 @@ describe('browser discovery integration', () => {
     response(resource('https://cdn.example.com/current.m3u8'));
     await vi.waitFor(async () => expect((await snapshot()).candidates).toHaveLength(1));
     expect((await snapshot()).candidates[0]?.url).toContain('current.m3u8');
+  });
+  it('hides TS entries while retaining origin headers for native playlist downloads', async () => {
+    const details = resource('https://segments.example.com/part-1.ts', {
+      responseHeaders: [{ name: 'Content-Type', value: 'video/mp2t' }],
+    });
+    request({ ...details, requestHeaders: [{ name: 'Cookie', value: 'segment-session=private' }] });
+    response(details);
+    await vi.waitFor(async () => expect((await snapshot()).contexts).toHaveLength(1));
+    expect((await snapshot()).candidates).toEqual([]);
+    expect((await snapshot()).contexts[0]?.headers).toContainEqual({
+      name: 'cookie',
+      value: 'segment-session=private',
+    });
   });
   it('classifies fragments separately and preserves their origin context', async () => {
     const details = resource('https://segments.example.com/part-1.m4s', {

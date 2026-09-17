@@ -10,6 +10,7 @@
  */
 import { z } from 'zod';
 import { normalizeFileExtensionList } from './file-extensions';
+import { MEDIA_FORMATS, MEDIA_MIMES } from './media/formats';
 import {
   MediaProbeRequestSchema,
   MediaInputPlanSchema,
@@ -57,28 +58,93 @@ export type ConnectionConfig = z.output<typeof ConnectionConfigSchema>;
 
 const interceptOrSkip = z.enum(['intercept', 'skip']);
 
+const resourceKind = z.enum(['hls', 'dash', 'file', 'fragment', 'subtitle', 'image', 'json']);
+export const MediaSizeRuleSchema = z.object({
+  operator: z.enum(['any', '>', '>=', '<', '<=', '=', '!=', 'between']).default('any'),
+  value: z.number().finite().nonnegative().default(0),
+  upper: z.number().finite().nonnegative().default(0),
+  unit: z.enum(['B', 'KB', 'MB', 'GB']).default('KB'),
+});
+export const MediaTypeRuleSchema = z
+  .object({
+    value: z.string().trim().toLowerCase().min(1).max(128),
+    kind: resourceKind,
+    enabled: z.boolean(),
+    size: MediaSizeRuleSchema.default(() => MediaSizeRuleSchema.parse({})),
+  })
+  .superRefine((rule, ctx) => {
+    if (
+      !/^(?:[a-z0-9][a-z0-9_+-]*|[a-z0-9!#$&^_.+-]+\/(?:[a-z0-9!#$&^_.+-]+|\*))$/.test(rule.value)
+    )
+      ctx.addIssue({ code: 'custom', path: ['value'], message: 'Invalid extension or MIME type' });
+    if (rule.size.operator === 'between' && rule.size.upper < rule.size.value)
+      ctx.addIssue({ code: 'custom', path: ['size', 'upper'], message: 'Invalid size range' });
+  });
+export const MediaRegexRuleSchema = z
+  .object({
+    id: z.uuid(),
+    pattern: z.string().min(1).max(512),
+    flags: z.string().max(6).default('i'),
+    action: z.enum(['capture', 'ignore']),
+    kind: resourceKind.default('file'),
+    captureGroup: z.number().int().min(0).max(32).default(0),
+    enabled: z.boolean().default(true),
+  })
+  .superRefine((rule, ctx) => {
+    try {
+      new RegExp(rule.pattern, rule.flags);
+    } catch {
+      ctx.addIssue({ code: 'custom', path: ['pattern'], message: 'Invalid regular expression' });
+    }
+  });
+export const MediaSettingsSchema = lenient(
+  z.object({
+    enabled: z.boolean().catch(true),
+    extensions: z
+      .array(MediaTypeRuleSchema)
+      .max(200)
+      .refine(
+        (rules) =>
+          rules.every((rule) => !rule.value.includes('/')) &&
+          new Set(rules.map((rule) => rule.value)).size === rules.length,
+      )
+      .catch(() =>
+        MEDIA_FORMATS.map(({ extension, kind, enabled }) =>
+          MediaTypeRuleSchema.parse({ value: extension, kind, enabled }),
+        ),
+      ),
+    mimeTypes: z
+      .array(MediaTypeRuleSchema)
+      .max(100)
+      .refine(
+        (rules) =>
+          rules.every((rule) => rule.value.includes('/')) &&
+          new Set(rules.map((rule) => rule.value)).size === rules.length,
+      )
+      .catch(() =>
+        MEDIA_MIMES.map(({ mime, kind, enabled }) =>
+          MediaTypeRuleSchema.parse({ value: mime, kind, enabled }),
+        ),
+      ),
+    regexRules: z.array(MediaRegexRuleSchema).max(100).catch([]),
+    excludedHosts: z.array(z.string().trim().min(1).max(512)).max(100).catch([]),
+    siteMode: z.enum(['exclude', 'include']).catch('exclude'),
+    preserveOnNavigation: z.boolean().catch(false),
+    alwaysDeepSearch: z.boolean().catch(false),
+    quickDownload: z.boolean().catch(true),
+    newestFirst: z.boolean().catch(false),
+  }),
+);
+export type MediaSettings = z.output<typeof MediaSettingsSchema>;
+export type MediaTypeRule = z.output<typeof MediaTypeRuleSchema>;
+export type MediaRegexRule = z.output<typeof MediaRegexRuleSchema>;
+export const parseMediaSettings = (input: unknown): MediaSettings =>
+  MediaSettingsSchema.parse(input);
+
 const DownloadSettingsSchema = lenient(
   z.object({
     enabled: z.boolean().catch(true),
-    mediaDiscovery: lenient(
-      z.object({
-        enabled: z.boolean().catch(true),
-        excludedHosts: z.array(z.string().min(1).max(253)).max(100).catch([]),
-        preserveOnNavigation: z.boolean().catch(false),
-        rules: z
-          .array(
-            z.object({
-              pattern: z.string().max(512),
-              field: z.enum(['url', 'mime', 'extension']).catch('url'),
-              minimumBytes: z.number().int().nonnegative().catch(0),
-              kind: z.enum(['hls', 'dash', 'file', 'subtitle', 'image', 'json', 'ignore']),
-              enabled: z.boolean(),
-            }),
-          )
-          .max(100)
-          .catch([]),
-      }),
-    ),
+    mediaDiscovery: MediaSettingsSchema,
     hideDownloadBar: z.boolean().catch(false),
     desktopUnavailable: lenient(
       z.object({
@@ -259,7 +325,7 @@ export const SETTINGS_BACKUP_KIND = 'rayburst-connect-settings';
 
 export const SettingsBackupSchema = z.strictObject({
   kind: z.literal(SETTINGS_BACKUP_KIND),
-  schemaVersion: z.literal(3),
+  schemaVersion: z.literal(4),
   extensionVersion: z.string().min(1),
   exportedAt: z.iso.datetime(),
   settings: StorageSnapshotSchema.unwrap().extend({

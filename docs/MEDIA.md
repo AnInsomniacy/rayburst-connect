@@ -7,10 +7,10 @@ storage. Aria2 Next inspects, downloads, decrypts and remuxes the result.
 
 Play media and open the **Media** tab, native browser sidebar or full-page workspace.
 Browse the current tab or all tabs, filter by type/name/URL, and sort by time, name
-or size. Fragments have a separate filter. Select resources for batch download,
+or size. TS and standalone subtitle capture are off by default; M4S capture remains on. Type filters are available for captured resources. Select resources for batch download,
 URL copy, track combination or ordered fragment concatenation.
 
-An HLS/DASH source opens native track selection. Choose video, audio, subtitles,
+Each row offers copy, inspection, inline preview and download. HLS/DASH inspection opens native track selection. Quick download uses the native defaults for finite sources without track choices; multiple choices and live sources require confirmation. Choose video, audio, subtitles,
 container and a finite time range or live recording limit. Confirmation starts the
 same GID without another desktop selection dialog. Ordinary files use the existing
 download API. Concatenation expects compatible transport fragments in playback
@@ -53,12 +53,27 @@ Native media-element controls provide seeking, volume, speed, loop, mute,
 Picture-in-Picture, fullscreen and screenshots. Browser gesture and permission
 requirements still apply.
 
-Discovery has independent global and host exclusions. Existing always-skip rules
-also apply. Classification rules match URL, MIME or file extension with a regular
-expression and optional minimum byte size; the first enabled match wins.
-Ordinary download filters remain independent so small manifests are not suppressed.
+The **Media** section in extension settings owns capture policy. Extension and MIME
+tables support enable/disable switches, resource classification, native numeric
+size comparisons and inclusive ranges. Unknown lengths remain eligible. An explicit
+disabled extension wins over MIME fallback. Ordered regular expressions can capture,
+ignore or extract a URL group; the first matching rule overrides type policy.
+Absolute signed URLs remain unchanged. Rule editors validate before saving.
 
-Preserve-on-navigation and automatic download are optional. The per-tab automatic
+Global discovery and site scopes are independent of ordinary download interception.
+Site lists support hostname or URL patterns and an allow-list mode. Existing always-skip
+rules still apply. Network, DOM and deep-search observations use the same policy.
+Filtering a TS or subtitle row does not suppress its document-scoped request context
+or prevent the engine from downloading it through a playlist.
+
+Settings changes save through the existing browser storage APIs. Native Web Locks
+serialize settings updates across extension contexts. Resetting media defaults leaves
+the desktop connection and other settings intact. Settings backups use schema 4;
+older backups and the removed media rule structure have no compatibility adapter.
+Rules are edited in settings, not inside the popup. New sources append in discovery
+order by default, without moving when another request observes the same resource.
+
+Preserve-on-navigation and per-tab automatic download are optional. Always-on deep search is an explicit, disabled-by-default setting; reload pages after changing it. Buffer, screen, playback and WebRTC capture remain explicit per-tab operations. The per-tab automatic
 queue does not submit live recordings or individual transport fragments. Mobile
 User-Agent uses native declarative session rules and reloads the tab; it changes
 request headers, not the rendering engine.
@@ -100,7 +115,7 @@ and external downloader integrations are excluded. Finite HLS/DASH ranges follow
 native segment boundaries, not individual frames. WebVTT export requires a compatible
 subtitle codec. Hooks cannot recover data created before installation.
 
-Run the repository's type, lint, locale, format, contract and module tests. Tests cover
+Run the repository's type, lint, locale, format, contract and module tests. Settings tests cover native concurrent writes and media-only reset; discovery tests cover filtered-segment credentials and shared type policy. Tests cover
 event correlation, credentials, capture replays, stale documents, selection and
 handoff. The maintainer performs real browser/desktop E2E with independently built
 applications. Static checks do not establish playback or download success.

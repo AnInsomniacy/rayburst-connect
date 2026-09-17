@@ -963,5 +963,98 @@
   },
   "resources_mobile": {
     "message": "Używaj mobilnego User-Agent"
+  },
+  "media_settings_title": {
+    "message": "Ustawienia mediów"
+  },
+  "media_settings_any_size": {
+    "message": "Dowolny rozmiar"
+  },
+  "media_settings_capture": {
+    "message": "Wykrywaj"
+  },
+  "media_settings_edit": {
+    "message": "Edytuj"
+  },
+  "media_settings_remove": {
+    "message": "Usuń"
+  },
+  "media_settings_invalid_rule": {
+    "message": "Sprawdź składnię, wartości i powtarzające się typy."
+  },
+  "media_settings_between": {
+    "message": "Pomiędzy"
+  },
+  "media_settings_upper": {
+    "message": "Górny limit"
+  },
+  "media_settings_pattern": {
+    "message": "Wzorzec"
+  },
+  "media_settings_action": {
+    "message": "Działanie"
+  },
+  "media_settings_enabled": {
+    "message": "Włączone"
+  },
+  "media_settings_ignore": {
+    "message": "Ignoruj"
+  },
+  "media_settings_regex": {
+    "message": "Wyrażenia regularne"
+  },
+  "media_settings_regex_hint": {
+    "message": "Pierwsze dopasowanie zastępuje reguły typów."
+  },
+  "media_settings_flags": {
+    "message": "Flagi wyrażenia"
+  },
+  "media_settings_group": {
+    "message": "Grupa URL (0: oryginalny URL)"
+  },
+  "media_settings_test_url": {
+    "message": "Testowy URL"
+  },
+  "media_settings_no_match": {
+    "message": "Brak dopasowania"
+  },
+  "media_settings_behavior": {
+    "message": "Zachowanie"
+  },
+  "media_settings_capture_hint": {
+    "message": "Filtry wykrywania nie ograniczają pobierania list odtwarzania."
+  },
+  "media_settings_newest": {
+    "message": "Najnowsze najpierw"
+  },
+  "media_settings_quick": {
+    "message": "Szybkie pobieranie"
+  },
+  "media_settings_quick_hint": {
+    "message": "Wybierz ścieżki, gdy jest kilka opcji."
+  },
+  "media_settings_deep": {
+    "message": "Zawsze włączaj głębokie wyszukiwanie"
+  },
+  "media_settings_deep_hint": {
+    "message": "Odśwież strony. Może to wpłynąć na odtwarzanie."
+  },
+  "media_settings_include": {
+    "message": "Tylko wymienione witryny"
+  },
+  "media_settings_exclude": {
+    "message": "Wyklucz wymienione witryny"
+  },
+  "media_settings_autosave": {
+    "message": "Zmiany zapisują się automatycznie."
+  },
+  "media_settings_restore": {
+    "message": "Przywróć ustawienia mediów"
+  },
+  "media_settings_restore_hint": {
+    "message": "Zresetować tylko media? Połączenie pozostanie bez zmian."
+  },
+  "media_settings_close_preview": {
+    "message": "Zamknij podgląd"
   }
 }

@@ -963,5 +963,98 @@
   },
   "resources_mobile": {
     "message": "استخدام User-Agent للأجهزة المحمولة"
+  },
+  "media_settings_title": {
+    "message": "إعدادات الوسائط"
+  },
+  "media_settings_any_size": {
+    "message": "أي حجم"
+  },
+  "media_settings_capture": {
+    "message": "التقاط"
+  },
+  "media_settings_edit": {
+    "message": "تعديل"
+  },
+  "media_settings_remove": {
+    "message": "إزالة"
+  },
+  "media_settings_invalid_rule": {
+    "message": "تحقق من الصياغة والقيم والأنواع المكررة."
+  },
+  "media_settings_between": {
+    "message": "بين"
+  },
+  "media_settings_upper": {
+    "message": "الحد الأعلى"
+  },
+  "media_settings_pattern": {
+    "message": "النمط"
+  },
+  "media_settings_action": {
+    "message": "الإجراء"
+  },
+  "media_settings_enabled": {
+    "message": "مفعّل"
+  },
+  "media_settings_ignore": {
+    "message": "تجاهل"
+  },
+  "media_settings_regex": {
+    "message": "التعبيرات النمطية"
+  },
+  "media_settings_regex_hint": {
+    "message": "تُطبّق أول مطابقة وتتجاوز قواعد النوع."
+  },
+  "media_settings_flags": {
+    "message": "أعلام التعبير النمطي"
+  },
+  "media_settings_group": {
+    "message": "مجموعة الرابط (0: الرابط الأصلي)"
+  },
+  "media_settings_test_url": {
+    "message": "رابط الاختبار"
+  },
+  "media_settings_no_match": {
+    "message": "لا توجد مطابقة"
+  },
+  "media_settings_behavior": {
+    "message": "السلوك"
+  },
+  "media_settings_capture_hint": {
+    "message": "مرشحات الالتقاط لا تحدّ من تنزيل قوائم التشغيل."
+  },
+  "media_settings_newest": {
+    "message": "الأحدث أولاً"
+  },
+  "media_settings_quick": {
+    "message": "تنزيل سريع"
+  },
+  "media_settings_quick_hint": {
+    "message": "اختيار المسارات عند توفر عدة خيارات."
+  },
+  "media_settings_deep": {
+    "message": "تفعيل البحث العميق دائماً"
+  },
+  "media_settings_deep_hint": {
+    "message": "أعد تحميل الصفحات للتطبيق. قد يؤثر في التشغيل."
+  },
+  "media_settings_include": {
+    "message": "المواقع المدرجة فقط"
+  },
+  "media_settings_exclude": {
+    "message": "استبعاد المواقع المدرجة"
+  },
+  "media_settings_autosave": {
+    "message": "تُحفظ التغييرات تلقائياً."
+  },
+  "media_settings_restore": {
+    "message": "استعادة إعدادات الوسائط"
+  },
+  "media_settings_restore_hint": {
+    "message": "إعادة ضبط الوسائط فقط؟ تبقى إعدادات الاتصال كما هي."
+  },
+  "media_settings_close_preview": {
+    "message": "إغلاق المعاينة"
   }
 }

@@ -963,5 +963,98 @@
   },
   "resources_mobile": {
     "message": "Utilitza un User-Agent mòbil"
+  },
+  "media_settings_title": {
+    "message": "Configuració de contingut multimèdia"
+  },
+  "media_settings_any_size": {
+    "message": "Qualsevol mida"
+  },
+  "media_settings_capture": {
+    "message": "Detecta"
+  },
+  "media_settings_edit": {
+    "message": "Edita"
+  },
+  "media_settings_remove": {
+    "message": "Elimina"
+  },
+  "media_settings_invalid_rule": {
+    "message": "Comprova la sintaxi, els valors i els tipus duplicats."
+  },
+  "media_settings_between": {
+    "message": "Entre"
+  },
+  "media_settings_upper": {
+    "message": "Límit superior"
+  },
+  "media_settings_pattern": {
+    "message": "Patró"
+  },
+  "media_settings_action": {
+    "message": "Acció"
+  },
+  "media_settings_enabled": {
+    "message": "Activat"
+  },
+  "media_settings_ignore": {
+    "message": "Ignora"
+  },
+  "media_settings_regex": {
+    "message": "Expressions regulars"
+  },
+  "media_settings_regex_hint": {
+    "message": "La primera coincidència preval sobre les regles de tipus."
+  },
+  "media_settings_flags": {
+    "message": "Indicadors regex"
+  },
+  "media_settings_group": {
+    "message": "Grup URL (0: URL original)"
+  },
+  "media_settings_test_url": {
+    "message": "URL de prova"
+  },
+  "media_settings_no_match": {
+    "message": "Cap coincidència"
+  },
+  "media_settings_behavior": {
+    "message": "Comportament"
+  },
+  "media_settings_capture_hint": {
+    "message": "Els filtres no limiten les baixades de llistes de reproducció."
+  },
+  "media_settings_newest": {
+    "message": "Més recents primer"
+  },
+  "media_settings_quick": {
+    "message": "Baixada ràpida"
+  },
+  "media_settings_quick_hint": {
+    "message": "Tria les pistes quan hi hagi diverses opcions."
+  },
+  "media_settings_deep": {
+    "message": "Activa sempre la cerca profunda"
+  },
+  "media_settings_deep_hint": {
+    "message": "Recarrega les pàgines. Pot afectar la reproducció."
+  },
+  "media_settings_include": {
+    "message": "Només els llocs indicats"
+  },
+  "media_settings_exclude": {
+    "message": "Exclou els llocs indicats"
+  },
+  "media_settings_autosave": {
+    "message": "Els canvis es desen automàticament."
+  },
+  "media_settings_restore": {
+    "message": "Restaura els valors multimèdia"
+  },
+  "media_settings_restore_hint": {
+    "message": "Vols restablir només el contingut multimèdia? La connexió no canvia."
+  },
+  "media_settings_close_preview": {
+    "message": "Tanca la previsualització"
   }
 }

@@ -963,5 +963,98 @@
   },
   "resources_mobile": {
     "message": "Использовать мобильный User-Agent"
+  },
+  "media_settings_title": {
+    "message": "Настройки медиа"
+  },
+  "media_settings_any_size": {
+    "message": "Любой размер"
+  },
+  "media_settings_capture": {
+    "message": "Захват"
+  },
+  "media_settings_edit": {
+    "message": "Изменить"
+  },
+  "media_settings_remove": {
+    "message": "Удалить"
+  },
+  "media_settings_invalid_rule": {
+    "message": "Проверьте синтаксис, значения и повторяющиеся типы."
+  },
+  "media_settings_between": {
+    "message": "Между"
+  },
+  "media_settings_upper": {
+    "message": "Верхний предел"
+  },
+  "media_settings_pattern": {
+    "message": "Шаблон"
+  },
+  "media_settings_action": {
+    "message": "Действие"
+  },
+  "media_settings_enabled": {
+    "message": "Включено"
+  },
+  "media_settings_ignore": {
+    "message": "Игнорировать"
+  },
+  "media_settings_regex": {
+    "message": "Регулярные выражения"
+  },
+  "media_settings_regex_hint": {
+    "message": "Первое совпадение имеет приоритет над правилами типов."
+  },
+  "media_settings_flags": {
+    "message": "Флаги выражения"
+  },
+  "media_settings_group": {
+    "message": "Группа URL (0: исходный URL)"
+  },
+  "media_settings_test_url": {
+    "message": "Тестовый URL"
+  },
+  "media_settings_no_match": {
+    "message": "Нет совпадений"
+  },
+  "media_settings_behavior": {
+    "message": "Поведение"
+  },
+  "media_settings_capture_hint": {
+    "message": "Фильтры захвата не ограничивают загрузку плейлистов."
+  },
+  "media_settings_newest": {
+    "message": "Сначала новые"
+  },
+  "media_settings_quick": {
+    "message": "Быстрая загрузка"
+  },
+  "media_settings_quick_hint": {
+    "message": "Выбирать дорожки при наличии нескольких вариантов."
+  },
+  "media_settings_deep": {
+    "message": "Всегда включать глубокий поиск"
+  },
+  "media_settings_deep_hint": {
+    "message": "Перезагрузите страницы. Может повлиять на воспроизведение."
+  },
+  "media_settings_include": {
+    "message": "Только указанные сайты"
+  },
+  "media_settings_exclude": {
+    "message": "Исключить указанные сайты"
+  },
+  "media_settings_autosave": {
+    "message": "Изменения сохраняются автоматически."
+  },
+  "media_settings_restore": {
+    "message": "Восстановить настройки медиа"
+  },
+  "media_settings_restore_hint": {
+    "message": "Сбросить только настройки медиа? Подключение не изменится."
+  },
+  "media_settings_close_preview": {
+    "message": "Закрыть предпросмотр"
   }
 }

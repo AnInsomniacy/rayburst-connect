@@ -963,5 +963,98 @@
   },
   "resources_mobile": {
     "message": "Mobil User-Agent kullan"
+  },
+  "media_settings_title": {
+    "message": "Medya ayarları"
+  },
+  "media_settings_any_size": {
+    "message": "Her boyut"
+  },
+  "media_settings_capture": {
+    "message": "Yakala"
+  },
+  "media_settings_edit": {
+    "message": "Düzenle"
+  },
+  "media_settings_remove": {
+    "message": "Kaldır"
+  },
+  "media_settings_invalid_rule": {
+    "message": "Sözdizimini, değerleri ve yinelenen türleri kontrol edin."
+  },
+  "media_settings_between": {
+    "message": "Arasında"
+  },
+  "media_settings_upper": {
+    "message": "Üst sınır"
+  },
+  "media_settings_pattern": {
+    "message": "Desen"
+  },
+  "media_settings_action": {
+    "message": "Eylem"
+  },
+  "media_settings_enabled": {
+    "message": "Etkin"
+  },
+  "media_settings_ignore": {
+    "message": "Yoksay"
+  },
+  "media_settings_regex": {
+    "message": "Düzenli ifadeler"
+  },
+  "media_settings_regex_hint": {
+    "message": "İlk eşleşme tür kurallarının önüne geçer."
+  },
+  "media_settings_flags": {
+    "message": "İfade bayrakları"
+  },
+  "media_settings_group": {
+    "message": "URL grubu (0: özgün URL)"
+  },
+  "media_settings_test_url": {
+    "message": "Test URL’si"
+  },
+  "media_settings_no_match": {
+    "message": "Eşleşme yok"
+  },
+  "media_settings_behavior": {
+    "message": "Davranış"
+  },
+  "media_settings_capture_hint": {
+    "message": "Yakalama filtreleri oynatma listesi indirmelerini sınırlamaz."
+  },
+  "media_settings_newest": {
+    "message": "Önce en yeniler"
+  },
+  "media_settings_quick": {
+    "message": "Hızlı indirme"
+  },
+  "media_settings_quick_hint": {
+    "message": "Birden fazla seçenek varsa parçaları seçin."
+  },
+  "media_settings_deep": {
+    "message": "Derin aramayı her zaman etkinleştir"
+  },
+  "media_settings_deep_hint": {
+    "message": "Sayfaları yeniden yükleyin. Oynatmayı etkileyebilir."
+  },
+  "media_settings_include": {
+    "message": "Yalnızca listedeki siteler"
+  },
+  "media_settings_exclude": {
+    "message": "Listedeki siteleri hariç tut"
+  },
+  "media_settings_autosave": {
+    "message": "Değişiklikler otomatik kaydedilir."
+  },
+  "media_settings_restore": {
+    "message": "Medya varsayılanlarını geri yükle"
+  },
+  "media_settings_restore_hint": {
+    "message": "Yalnızca medya ayarları sıfırlansın mı? Bağlantı değişmez."
+  },
+  "media_settings_close_preview": {
+    "message": "Önizlemeyi kapat"
   }
 }

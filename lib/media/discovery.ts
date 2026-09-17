@@ -9,10 +9,10 @@ import {
   captureRequestHeaderContext,
   type RequestHeaderContextStore,
 } from '../download/request-context';
-import { detectMedia, isMediaFragment, mediaOrigin, type MediaObservation } from './detection';
+import { detectMedia, mediaOrigin, type MediaObservation } from './detection';
 import { captureMediaContext } from './request-context';
 import type { MediaCatalog } from './catalog';
-import { matchMediaRule } from './rules';
+import { selectMedia } from './rules';
 
 const HTTP_URLS = ['http://*/*', 'https://*/*'];
 const REQUEST_TTL_MS = 2 * 60_000;
@@ -89,43 +89,26 @@ export function startMediaDiscovery(options: {
     context?: MediaCapturedContext,
     documentUrl?: string,
   ) {
-    let detected = detectMedia(input);
-    const rule = matchMediaRule(options.settings().mediaDiscovery.rules, {
-      ...input,
-      size: detected?.size ?? (Number(input.length) || null),
-    });
-    if (rule === 'ignore') return;
-    if (rule) {
-      detected = {
-        ...(detected ?? {
-          url: input.url,
-          filename: '',
-          mime: input.mime ?? '',
-          size: null,
-          method: input.method ?? 'GET',
-          evidence: input.evidence,
-        }),
-        kind: rule,
-      };
-    }
-    const fragment =
-      input.evidence === 'network' &&
-      input.method === 'GET' &&
-      [200, 206, 304].includes(input.status ?? 0) &&
-      isMediaFragment(input.url, input.mime);
-    if (fragment && detected?.kind === 'file') detected = null;
-    if (!detected && !fragment) return;
     await options.ensureConfig();
+    const detected = selectMedia(input, options.settings().mediaDiscovery);
+    const transportMedia = detectMedia(input);
+    // Filtered segments still supply document-scoped transport context for their playlist.
+    if (
+      !detected &&
+      !['file', 'hls', 'dash', 'fragment', 'subtitle'].includes(transportMedia?.kind ?? '')
+    )
+      return;
     const current = await frameContext(tabId, frameId, documentId).catch(() => null);
     if (!current || !allowed(current.tab.url ?? '', input.url)) return;
     if (documentUrl && current.frame.url !== documentUrl) return;
     const now = Date.now();
-    const cleanContext = context
-      ? {
-          ...captureMediaContext(input.url, context.headers, options.settings()),
-          capturedAt: context.capturedAt,
-        }
-      : undefined;
+    const cleanContext =
+      context && (!detected || detected.url === input.url)
+        ? {
+            ...captureMediaContext(input.url, context.headers, options.settings()),
+            capturedAt: context.capturedAt,
+          }
+        : undefined;
     if (cleanContext?.headers.length) {
       await catalog.run((state) => {
         const previous = state.contexts.find(

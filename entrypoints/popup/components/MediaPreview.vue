@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from 'vue';
-import { NAlert, NInput, NQrCode } from 'naive-ui';
+import { NAlert, NInput, NQrCode, NButton } from 'naive-ui';
 import type { MediaItem } from '@/lib/media/messages';
 import { useI18n } from '@/shared/i18n/engine';
 const props = defineProps<{ item: MediaItem }>();
 const { t } = useI18n();
+const emit = defineEmits<{ close: [] }>();
+const container = ref<InstanceType<typeof window.HTMLElement>>();
 const video = ref<InstanceType<typeof window.HTMLVideoElement>>();
 const error = ref(false);
 let dispose: (() => Promise<void> | void) | undefined;
@@ -47,19 +49,29 @@ async function load() {
       player.attachMediaElement(element);
       player.load();
     } else element.src = props.item.url;
+    if (current === revision) void element.play().catch(() => undefined);
   } catch {
     error.value = true;
   }
 }
 watch(() => props.item.id, load, { flush: 'post' });
-onMounted(load);
+onMounted(() => {
+  void load();
+  container.value?.scrollIntoView({ block: 'nearest' });
+});
 onUnmounted(() => {
   revision++;
+  video.value?.pause();
+  video.value?.removeAttribute('src');
+  video.value?.load();
   void dispose?.();
 });
 </script>
 <template>
-  <section class="preview">
+  <section ref="container" class="preview">
+    <NButton size="small" quaternary @click="emit('close')">{{
+      t('media_settings_close_preview')
+    }}</NButton>
     <NAlert v-if="error" type="info" :show-icon="false">{{
       t('resources_preview_unavailable')
     }}</NAlert>
@@ -71,8 +83,11 @@ onUnmounted(() => {
       @error="error = true"
     />
     <img v-else-if="item.kind === 'image'" :src="item.url" :alt="item.filename" />
-    <NInput :value="item.url" readonly type="textarea" :aria-label="t('resources_url')" />
-    <NQrCode v-if="item.url.length < 1500" :value="item.url" :size="100" />
+    <details>
+      <summary>{{ t('resources_url') }}</summary>
+      <NInput :value="item.url" readonly type="textarea" :aria-label="t('resources_url')" />
+      <NQrCode v-if="item.url.length < 1500" :value="item.url" :size="100" />
+    </details>
   </section>
 </template>
 <style scoped>

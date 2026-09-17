@@ -152,10 +152,11 @@ and stable for the inspection; never use a resolution label as the selector.
 
 Track types: `video`, `audio`, `muxed`, `subtitle`. A multiplexed representation may
 be selected in both slots using the same ID, or in only one slot for video-only or
-audio-only output. It cannot be combined with another representation in v1. The
+audio-only output. It cannot be combined with another audio/video representation. The
 desktop maps null selectors to native `none` options and preserves that packet-filtering
-intent. At least one video/audio track must be selected for streaming media.
-Subtitle-only output and arbitrary multi-audio output are not part of this contract.
+intent. At least one video, audio or subtitle track must be selected. Subtitle-only output
+can use WebVTT when the native codec supports it. Arbitrary multi-audio output is
+not part of this contract.
 
 `defaults` must reference available tracks and a supported format. `formats` contains
 only actual output-container choices; final codec/container validation remains native.

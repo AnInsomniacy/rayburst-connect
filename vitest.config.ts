@@ -7,6 +7,7 @@ export default defineConfig({
   // import.meta.env.* flags; localesPlugin serves virtual:locales.
   plugins: [WxtVitest(), localesPlugin()],
   test: {
+    setupFiles: ['./__tests__/setup.ts'],
     server: { deps: { inline: ['@material/material-color-utilities'] } },
     environment: 'happy-dom',
     include: ['__tests__/**/*.test.ts'],

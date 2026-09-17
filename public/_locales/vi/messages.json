@@ -963,5 +963,98 @@
   },
   "resources_mobile": {
     "message": "Dùng User-Agent di động"
+  },
+  "media_settings_title": {
+    "message": "Cài đặt phương tiện"
+  },
+  "media_settings_any_size": {
+    "message": "Mọi kích thước"
+  },
+  "media_settings_capture": {
+    "message": "Phát hiện"
+  },
+  "media_settings_edit": {
+    "message": "Sửa"
+  },
+  "media_settings_remove": {
+    "message": "Xóa"
+  },
+  "media_settings_invalid_rule": {
+    "message": "Kiểm tra cú pháp, giá trị và loại trùng lặp."
+  },
+  "media_settings_between": {
+    "message": "Trong khoảng"
+  },
+  "media_settings_upper": {
+    "message": "Giới hạn trên"
+  },
+  "media_settings_pattern": {
+    "message": "Mẫu"
+  },
+  "media_settings_action": {
+    "message": "Hành động"
+  },
+  "media_settings_enabled": {
+    "message": "Bật"
+  },
+  "media_settings_ignore": {
+    "message": "Bỏ qua"
+  },
+  "media_settings_regex": {
+    "message": "Biểu thức chính quy"
+  },
+  "media_settings_regex_hint": {
+    "message": "Quy tắc khớp đầu tiên được ưu tiên hơn quy tắc loại."
+  },
+  "media_settings_flags": {
+    "message": "Cờ biểu thức chính quy"
+  },
+  "media_settings_group": {
+    "message": "Nhóm URL (0: URL gốc)"
+  },
+  "media_settings_test_url": {
+    "message": "URL thử nghiệm"
+  },
+  "media_settings_no_match": {
+    "message": "Không khớp"
+  },
+  "media_settings_behavior": {
+    "message": "Hành vi"
+  },
+  "media_settings_capture_hint": {
+    "message": "Bộ lọc phát hiện không giới hạn tải danh sách phát."
+  },
+  "media_settings_newest": {
+    "message": "Mới nhất trước"
+  },
+  "media_settings_quick": {
+    "message": "Tải nhanh"
+  },
+  "media_settings_quick_hint": {
+    "message": "Chọn luồng khi có nhiều lựa chọn."
+  },
+  "media_settings_deep": {
+    "message": "Luôn bật tìm kiếm chuyên sâu"
+  },
+  "media_settings_deep_hint": {
+    "message": "Tải lại trang để áp dụng. Có thể ảnh hưởng phát lại."
+  },
+  "media_settings_include": {
+    "message": "Chỉ các trang trong danh sách"
+  },
+  "media_settings_exclude": {
+    "message": "Loại trừ các trang trong danh sách"
+  },
+  "media_settings_autosave": {
+    "message": "Thay đổi được lưu tự động."
+  },
+  "media_settings_restore": {
+    "message": "Khôi phục mặc định phương tiện"
+  },
+  "media_settings_restore_hint": {
+    "message": "Chỉ đặt lại phương tiện? Cài đặt kết nối không đổi."
+  },
+  "media_settings_close_preview": {
+    "message": "Đóng xem trước"
   }
 }

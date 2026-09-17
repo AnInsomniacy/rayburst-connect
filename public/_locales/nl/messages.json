@@ -963,5 +963,98 @@
   },
   "resources_mobile": {
     "message": "Mobiele User-Agent gebruiken"
+  },
+  "media_settings_title": {
+    "message": "Media-instellingen"
+  },
+  "media_settings_any_size": {
+    "message": "Elke grootte"
+  },
+  "media_settings_capture": {
+    "message": "Detecteren"
+  },
+  "media_settings_edit": {
+    "message": "Bewerken"
+  },
+  "media_settings_remove": {
+    "message": "Verwijderen"
+  },
+  "media_settings_invalid_rule": {
+    "message": "Controleer syntaxis, waarden en dubbele typen."
+  },
+  "media_settings_between": {
+    "message": "Tussen"
+  },
+  "media_settings_upper": {
+    "message": "Bovengrens"
+  },
+  "media_settings_pattern": {
+    "message": "Patroon"
+  },
+  "media_settings_action": {
+    "message": "Actie"
+  },
+  "media_settings_enabled": {
+    "message": "Ingeschakeld"
+  },
+  "media_settings_ignore": {
+    "message": "Negeren"
+  },
+  "media_settings_regex": {
+    "message": "Reguliere expressies"
+  },
+  "media_settings_regex_hint": {
+    "message": "De eerste overeenkomst overschrijft de typeregels."
+  },
+  "media_settings_flags": {
+    "message": "Regex-vlaggen"
+  },
+  "media_settings_group": {
+    "message": "URL-groep (0: oorspronkelijke URL)"
+  },
+  "media_settings_test_url": {
+    "message": "Test-URL"
+  },
+  "media_settings_no_match": {
+    "message": "Geen overeenkomst"
+  },
+  "media_settings_behavior": {
+    "message": "Gedrag"
+  },
+  "media_settings_capture_hint": {
+    "message": "Detectiefilters beperken geen playlistdownloads."
+  },
+  "media_settings_newest": {
+    "message": "Nieuwste eerst"
+  },
+  "media_settings_quick": {
+    "message": "Snel downloaden"
+  },
+  "media_settings_quick_hint": {
+    "message": "Kies tracks wanneer er meerdere opties zijn."
+  },
+  "media_settings_deep": {
+    "message": "Diep zoeken altijd inschakelen"
+  },
+  "media_settings_deep_hint": {
+    "message": "Herlaad de pagina. Dit kan het afspelen beïnvloeden."
+  },
+  "media_settings_include": {
+    "message": "Alleen vermelde websites"
+  },
+  "media_settings_exclude": {
+    "message": "Vermelde websites uitsluiten"
+  },
+  "media_settings_autosave": {
+    "message": "Wijzigingen worden automatisch opgeslagen."
+  },
+  "media_settings_restore": {
+    "message": "Mediastandaarden herstellen"
+  },
+  "media_settings_restore_hint": {
+    "message": "Alleen media-instellingen herstellen? De verbinding blijft ongewijzigd."
+  },
+  "media_settings_close_preview": {
+    "message": "Voorbeeld sluiten"
   }
 }

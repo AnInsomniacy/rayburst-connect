@@ -963,5 +963,98 @@
   },
   "resources_mobile": {
     "message": "ใช้ User-Agent ของมือถือ"
+  },
+  "media_settings_title": {
+    "message": "การตั้งค่าสื่อ"
+  },
+  "media_settings_any_size": {
+    "message": "ทุกขนาด"
+  },
+  "media_settings_capture": {
+    "message": "ตรวจจับ"
+  },
+  "media_settings_edit": {
+    "message": "แก้ไข"
+  },
+  "media_settings_remove": {
+    "message": "ลบ"
+  },
+  "media_settings_invalid_rule": {
+    "message": "ตรวจสอบไวยากรณ์ ค่า และประเภทที่ซ้ำกัน"
+  },
+  "media_settings_between": {
+    "message": "ระหว่าง"
+  },
+  "media_settings_upper": {
+    "message": "ขีดจำกัดบน"
+  },
+  "media_settings_pattern": {
+    "message": "รูปแบบ"
+  },
+  "media_settings_action": {
+    "message": "การทำงาน"
+  },
+  "media_settings_enabled": {
+    "message": "เปิดใช้"
+  },
+  "media_settings_ignore": {
+    "message": "ละเว้น"
+  },
+  "media_settings_regex": {
+    "message": "นิพจน์ทั่วไป"
+  },
+  "media_settings_regex_hint": {
+    "message": "กฎแรกที่ตรงกันจะมีผลเหนือกฎประเภทไฟล์"
+  },
+  "media_settings_flags": {
+    "message": "แฟล็กนิพจน์ทั่วไป"
+  },
+  "media_settings_group": {
+    "message": "กลุ่ม URL (0: URL เดิม)"
+  },
+  "media_settings_test_url": {
+    "message": "URL ทดสอบ"
+  },
+  "media_settings_no_match": {
+    "message": "ไม่พบรายการที่ตรงกัน"
+  },
+  "media_settings_behavior": {
+    "message": "ลักษณะการทำงาน"
+  },
+  "media_settings_capture_hint": {
+    "message": "ตัวกรองการตรวจจับไม่จำกัดการดาวน์โหลดเพลย์ลิสต์"
+  },
+  "media_settings_newest": {
+    "message": "ใหม่ที่สุดก่อน"
+  },
+  "media_settings_quick": {
+    "message": "ดาวน์โหลดด่วน"
+  },
+  "media_settings_quick_hint": {
+    "message": "เลือกแทร็กเมื่อมีหลายตัวเลือก"
+  },
+  "media_settings_deep": {
+    "message": "เปิดการค้นหาเชิงลึกเสมอ"
+  },
+  "media_settings_deep_hint": {
+    "message": "โหลดหน้าใหม่เพื่อใช้งาน อาจมีผลต่อการเล่น"
+  },
+  "media_settings_include": {
+    "message": "เฉพาะเว็บไซต์ในรายการ"
+  },
+  "media_settings_exclude": {
+    "message": "ยกเว้นเว็บไซต์ในรายการ"
+  },
+  "media_settings_autosave": {
+    "message": "บันทึกการเปลี่ยนแปลงอัตโนมัติ"
+  },
+  "media_settings_restore": {
+    "message": "คืนค่าเริ่มต้นของสื่อ"
+  },
+  "media_settings_restore_hint": {
+    "message": "รีเซ็ตเฉพาะสื่อหรือไม่ การตั้งค่าการเชื่อมต่อจะไม่เปลี่ยน"
+  },
+  "media_settings_close_preview": {
+    "message": "ปิดตัวอย่าง"
   }
 }

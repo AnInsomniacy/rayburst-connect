@@ -963,5 +963,98 @@
   },
   "resources_mobile": {
     "message": "使用行動版 User-Agent"
+  },
+  "media_settings_title": {
+    "message": "媒體設定"
+  },
+  "media_settings_any_size": {
+    "message": "不限大小"
+  },
+  "media_settings_capture": {
+    "message": "擷取"
+  },
+  "media_settings_edit": {
+    "message": "編輯"
+  },
+  "media_settings_remove": {
+    "message": "移除"
+  },
+  "media_settings_invalid_rule": {
+    "message": "請檢查語法、數值和重複類型。"
+  },
+  "media_settings_between": {
+    "message": "範圍"
+  },
+  "media_settings_upper": {
+    "message": "上限"
+  },
+  "media_settings_pattern": {
+    "message": "運算式"
+  },
+  "media_settings_action": {
+    "message": "操作"
+  },
+  "media_settings_enabled": {
+    "message": "啟用"
+  },
+  "media_settings_ignore": {
+    "message": "忽略"
+  },
+  "media_settings_regex": {
+    "message": "正規表示式"
+  },
+  "media_settings_regex_hint": {
+    "message": "優先採用首條符合規則，覆蓋類型規則。"
+  },
+  "media_settings_flags": {
+    "message": "正規表示式旗標"
+  },
+  "media_settings_group": {
+    "message": "URL 擷取群組（0：原始網址）"
+  },
+  "media_settings_test_url": {
+    "message": "測試網址"
+  },
+  "media_settings_no_match": {
+    "message": "未符合"
+  },
+  "media_settings_behavior": {
+    "message": "行為"
+  },
+  "media_settings_capture_hint": {
+    "message": "擷取篩選不影響清單內資源的下載。"
+  },
+  "media_settings_newest": {
+    "message": "最新優先"
+  },
+  "media_settings_quick": {
+    "message": "快速下載"
+  },
+  "media_settings_quick_hint": {
+    "message": "有多個選項時先選擇畫質和音軌。"
+  },
+  "media_settings_deep": {
+    "message": "一律開啟深度搜尋"
+  },
+  "media_settings_deep_hint": {
+    "message": "重新整理頁面後生效，可能影響播放。"
+  },
+  "media_settings_include": {
+    "message": "僅啟用所列網站"
+  },
+  "media_settings_exclude": {
+    "message": "排除所列網站"
+  },
+  "media_settings_autosave": {
+    "message": "變更會自動儲存。"
+  },
+  "media_settings_restore": {
+    "message": "還原媒體預設設定"
+  },
+  "media_settings_restore_hint": {
+    "message": "僅重設媒體設定？連線設定保持不變。"
+  },
+  "media_settings_close_preview": {
+    "message": "關閉預覽"
   }
 }

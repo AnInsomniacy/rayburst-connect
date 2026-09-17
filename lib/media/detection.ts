@@ -6,41 +6,8 @@ import {
 } from '../download/url';
 import type { MediaCandidate } from '../schema';
 
-const HLS_MIMES = new Set([
-  'application/vnd.apple.mpegurl',
-  'application/x-mpegurl',
-  'application/mpegurl',
-  'application/octet-stream-m3u8',
-  'audio/mpegurl',
-  'audio/x-mpegurl',
-]);
-const DASH_MIME = 'application/dash+xml';
-const SEGMENT_EXTENSIONS = new Set(['ts', 'm4s', 'm4f', 'cmfv', 'cmfa', 'key']);
-const FILE_EXTENSIONS = new Set([
-  'mp4',
-  'm4v',
-  'mov',
-  'webm',
-  'mkv',
-  'mp3',
-  'm4a',
-  'ogg',
-  'oga',
-  'opus',
-  'wav',
-  'flac',
-  'flv',
-  'f4v',
-  'avi',
-  'wmv',
-  'asf',
-  'mpeg',
-  'mpg',
-  'ogv',
-  'weba',
-  '3gp',
-  'aac',
-]);
+import { MEDIA_FORMATS, MEDIA_MIMES, matchesMime } from './formats';
+
 const DOCUMENT_MIMES = new Set(['text/html', 'application/xhtml+xml']);
 
 export interface MediaObservation {
@@ -102,26 +69,13 @@ export function detectMedia(
   );
   const path = new URL(url).pathname;
   const extension = (filename || path).split('.').pop()?.toLowerCase() ?? '';
-  let kind: MediaCandidate['kind'];
-  if (HLS_MIMES.has(mime) || ['m3u8', 'm3u'].includes(extension)) kind = 'hls';
-  else if (mime === DASH_MIME || extension === 'mpd') kind = 'dash';
-  else if (
-    SEGMENT_EXTENSIONS.has(extension) ||
-    ['video/mp2t', 'video/iso.segment', 'audio/iso.segment'].includes(mime)
-  )
-    kind = 'fragment';
-  else if (
-    ['vtt', 'srt', 'ass', 'ssa', 'ttml'].includes(extension) ||
-    ['text/vtt', 'application/ttml+xml', 'application/x-subrip'].includes(mime)
-  )
-    kind = 'subtitle';
-  else if (mime.startsWith('image/') && input.evidence === 'script') kind = 'image';
-  else if (mime === 'application/json' && input.evidence === 'script') kind = 'json';
-  else {
-    if (!FILE_EXTENSIONS.has(extension) && !/^(video|audio)\//.test(mime) && !input.elementType)
-      return null;
-    kind = 'file';
-  }
+  const format = MEDIA_FORMATS.find((item) => item.extension === extension);
+  const type = MEDIA_MIMES.find((item) => matchesMime(item.mime, mime));
+  const kind =
+    type?.kind === 'hls' || type?.kind === 'dash'
+      ? type.kind
+      : (format?.kind ?? type?.kind ?? (input.elementType ? 'file' : undefined));
+  if (!kind) return null;
   const total = input.contentRange?.match(/^bytes \d+-\d+\/(\d+)$/i)?.[1];
   const rawSize = total ?? (input.status === 206 ? undefined : input.length);
   const size = rawSize && /^\d+$/.test(rawSize) ? Number(rawSize) : NaN;
@@ -161,19 +115,5 @@ export function mediaOrigin(value: string): string {
     return new URL(value).origin;
   } catch {
     return '';
-  }
-}
-
-/** Fragments are credential evidence for their own origin, not separate downloadable titles. */
-export function isMediaFragment(url: string, mime = ''): boolean {
-  try {
-    return (
-      /\.(ts|m4s|m4f|cmfv|cmfa|aac|key)$/i.test(new URL(url).pathname) ||
-      ['video/mp2t', 'video/iso.segment', 'audio/iso.segment'].includes(
-        mime.split(';')[0]?.trim().toLowerCase() ?? '',
-      )
-    );
-  } catch {
-    return false;
   }
 }

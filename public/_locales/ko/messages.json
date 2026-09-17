@@ -963,5 +963,98 @@
   },
   "resources_mobile": {
     "message": "모바일 User-Agent 사용"
+  },
+  "media_settings_title": {
+    "message": "미디어 설정"
+  },
+  "media_settings_any_size": {
+    "message": "크기 제한 없음"
+  },
+  "media_settings_capture": {
+    "message": "감지"
+  },
+  "media_settings_edit": {
+    "message": "편집"
+  },
+  "media_settings_remove": {
+    "message": "삭제"
+  },
+  "media_settings_invalid_rule": {
+    "message": "구문, 값 및 중복 유형을 확인하세요."
+  },
+  "media_settings_between": {
+    "message": "범위"
+  },
+  "media_settings_upper": {
+    "message": "상한"
+  },
+  "media_settings_pattern": {
+    "message": "패턴"
+  },
+  "media_settings_action": {
+    "message": "동작"
+  },
+  "media_settings_enabled": {
+    "message": "사용"
+  },
+  "media_settings_ignore": {
+    "message": "무시"
+  },
+  "media_settings_regex": {
+    "message": "정규 표현식"
+  },
+  "media_settings_regex_hint": {
+    "message": "처음 일치한 규칙이 유형 규칙보다 우선합니다."
+  },
+  "media_settings_flags": {
+    "message": "정규식 플래그"
+  },
+  "media_settings_group": {
+    "message": "URL 캡처 그룹 (0: 원본 URL)"
+  },
+  "media_settings_test_url": {
+    "message": "테스트 URL"
+  },
+  "media_settings_no_match": {
+    "message": "일치 없음"
+  },
+  "media_settings_behavior": {
+    "message": "동작 설정"
+  },
+  "media_settings_capture_hint": {
+    "message": "감지 필터는 재생 목록 다운로드를 제한하지 않습니다."
+  },
+  "media_settings_newest": {
+    "message": "최신순"
+  },
+  "media_settings_quick": {
+    "message": "빠른 다운로드"
+  },
+  "media_settings_quick_hint": {
+    "message": "선택 사항이 있으면 트랙을 선택합니다."
+  },
+  "media_settings_deep": {
+    "message": "항상 심층 검색 사용"
+  },
+  "media_settings_deep_hint": {
+    "message": "페이지를 새로 고치면 적용됩니다. 재생에 영향을 줄 수 있습니다."
+  },
+  "media_settings_include": {
+    "message": "목록의 사이트만"
+  },
+  "media_settings_exclude": {
+    "message": "목록의 사이트 제외"
+  },
+  "media_settings_autosave": {
+    "message": "변경 사항이 자동 저장됩니다."
+  },
+  "media_settings_restore": {
+    "message": "미디어 기본값 복원"
+  },
+  "media_settings_restore_hint": {
+    "message": "미디어 설정만 초기화할까요? 연결 설정은 유지됩니다."
+  },
+  "media_settings_close_preview": {
+    "message": "미리보기 닫기"
   }
 }

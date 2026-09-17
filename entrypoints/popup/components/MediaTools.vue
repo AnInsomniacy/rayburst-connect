@@ -2,7 +2,6 @@
 import { mediaFailureKey } from '@/lib/media/presentation';
 import type { MediaItem } from '@/lib/media/messages';
 import MediaControls from './MediaControls.vue';
-import MediaRules from './MediaRules.vue';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { browser } from 'wxt/browser';
 import { z } from 'zod';
@@ -279,8 +278,12 @@ onUnmounted(() => browser.storage.onChanged.removeListener(changed));
           }}</NCheckbox>
         </NSpace>
       </NCollapseItem>
-      <NCollapseItem name="rules" :title="t('options_section_rules')"><MediaRules /></NCollapseItem>
     </NCollapse>
+    <NButton
+      quaternary
+      @click="browser.tabs.create({ url: browser.runtime.getURL('/options.html') + '#media' })"
+      >{{ t('media_settings_title') }}</NButton
+    >
   </section>
 </template>
 <style scoped>
