@@ -14,10 +14,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-PACKAGE_JSON="$PROJECT_ROOT/package.json"
+cd "$PROJECT_ROOT"
 
 # Read version from package.json
-VERSION=$(node -e "console.log(require('$PACKAGE_JSON').version)")
+VERSION=$(node -p "require('./package.json').version")
 TAG="v$VERSION"
 
 if [ -z "$VERSION" ]; then
@@ -35,7 +35,6 @@ fi
 echo "Releasing $TAG..."
 
 # Format code (best-effort auto-fix, then verify below)
-cd "$PROJECT_ROOT"
 pnpm format --log-level warn 2>/dev/null || true
 
 # ── Pre-release verification gate ────────────────────────────────
@@ -64,7 +63,7 @@ fi
 git tag -a "$TAG" -m "$TAG"
 
 # Push commit and tag
-git push && git push --tags
+git push && git push origin "$TAG"
 
 echo ""
 echo "✓ Released $TAG"
