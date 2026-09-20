@@ -48,3 +48,9 @@ continue to authenticate with the Extension API secret.
 
 The `rayburst://` scheme activates the desktop only. It never creates a download or
 transports cookies. Downloads use the authenticated HTTP handoff and its receipts.
+
+Chromium takeover owns the asynchronous `onDeterminingFilename` callback while
+cancellation completes. Successful cancellation ends filename determination;
+no suggestion is sent for that terminated download. A failed cancellation releases
+the filename callback. Cancellation rejection is observed before waiting for
+configuration, so worker startup cannot produce an unhandled rejection.

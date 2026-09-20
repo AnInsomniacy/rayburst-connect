@@ -225,9 +225,9 @@ describe('DownloadOrchestrator', () => {
       .mocked(baseDeps.desktopClient.addDownload)
       .mockRejectedValue(new ApiDeliveryUncertainError(new Error('reply lost')));
     const orchestrator = new DownloadOrchestrator(baseDeps);
-    await expect(orchestrator.handleChromiumTakeover(item(), Promise.resolve())).resolves.toBe(
-      true,
-    );
+    await expect(
+      orchestrator.handleChromiumTakeover(item(), Promise.resolve({ ok: true })),
+    ).resolves.toBe(true);
     expect(add).toHaveBeenCalledTimes(2);
     expect(new Set(add.mock.calls.map(([request]) => request.id)).size).toBe(1);
     expect(baseDeps.downloads.download).not.toHaveBeenCalled();

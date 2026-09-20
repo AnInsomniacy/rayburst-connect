@@ -1,7 +1,7 @@
 import { MediaApiError } from '@/lib/api';
 import { browser, type Browser } from 'wxt/browser';
 import { DownloadOrchestrator, type DownloadCandidate } from '@/lib/download/orchestrator';
-import { startChromiumTakeover } from '@/lib/download/chromium-takeover';
+import { startChromiumTakeover, type ChromiumCancellation } from '@/lib/download/chromium-takeover';
 import { DuplicateDownloadGuard } from '@/lib/download/duplicate-guard';
 import {
   RequestHeaderContextStore,
@@ -321,7 +321,7 @@ export default defineBackground(() => {
 
   async function handleChromiumTakeover(
     item: Browser.downloads.DownloadItem,
-    cancellation: Promise<void>,
+    cancellation: Promise<ChromiumCancellation>,
   ): Promise<void> {
     await ensureConfigLoaded();
     await orchestrator.handleChromiumTakeover(
@@ -354,7 +354,7 @@ export default defineBackground(() => {
       });
     });
   } else {
-    browser.downloads.onDeterminingFilename.addListener((item) => {
+    browser.downloads.onDeterminingFilename.addListener((item, suggest) => {
       if (!isPotentialChromiumDownload(item)) return;
       if (
         configLoaded &&
@@ -365,10 +365,11 @@ export default defineBackground(() => {
         return;
       }
 
-      startChromiumTakeover(
+      return startChromiumTakeover(
         () => browser.downloads.cancel(item.id),
         (cancellation) => handleChromiumTakeover(item, cancellation),
         (error) => logDownloadHandlerError(item, error),
+        suggest,
       );
     });
   }

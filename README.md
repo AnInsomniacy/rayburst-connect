@@ -6,6 +6,14 @@
 ![Build](https://img.shields.io/github/actions/workflow/status/AnInsomniacy/rayburst-connect/ci.yml?branch=main&label=Build)
 ![Manifest](https://img.shields.io/badge/manifest-v3-blue)
 
+  <p>
+    <a href="https://chromewebstore.google.com/detail/ofeajdebdjajhkmcmamagokecnbephhl"><img src="docs/badges/chrome-web-store.png" alt="Get Rayburst Connect from the Chrome Web Store" height="58" /></a>
+    &nbsp;&nbsp;
+    <a href="https://microsoftedge.microsoft.com/addons/detail/loojjolhejmakcdlbidigoniobfanjlb"><img src="docs/badges/edge-add-ons.png" alt="Get Rayburst Connect from Microsoft Edge Add-ons" height="58" /></a>
+    &nbsp;&nbsp;
+    <a href="https://addons.mozilla.org/en-US/firefox/addon/rayburst-connect/"><img src="docs/badges/firefox-add-ons.svg" alt="Get Rayburst Connect for Firefox" height="58" /></a>
+  </p>
+
 </div>
 
 > Requires Rayburst 4 or later on the same Windows, macOS or Linux computer. Configure the desktop Extension API port and secret in the extension settings.
@@ -31,6 +39,10 @@
 - **Diagnostics** — Privacy-sanitized outcome log with severity filters, configurable bounded history (100 events by default), and one-click export
 
 ## Installation
+
+### From Browser Stores
+
+Install Rayburst Connect from the [Chrome Web Store](https://chromewebstore.google.com/detail/ofeajdebdjajhkmcmamagokecnbephhl), [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/loojjolhejmakcdlbidigoniobfanjlb), or [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/rayburst-connect/).
 
 ### From GitHub Releases
 

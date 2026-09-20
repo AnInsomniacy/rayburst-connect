@@ -4,7 +4,7 @@ Product: **Rayburst Connect**. Package: `rayburst-connect`.
 
 Redefining the companion browser extension
 
-`public/icon/icon.svg` is the artwork source. WXT's official auto-icons module builds
+`public/icon/icon.svg` mirrors the desktop app’s `public/logo.svg`; both products use the same mark. WXT's official auto-icons module builds
 the required PNG sizes and manifest entries. UI surfaces use the source SVG directly.
 `docs/brand/banner.png` is the English README banner with the current slogan. Use no terminal punctuation in slogans, including translations.
 

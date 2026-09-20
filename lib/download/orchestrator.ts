@@ -10,6 +10,7 @@
  * Explicit flow (context menu, protocol links):
  *   submit over HTTP → activate Rayburst → retry over HTTP.
  */
+import type { ChromiumCancellation } from './chromium-takeover';
 import type { DownloadSettings, SiteRule } from '@/lib/schema';
 import type { DiagnosticInput } from '@/lib/diagnostics';
 import { ApiAuthError, ApiDeliveryUncertainError, type DesktopApiClient } from '@/lib/api';
@@ -190,7 +191,10 @@ export class DownloadOrchestrator {
    * the event adapter. Browser fallback starts a fresh, self-owned download so
    * Chrome can show exactly one save dialog under the user's global preference.
    */
-  async handleChromiumTakeover(item: DownloadItem, cancellation: Promise<void>): Promise<boolean> {
+  async handleChromiumTakeover(
+    item: DownloadItem,
+    cancellation: Promise<ChromiumCancellation>,
+  ): Promise<boolean> {
     if (!(await this.finishChromiumCancellation(item.id, cancellation))) return false;
 
     const filterResult = this.evaluateCandidate(item);
@@ -598,15 +602,14 @@ export class DownloadOrchestrator {
 
   private async finishChromiumCancellation(
     id: number,
-    cancellation: Promise<void>,
+    cancellation: Promise<ChromiumCancellation>,
   ): Promise<boolean> {
-    try {
-      await cancellation;
-    } catch (e) {
+    const result = await cancellation;
+    if (!result.ok) {
       this.log(
         'download_cancel_failed',
         'Browser download could not be cancelled',
-        { downloadId: id, error: errorMessage(e) },
+        { downloadId: id, error: errorMessage(result.error) },
         'warn',
       );
       return false;
