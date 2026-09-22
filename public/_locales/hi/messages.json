@@ -1071,5 +1071,20 @@
   "popup_status_checking": {
     "message": "जाँच जारी है",
     "description": "Connection status while the desktop check is pending"
+  },
+  "connection_legacy_title": {
+    "message": "Motrix Next अब समर्थित नहीं है"
+  },
+  "connection_unsupported_title": {
+    "message": "डेस्कटॉप संस्करण समर्थित नहीं है"
+  },
+  "connection_upgrade_hint": {
+    "message": "Rayburst का नवीनतम संस्करण इंस्टॉल करें, फिर दोबारा कनेक्ट करें।"
+  },
+  "connection_get_rayburst": {
+    "message": "Rayburst डाउनलोड करें"
+  },
+  "connection_check_again": {
+    "message": "फिर जाँचें"
   }
 }

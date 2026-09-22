@@ -270,6 +270,7 @@ const DiagnosticCodeSchema = z.enum([
   'media_discovery_failed',
   'firefox_interception_failed',
   'desktop_activation_failed',
+  'desktop_incompatible',
   'cookie_collect_failed',
   'permission_granted',
   'permission_revoked',

@@ -10,7 +10,13 @@ import { onMounted, onUnmounted, provide, ref } from 'vue';
 import { browser } from 'wxt/browser';
 import { NButton, NConfigProvider, NIcon, NSkeleton, NSpin, NTabs, NTabPane } from 'naive-ui';
 import { AlertCircleOutline, PauseOutline, PlayOutline, RocketOutline } from '@vicons/ionicons5';
-import { DesktopApiClient, checkConnection, type StatResponse } from '@/lib/api';
+import {
+  DesktopApiClient,
+  checkConnection,
+  isCompatibilityErrorName,
+  type StatResponse,
+} from '@/lib/api';
+import UnsupportedDesktop from '@/shared/components/UnsupportedDesktop.vue';
 import { loadSnapshot, updateSettings } from '@/lib/storage';
 import {
   parseDesktopActionResponse,
@@ -52,6 +58,7 @@ const connectionPort = ref(DEFAULT_CONNECTION_CONFIG.port);
 const globalStat = ref<StatResponse | null>(null);
 const enabled = ref(true);
 const opening = ref(false);
+const checking = ref(false);
 const { view, count: resourceCount, ready: navigationReady } = usePopupNavigation();
 const settingsReady = ref(false);
 const popupContent = ref<InstanceType<typeof window.HTMLElement>>();
@@ -114,12 +121,23 @@ async function launchApp(): Promise<void> {
   try {
     const response = await sendDesktopAction('START_DESKTOP');
     if (!response.ok) {
+      if (isCompatibilityErrorName(response.error)) errorType.value = response.error;
       phase.value = 'failed';
       return;
     }
     if (!(await fetchData())) phase.value = 'failed';
   } catch {
     phase.value = 'failed';
+  }
+}
+
+async function checkAgain(): Promise<void> {
+  if (checking.value) return;
+  checking.value = true;
+  try {
+    await fetchData();
+  } finally {
+    checking.value = false;
   }
 }
 
@@ -277,6 +295,18 @@ onUnmounted(() => {
                     <NSkeleton height="108px" :sharp="false" />
                   </section>
                   <section
+                    v-else-if="errorType && isCompatibilityErrorName(errorType)"
+                    key="unsupported"
+                    class="popup-page popup-unsupported"
+                  >
+                    <UnsupportedDesktop
+                      :error="errorType"
+                      :version="version"
+                      :checking="checking"
+                      @retry="checkAgain"
+                    />
+                  </section>
+                  <section
                     v-else-if="phase === 'launching'"
                     key="launching"
                     class="popup-page popup-launching"
@@ -423,6 +453,11 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.popup-unsupported {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+}
 .sniffer-tab {
   display: inline-flex;
   align-items: center;

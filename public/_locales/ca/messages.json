@@ -1071,5 +1071,20 @@
   "popup_status_checking": {
     "message": "Comprovant",
     "description": "Connection status while the desktop check is pending"
+  },
+  "connection_legacy_title": {
+    "message": "Motrix Next ja no és compatible"
+  },
+  "connection_unsupported_title": {
+    "message": "Versió d’escriptori no compatible"
+  },
+  "connection_upgrade_hint": {
+    "message": "Instal·la l’última versió de Rayburst i torna a connectar-te."
+  },
+  "connection_get_rayburst": {
+    "message": "Obtén Rayburst"
+  },
+  "connection_check_again": {
+    "message": "Torna a comprovar"
   }
 }

@@ -1,7 +1,7 @@
 /**
  * HTTP client for the Rayburst desktop app's embedded REST API
  * (Axum server at `127.0.0.1:{port}`), plus the extension's single error
- * taxonomy and the two-step connection check.
+ * taxonomy and desktop compatibility checks.
  *
  * Endpoints: GET /ping (no auth), GET /stat, POST /add, POST /pause-all,
  * POST /resume-all (Bearer auth when a secret is configured).
@@ -72,6 +72,20 @@ export class ApiAuthError extends ApiError {
   }
 }
 
+export class ApiCompatibilityError extends ApiError {
+  constructor(
+    public readonly version: string | null = null,
+    legacy = false,
+  ) {
+    super('Install the latest Rayburst to connect');
+    this.name = legacy ? 'MotrixNextUnsupportedError' : 'ApiCompatibilityError';
+  }
+}
+
+export function isCompatibilityErrorName(name: string | null): boolean {
+  return name === 'MotrixNextUnsupportedError' || name === 'ApiCompatibilityError';
+}
+
 export class ApiTimeoutError extends ApiError {
   constructor(timeoutMs: number) {
     super(`API call timed out after ${timeoutMs}ms`);
@@ -100,6 +114,18 @@ const PingResponseSchema = z.object({
   product: z.literal('rayburst'),
   status: z.literal('ok'),
   version: z.string(),
+});
+
+const DiscoveryResponseSchema = z.object({
+  product: z.string().optional(),
+  status: z.literal('ok'),
+  version: z.string().min(1),
+});
+
+const DownloadCapabilitiesSchema = z.object({
+  product: z.literal('rayburst'),
+  protocolVersion: z.literal(2),
+  filenameHints: z.literal(true),
 });
 
 const StatResponseSchema = z.object({
@@ -162,6 +188,12 @@ export class DesktopApiClient {
       const payload = await this.http(path, options).json<unknown>();
       return schema.parse(payload);
     } catch (error) {
+      if (
+        path === 'downloads/capabilities' &&
+        (error instanceof z.ZodError ||
+          (error instanceof HTTPError && [404, 405].includes(error.response.status)))
+      )
+        throw new ApiCompatibilityError();
       if (path.startsWith(MEDIA_API_PATH)) {
         if (error instanceof z.ZodError) throw new MediaApiError('invalid_response');
         if (error instanceof HTTPError && error.response.status !== 401) {
@@ -186,12 +218,19 @@ export class DesktopApiClient {
 
   /** Heartbeat check — no authentication required. */
   async ping(): Promise<PingResponse> {
-    return this.request(
+    const discovery = await this.request(
       'ping',
-      PingResponseSchema,
+      DiscoveryResponseSchema,
       { timeout: API_CONNECTIVITY_TIMEOUT_MS, retry: 0 },
       'Ping',
     );
+    if (discovery.product !== 'rayburst') {
+      throw new ApiCompatibilityError(
+        discovery.version,
+        discovery.product === undefined && /^[1-3]\.\d+\.\d+(?:[-+].*)?$/.test(discovery.version),
+      );
+    }
+    return PingResponseSchema.parse(discovery);
   }
 
   async getStat(): Promise<StatResponse> {
@@ -203,17 +242,17 @@ export class DesktopApiClient {
     );
   }
 
-  async addDownload(request: AddDownloadRequest): Promise<AddDownloadResponse> {
+  async getDownloadCapabilities(): Promise<void> {
     await this.request(
       'downloads/capabilities',
-      z.object({
-        product: z.literal('rayburst'),
-        protocolVersion: z.literal(2),
-        filenameHints: z.literal(true),
-      }),
+      DownloadCapabilitiesSchema,
       { method: 'GET', headers: this.authHeaders(), retry: 0 },
       'Check download support',
     );
+  }
+
+  async addDownload(request: AddDownloadRequest): Promise<AddDownloadResponse> {
+    await this.getDownloadCapabilities();
     await rememberDownload(request, this.config);
     try {
       const response = await this.request(
@@ -369,22 +408,27 @@ export class DesktopApiClient {
     );
   }
 
-  /** Non-throwing readiness check for both the desktop app and its engine. */
+  /** Throws permanent failures so activation never retries an incompatible desktop. */
+  async checkReady(): Promise<boolean> {
+    await this.ping();
+    await this.request(
+      'stat',
+      StatResponseSchema,
+      {
+        method: 'GET',
+        headers: this.authHeaders(),
+        timeout: API_CONNECTIVITY_TIMEOUT_MS,
+        retry: 0,
+      },
+      'Check readiness',
+    );
+    await this.getDownloadCapabilities();
+    return true;
+  }
+
   async isReady(): Promise<boolean> {
     try {
-      await this.ping();
-      await this.request(
-        'stat',
-        StatResponseSchema,
-        {
-          method: 'GET',
-          headers: this.authHeaders(),
-          timeout: API_CONNECTIVITY_TIMEOUT_MS,
-          retry: 0,
-        },
-        'Check readiness',
-      );
-      return true;
+      return await this.checkReady();
     } catch {
       return false;
     }
@@ -417,22 +461,26 @@ type ConnectionResult =
   | { status: 'disconnected'; version: string | null; error: string };
 
 /**
- * Two-step connection verification:
- *   1. `ping()` — the app is running (no auth)
- *   2. `getStat()` — the API secret is correct (Bearer auth)
+ * Verify product identity, authentication and the supported download contract.
  */
 export async function checkConnection(
-  client: Pick<DesktopApiClient, 'ping' | 'getStat'>,
+  client: Pick<DesktopApiClient, 'ping' | 'getStat' | 'getDownloadCapabilities'>,
 ): Promise<ConnectionResult> {
   let version: string | null = null;
   try {
     version = (await client.ping()).version;
     const stat = await client.getStat();
+    await client.getDownloadCapabilities();
     return { status: 'connected', version, stat };
   } catch (error) {
     return {
       status: 'disconnected',
-      version: error instanceof ApiAuthError ? version : null,
+      version:
+        error instanceof ApiCompatibilityError
+          ? (error.version ?? version)
+          : error instanceof ApiAuthError
+            ? version
+            : null,
       error: error instanceof Error ? error.name : 'UnknownError',
     };
   }

@@ -1071,5 +1071,20 @@
   "popup_status_checking": {
     "message": "Έλεγχος",
     "description": "Connection status while the desktop check is pending"
+  },
+  "connection_legacy_title": {
+    "message": "Το Motrix Next δεν υποστηρίζεται πλέον"
+  },
+  "connection_unsupported_title": {
+    "message": "Μη υποστηριζόμενη έκδοση εφαρμογής"
+  },
+  "connection_upgrade_hint": {
+    "message": "Εγκαταστήστε το νεότερο Rayburst και συνδεθείτε ξανά."
+  },
+  "connection_get_rayburst": {
+    "message": "Λήψη Rayburst"
+  },
+  "connection_check_again": {
+    "message": "Νέος έλεγχος"
   }
 }

@@ -1071,5 +1071,20 @@
   "popup_status_checking": {
     "message": "Ellenőrzés",
     "description": "Connection status while the desktop check is pending"
+  },
+  "connection_legacy_title": {
+    "message": "A Motrix Next már nem támogatott"
+  },
+  "connection_unsupported_title": {
+    "message": "Nem támogatott asztali verzió"
+  },
+  "connection_upgrade_hint": {
+    "message": "Telepítsd a legújabb Rayburst verziót, majd kapcsolódj újra."
+  },
+  "connection_get_rayburst": {
+    "message": "Rayburst letöltése"
+  },
+  "connection_check_again": {
+    "message": "Újraellenőrzés"
   }
 }

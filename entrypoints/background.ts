@@ -8,7 +8,7 @@ import {
   type RequestHeaderMatchResult,
 } from '@/lib/download/request-context';
 import { parseFirefoxDownloadResponse } from '@/lib/download/firefox-response';
-import { ApiAuthError, DesktopApiClient } from '@/lib/api';
+import { ApiAuthError, ApiCompatibilityError, DesktopApiClient } from '@/lib/api';
 import { startMediaBackground } from '@/lib/media/background';
 import { fileRequestContext } from '@/lib/media/request-context';
 import {
@@ -169,7 +169,9 @@ export default defineBackground(() => {
     activateDesktop: (timeoutMs) =>
       activateDesktopAndWait({
         activate: activateDesktopApp,
-        checkReady: () => desktopClient.isReady(),
+        checkReady: () => desktopClient.checkReady(),
+        isFatalReadinessError: (error) =>
+          error instanceof ApiAuthError || error instanceof ApiCompatibilityError,
         maxWaitMs: timeoutMs,
       }),
     onDuplicateBlocked: () => {
@@ -281,7 +283,9 @@ export default defineBackground(() => {
     activate: () =>
       activateDesktopAndWait({
         activate: activateDesktopApp,
-        checkReady: () => desktopClient.isReady(),
+        checkReady: () => desktopClient.checkReady(),
+        isFatalReadinessError: (error) =>
+          error instanceof ApiAuthError || error instanceof ApiCompatibilityError,
         maxWaitMs: settings.desktopUnavailable.startupTimeoutSeconds * 1000,
       }),
   });
@@ -483,11 +487,9 @@ export default defineBackground(() => {
     try {
       const ready = await activateDesktopAndWait({
         activate: activateDesktopApp,
-        checkReady: async () => {
-          await desktopClient.getStat();
-          return true;
-        },
-        isFatalReadinessError: (error) => error instanceof ApiAuthError,
+        checkReady: () => desktopClient.checkReady(),
+        isFatalReadinessError: (error) =>
+          error instanceof ApiAuthError || error instanceof ApiCompatibilityError,
         maxWaitMs: 15_000,
       });
       if (ready) return { ok: true };
@@ -498,6 +500,14 @@ export default defineBackground(() => {
       });
       return { ok: false, error: 'readiness_timeout' };
     } catch (error) {
+      if (error instanceof ApiCompatibilityError) {
+        logWarn('desktop_incompatible', 'The connected desktop is not supported', {
+          source: 'popup',
+          version: error.version ?? '',
+          reason: error.name,
+        });
+        return { ok: false, error: error.name };
+      }
       const authFailure = error instanceof ApiAuthError;
       const code =
         error instanceof DesktopActivationError

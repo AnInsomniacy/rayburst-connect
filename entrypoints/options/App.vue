@@ -397,8 +397,8 @@ const connectionError = ref<string | null>(null);
 const testingConnection = ref(false);
 
 async function testConnection(): Promise<void> {
+  if (testingConnection.value) return;
   testingConnection.value = true;
-  connectionError.value = null;
 
   const client = new DesktopApiClient(draft.value.connection);
   // Minimum 600ms so the loading state doesn't flash on fast local checks.

@@ -3,7 +3,8 @@
 import { computed } from 'vue';
 import { NFormItem, NInput, NInputNumber, NButton, NTag, NIcon } from 'naive-ui';
 import { CheckmarkCircleOutline, CloseCircleOutline } from '@vicons/ionicons5';
-import type { ConnectionStatus } from '@/lib/api';
+import { isCompatibilityErrorName, type ConnectionStatus } from '@/lib/api';
+import UnsupportedDesktop from '@/shared/components/UnsupportedDesktop.vue';
 import { DEFAULT_CONNECTION_CONFIG } from '@/lib/schema';
 
 const props = defineProps<{
@@ -90,16 +91,33 @@ const errorMessage = computed(() => {
           {{ i18n('options_connection_success_prefix', 'Connected · Rayburst') }}
           <NTag size="small" round>v{{ version }}</NTag>
         </span>
-        <span v-else-if="error" key="err" class="section__feedback section__feedback--err">
+        <span
+          v-else-if="error && !isCompatibilityErrorName(error)"
+          key="err"
+          class="section__feedback section__feedback--err"
+        >
           <NIcon :size="16"><CloseCircleOutline /></NIcon>
           {{ errorMessage }}
         </span>
       </Transition>
     </div>
+    <Transition name="fade" mode="out-in">
+      <UnsupportedDesktop
+        v-if="error && isCompatibilityErrorName(error)"
+        :error="error"
+        :version="version"
+        :checking="testing"
+        class="section__compatibility"
+        @retry="emit('test')"
+      />
+    </Transition>
   </div>
 </template>
 
 <style scoped>
+.section__compatibility {
+  margin-top: 16px;
+}
 .section__grid {
   display: flex;
   gap: 20px;

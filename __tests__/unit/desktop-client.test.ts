@@ -3,6 +3,7 @@ import {
   API_CONNECTIVITY_TIMEOUT_MS,
   API_REQUEST_TIMEOUT_MS,
   ApiAuthError,
+  ApiCompatibilityError,
   ApiDeliveryUncertainError,
   ApiUnreachableError,
   DesktopApiClient,
@@ -35,6 +36,22 @@ describe('DesktopApiClient', () => {
     vi.useRealTimers();
     await browser.storage.session.clear();
     client = new DesktopApiClient({ port: 29110, secret: 'secret' });
+  });
+
+  it('identifies the unsupported legacy desktop without treating malformed responses as legacy', async () => {
+    vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response(JSON.stringify({ status: 'ok', version: '3.9.9' })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ status: 'ok' })))
+      .mockResolvedValueOnce(new Response('Missing endpoint', { status: 404 }));
+    await expect(client.ping()).rejects.toMatchObject({
+      name: 'MotrixNextUnsupportedError',
+      version: '3.9.9',
+    });
+    await expect(client.ping()).rejects.not.toBeInstanceOf(ApiCompatibilityError);
+    await expect(client.getDownloadCapabilities()).rejects.toBeInstanceOf(ApiCompatibilityError);
+    expect(vi.mocked(fetch).mock.calls.every((_, index) => requestAt(index).method === 'GET')).toBe(
+      true,
+    );
   });
 
   it('uses the configured port and keeps ping unauthenticated', async () => {
@@ -176,6 +193,11 @@ describe('DesktopApiClient', () => {
         new Response(JSON.stringify({ product: 'rayburst', status: 'ok', version: '1.0.0' })),
       )
       .mockResolvedValueOnce(new Response(JSON.stringify(stat)))
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ product: 'rayburst', protocolVersion: 2, filenameHints: true }),
+        ),
+      )
       .mockResolvedValueOnce(new Response('Unavailable', { status: 503 }));
 
     await expect(client.isReady()).resolves.toBe(true);

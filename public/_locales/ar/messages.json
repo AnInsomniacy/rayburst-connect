@@ -1071,5 +1071,20 @@
   "popup_status_checking": {
     "message": "جارٍ التحقق",
     "description": "Connection status while the desktop check is pending"
+  },
+  "connection_legacy_title": {
+    "message": "لم يعد Motrix Next مدعومًا"
+  },
+  "connection_unsupported_title": {
+    "message": "إصدار تطبيق سطح المكتب غير مدعوم"
+  },
+  "connection_upgrade_hint": {
+    "message": "ثبّت أحدث إصدار من Rayburst، ثم أعد الاتصال."
+  },
+  "connection_get_rayburst": {
+    "message": "تنزيل Rayburst"
+  },
+  "connection_check_again": {
+    "message": "التحقق مجددًا"
   }
 }

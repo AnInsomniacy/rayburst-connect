@@ -1071,5 +1071,20 @@
   "popup_status_checking": {
     "message": "確認中",
     "description": "Connection status while the desktop check is pending"
+  },
+  "connection_legacy_title": {
+    "message": "Motrix Next のサポートは終了しました"
+  },
+  "connection_unsupported_title": {
+    "message": "未対応のデスクトップ版です"
+  },
+  "connection_upgrade_hint": {
+    "message": "最新版の Rayburst をインストールして再接続してください。"
+  },
+  "connection_get_rayburst": {
+    "message": "Rayburst を入手"
+  },
+  "connection_check_again": {
+    "message": "再確認"
   }
 }

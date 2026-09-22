@@ -1071,5 +1071,20 @@
   "popup_status_checking": {
     "message": "확인 중",
     "description": "Connection status while the desktop check is pending"
+  },
+  "connection_legacy_title": {
+    "message": "Motrix Next 지원이 종료되었습니다"
+  },
+  "connection_unsupported_title": {
+    "message": "지원되지 않는 데스크톱 버전"
+  },
+  "connection_upgrade_hint": {
+    "message": "최신 Rayburst를 설치한 후 다시 연결하세요."
+  },
+  "connection_get_rayburst": {
+    "message": "Rayburst 다운로드"
+  },
+  "connection_check_again": {
+    "message": "다시 확인"
   }
 }

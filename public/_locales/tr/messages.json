@@ -1071,5 +1071,20 @@
   "popup_status_checking": {
     "message": "Kontrol ediliyor",
     "description": "Connection status while the desktop check is pending"
+  },
+  "connection_legacy_title": {
+    "message": "Motrix Next artık desteklenmiyor"
+  },
+  "connection_unsupported_title": {
+    "message": "Masaüstü sürümü desteklenmiyor"
+  },
+  "connection_upgrade_hint": {
+    "message": "En yeni Rayburst sürümünü yükleyip yeniden bağlanın."
+  },
+  "connection_get_rayburst": {
+    "message": "Rayburst indir"
+  },
+  "connection_check_again": {
+    "message": "Yeniden denetle"
   }
 }

@@ -1071,5 +1071,20 @@
   "popup_status_checking": {
     "message": "檢查中",
     "description": "Connection status while the desktop check is pending"
+  },
+  "connection_legacy_title": {
+    "message": "不再支援 Motrix Next"
+  },
+  "connection_unsupported_title": {
+    "message": "不支援此桌面版本"
+  },
+  "connection_upgrade_hint": {
+    "message": "請安裝新版 Rayburst 後重新連線。"
+  },
+  "connection_get_rayburst": {
+    "message": "取得 Rayburst"
+  },
+  "connection_check_again": {
+    "message": "重新檢查"
   }
 }

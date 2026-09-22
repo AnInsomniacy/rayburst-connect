@@ -13,7 +13,12 @@
 import type { ChromiumCancellation } from './chromium-takeover';
 import type { DownloadSettings, SiteRule } from '@/lib/schema';
 import type { DiagnosticInput } from '@/lib/diagnostics';
-import { ApiAuthError, ApiDeliveryUncertainError, type DesktopApiClient } from '@/lib/api';
+import {
+  ApiAuthError,
+  ApiCompatibilityError,
+  ApiDeliveryUncertainError,
+  type DesktopApiClient,
+} from '@/lib/api';
 import { createFilterPipeline, evaluateFilterPipeline, type FilterContext } from './filter';
 import { extractFilenameFromUrl, isCookieCollectableUrl } from './url';
 import type { RequestHeaderContext, RequestHeaderMatchReason } from './request-context';
@@ -90,6 +95,7 @@ interface SendOptions {
 type DeliveryFailureReason =
   | 'desktop-unavailable'
   | 'api-auth-failed'
+  | 'api-incompatible'
   | 'api-unreachable'
   | 'desktop-activation-disabled'
   | 'desktop-activation-timeout'
@@ -378,6 +384,9 @@ export class DownloadOrchestrator {
         ? { ok: true }
         : { ok: false, reason: 'desktop-activation-timeout' };
     } catch (e) {
+      if (e instanceof ApiCompatibilityError) {
+        return { ok: false, reason: 'api-incompatible', error: e.message };
+      }
       return { ok: false, reason: 'desktop-activation-failed', error: errorMessage(e) };
     }
   }
@@ -450,6 +459,9 @@ export class DownloadOrchestrator {
       await this.submitToDesktopApi(job);
       return { ok: true };
     } catch (e) {
+      if (e instanceof ApiCompatibilityError) {
+        return { ok: false, reason: 'api-incompatible', error: e.message };
+      }
       if (e instanceof ApiDeliveryUncertainError) {
         try {
           await this.submitToDesktopApi(job);

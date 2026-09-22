@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ApiAuthError, ApiDeliveryUncertainError } from '@/lib/api';
+import { ApiAuthError, ApiCompatibilityError, ApiDeliveryUncertainError } from '@/lib/api';
 import { DownloadOrchestrator, type OrchestratorDeps } from '@/lib/download/orchestrator';
 import type { RequestHeaderContext } from '@/lib/download/request-context';
 import { DEFAULT_DOWNLOAD_SETTINGS } from '@/lib/schema';
@@ -147,20 +147,21 @@ describe('DownloadOrchestrator', () => {
     expect(add).toHaveBeenCalledTimes(2);
   });
 
-  it('does not activate after authentication failure and records one terminal error', async () => {
+  it.each([
+    [new ApiAuthError(), 'api-auth-failed', 'api_auth_failed'],
+    [new ApiCompatibilityError('3.9.9', true), 'api-incompatible', 'download_delivery_failed'],
+  ])('does not activate after a permanent preflight failure: %s', async (error, reason, code) => {
     const client = desktopClient(true);
-    vi.spyOn(client, 'addDownload').mockRejectedValue(new ApiAuthError());
-    const authDeps = deps({ desktopClient: client });
-    const orchestrator = new DownloadOrchestrator(authDeps);
-
+    vi.spyOn(client, 'addDownload').mockRejectedValue(error);
+    const failureDeps = deps({ desktopClient: client });
+    const orchestrator = new DownloadOrchestrator(failureDeps);
     await expect(
       orchestrator.sendUrl('https://example.com/file.zip', '', { source: 'context-menu' }),
-    ).rejects.toThrow('api-auth-failed');
-
-    expect(authDeps.activateDesktop).not.toHaveBeenCalled();
-    expect(authDeps.diagnosticLog.append).toHaveBeenCalledTimes(1);
-    expect(authDeps.diagnosticLog.append).toHaveBeenCalledWith(
-      expect.objectContaining({ code: 'api_auth_failed', level: 'error' }),
+    ).rejects.toThrow(reason);
+    expect(failureDeps.activateDesktop).not.toHaveBeenCalled();
+    expect(failureDeps.diagnosticLog.append).toHaveBeenCalledTimes(1);
+    expect(failureDeps.diagnosticLog.append).toHaveBeenCalledWith(
+      expect.objectContaining({ code, level: 'error' }),
     );
   });
 

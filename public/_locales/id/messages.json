@@ -1071,5 +1071,20 @@
   "popup_status_checking": {
     "message": "Memeriksa",
     "description": "Connection status while the desktop check is pending"
+  },
+  "connection_legacy_title": {
+    "message": "Motrix Next tidak lagi didukung"
+  },
+  "connection_unsupported_title": {
+    "message": "Versi desktop tidak didukung"
+  },
+  "connection_upgrade_hint": {
+    "message": "Instal Rayburst terbaru, lalu hubungkan kembali."
+  },
+  "connection_get_rayburst": {
+    "message": "Unduh Rayburst"
+  },
+  "connection_check_again": {
+    "message": "Periksa lagi"
   }
 }

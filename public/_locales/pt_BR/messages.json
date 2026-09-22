@@ -1071,5 +1071,20 @@
   "popup_status_checking": {
     "message": "Verificando",
     "description": "Connection status while the desktop check is pending"
+  },
+  "connection_legacy_title": {
+    "message": "Motrix Next não é mais compatível"
+  },
+  "connection_unsupported_title": {
+    "message": "Versão para desktop incompatível"
+  },
+  "connection_upgrade_hint": {
+    "message": "Instale a versão mais recente do Rayburst e conecte novamente."
+  },
+  "connection_get_rayburst": {
+    "message": "Baixar Rayburst"
+  },
+  "connection_check_again": {
+    "message": "Verificar novamente"
   }
 }

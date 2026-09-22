@@ -1071,5 +1071,20 @@
   "popup_status_checking": {
     "message": "Kontrollerer",
     "description": "Connection status while the desktop check is pending"
+  },
+  "connection_legacy_title": {
+    "message": "Motrix Next støttes ikke lenger"
+  },
+  "connection_unsupported_title": {
+    "message": "Skrivebordsversjonen støttes ikke"
+  },
+  "connection_upgrade_hint": {
+    "message": "Installer nyeste Rayburst og koble til på nytt."
+  },
+  "connection_get_rayburst": {
+    "message": "Last ned Rayburst"
+  },
+  "connection_check_again": {
+    "message": "Sjekk igjen"
   }
 }

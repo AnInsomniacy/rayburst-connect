@@ -46,6 +46,12 @@ media capabilities. Rayburst Connect validates that field and sends
 requests without that header are rejected. Native clients without an Origin header
 continue to authenticate with the Extension API secret.
 
+Connection checks validate the product, credentials and download capabilities.
+An unsupported desktop is shown in both the popup and connection settings with
+an upgrade link. The old Motrix Next discovery response is recognized only to
+explain the failure; its API is not supported. Compatibility failures stop native
+activation retries and download submission before ownership transfers.
+
 The `rayburst://` scheme activates the desktop only. It never creates a download or
 transports cookies. Downloads use the authenticated HTTP handoff and its receipts.
 

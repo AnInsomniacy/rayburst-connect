@@ -1071,5 +1071,20 @@
   "popup_status_checking": {
     "message": "Đang kiểm tra",
     "description": "Connection status while the desktop check is pending"
+  },
+  "connection_legacy_title": {
+    "message": "Motrix Next không còn được hỗ trợ"
+  },
+  "connection_unsupported_title": {
+    "message": "Phiên bản máy tính không được hỗ trợ"
+  },
+  "connection_upgrade_hint": {
+    "message": "Cài đặt Rayburst mới nhất rồi kết nối lại."
+  },
+  "connection_get_rayburst": {
+    "message": "Tải Rayburst"
+  },
+  "connection_check_again": {
+    "message": "Kiểm tra lại"
   }
 }

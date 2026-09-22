@@ -1071,5 +1071,20 @@
   "popup_status_checking": {
     "message": "Se verifică",
     "description": "Connection status while the desktop check is pending"
+  },
+  "connection_legacy_title": {
+    "message": "Motrix Next nu mai este acceptat"
+  },
+  "connection_unsupported_title": {
+    "message": "Versiune desktop neacceptată"
+  },
+  "connection_upgrade_hint": {
+    "message": "Instalează cea mai recentă versiune Rayburst și reconectează-te."
+  },
+  "connection_get_rayburst": {
+    "message": "Descarcă Rayburst"
+  },
+  "connection_check_again": {
+    "message": "Verifică din nou"
   }
 }
