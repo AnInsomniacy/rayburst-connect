@@ -54,7 +54,7 @@ describe('checkConnection', () => {
     expect(result).toHaveProperty('error', 'ApiAuthError');
   });
 
-  it('classifies non-authentication failures without exposing a stale version', async () => {
+  it('classifies failures and preserves only a version obtained during this check', async () => {
     for (const [error, name] of [
       [new ApiUnreachableError(), 'ApiUnreachableError'],
       [new ApiTimeoutError(5000), 'ApiTimeoutError'],
@@ -67,6 +67,10 @@ describe('checkConnection', () => {
     const statFailure = await checkConnection(
       mockClient({ getStat: vi.fn().mockRejectedValue(new ApiUnreachableError()) }),
     );
-    expect(statFailure.version).toBeNull();
+    expect(statFailure).toMatchObject({
+      status: 'disconnected',
+      version: '3.7.3',
+      error: 'ApiUnreachableError',
+    });
   });
 });
