@@ -1,9 +1,10 @@
-import { requireStoreIdentity, validatePackage } from './workflow-utils';
+import identity from '../../browser-identity.json';
+import { validatePackage } from './workflow-utils';
+import { fetchEdge, fetchEdgeJson } from './store-api';
 import { readFile } from 'node:fs/promises';
 
 import {
   configured,
-  fetchJson,
   findZipByNamePart,
   isRecord,
   optionalEnv,
@@ -127,9 +128,7 @@ export function decideEdgePreflightAction(
 }
 
 async function publishEdgeFromEnv(): Promise<void> {
-  requireStoreIdentity('edgeId', requiredEnv('EDGE_EXTENSION_ID'));
-  const productId = requiredEnv('EDGE_PRODUCT_ID');
-  requireStoreIdentity('edgeProductId', productId);
+  const productId = identity.stores.edgeProductId;
   const clientId = requiredEnv('EDGE_CLIENT_ID');
   const apiKey = requiredEnv('EDGE_API_KEY');
   const version = requiredEnv('VERSION');
@@ -202,7 +201,7 @@ async function uploadDraftPackage(input: {
   productId: string;
   zipPath: string;
 }): Promise<string> {
-  const response = await fetch(
+  const response = await fetchEdge(
     `https://api.addons.microsoftedge.microsoft.com/v1/products/${input.productId}/submissions/draft/package`,
     {
       method: 'POST',
@@ -229,7 +228,7 @@ async function waitForPackageValidation(input: {
   let status: string;
   for (let attempt = 1; attempt <= 30; attempt += 1) {
     await sleep(10_000);
-    const response = await fetchJson(
+    const response = await fetchEdgeJson(
       `https://api.addons.microsoftedge.microsoft.com/v1/products/${input.productId}/submissions/draft/package/operations/${input.operationId}`,
       { headers: input.authHeaders },
     );
@@ -247,7 +246,7 @@ async function submitForReview(input: {
   authHeaders: Record<string, string>;
   productId: string;
 }): Promise<string> {
-  const response = await fetch(
+  const response = await fetchEdge(
     `https://api.addons.microsoftedge.microsoft.com/v1/products/${input.productId}/submissions`,
     {
       method: 'POST',
@@ -293,7 +292,7 @@ async function waitForPublishOperation(input: {
   let operation = emptyEdgePublishOperation();
   for (let attempt = 1; attempt <= 30; attempt += 1) {
     await sleep(10_000);
-    const response = await fetchJson(
+    const response = await fetchEdgeJson(
       `https://api.addons.microsoftedge.microsoft.com/v1/products/${input.productId}/submissions/operations/${input.operationId}`,
       { headers: input.authHeaders },
     );
@@ -321,7 +320,7 @@ export async function fetchTrackedPublishOperation(input: {
   }
 
   const url = `https://api.addons.microsoftedge.microsoft.com/v1/products/${input.productId}/submissions/operations/${input.operationId}`;
-  const response = await fetch(url, { headers: input.authHeaders });
+  const response = await fetchEdge(url, { headers: input.authHeaders });
   const text = await response.text();
   if (response.status === 404) {
     console.log('::notice::Edge Add-ons: tracked publish operation is no longer available');

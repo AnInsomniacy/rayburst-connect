@@ -1,10 +1,5 @@
 import identity from '../../browser-identity.json';
-import {
-  requireStoreIdentity,
-  validatePackage,
-  findZipByNamePart,
-  fetchJson,
-} from './workflow-utils';
+import { validatePackage, findZipByNamePart, fetchJson } from './workflow-utils';
 import { createAmoJwt, getFirefoxVersions } from './store-api';
 
 import { requiredEnv, runCommand, stringField } from './workflow-utils';
@@ -32,9 +27,8 @@ async function publishFirefoxFromEnv(): Promise<void> {
   const apiKey = requiredEnv('FIREFOX_API_KEY');
   const apiSecret = requiredEnv('FIREFOX_API_SECRET');
   const version = requiredEnv('VERSION');
-  const slug = requiredEnv('FIREFOX_ADDON_SLUG');
+  const slug = identity.stores.firefoxSlug;
   validatePackage(findZipByNamePart('firefox-mv3'), version, 'firefox');
-  requireStoreIdentity('firefoxSlug', slug);
   const addon = await fetchJson(
     `https://addons.mozilla.org/api/v5/addons/addon/${encodeURIComponent(slug)}/`,
   );

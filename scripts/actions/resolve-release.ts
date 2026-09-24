@@ -32,6 +32,7 @@ function resolveProductionRelease(input: string, repo: string): { tag: string; v
           '--repo',
           repo,
           '--exclude-pre-releases',
+          '--exclude-drafts',
           '--limit',
           '1',
           '--json',
@@ -52,9 +53,14 @@ function resolveProductionRelease(input: string, repo: string): { tag: string; v
     '--repo',
     repo,
     '--json',
-    'isPrerelease,tagName',
+    'isPrerelease,isDraft,tagName',
   ]);
-  const release = JSON.parse(releaseJson) as { isPrerelease?: boolean; tagName?: string };
+  const release = JSON.parse(releaseJson) as {
+    isPrerelease?: boolean;
+    isDraft?: boolean;
+    tagName?: string;
+  };
+  if (release.isDraft) throw new Error('Draft releases cannot be submitted to stores');
   const version = assertProductionRelease(release.tagName || tag, release.isPrerelease === true);
   return { tag: release.tagName || tag, version };
 }

@@ -1,4 +1,6 @@
+import identity from '../../browser-identity.json';
 import {
+  fetchEdgeJson,
   getGoogleAccessToken,
   readChromeRevision,
   createAmoJwt,
@@ -17,7 +19,6 @@ import {
   md,
   optionalEnv,
   requiredEnv,
-  requireStoreIdentity,
   stringField,
 } from './workflow-utils';
 import { isBlockingChromeSubmissionState } from './publish-chrome';
@@ -74,7 +75,7 @@ async function runStoreStatusFromEnv(): Promise<void> {
       checkChrome({
         clientId: optionalEnv('CHROME_CLIENT_ID'),
         clientSecret: optionalEnv('CHROME_CLIENT_SECRET'),
-        extensionId: optionalEnv('CHROME_EXTENSION_ID'),
+        extensionId: identity.stores.chromeId,
         publisherId: optionalEnv('CHROME_PUBLISHER_ID'),
         refreshToken: optionalEnv('CHROME_REFRESH_TOKEN'),
       }),
@@ -83,19 +84,19 @@ async function runStoreStatusFromEnv(): Promise<void> {
       checkFirefox({
         apiKey: optionalEnv('FIREFOX_API_KEY'),
         apiSecret: optionalEnv('FIREFOX_API_SECRET'),
-        slug: optionalEnv('FIREFOX_ADDON_SLUG'),
+        slug: identity.stores.firefoxSlug,
       }),
     ),
     withStoreError('Edge Add-ons', () =>
       checkEdge({
         apiKey: optionalEnv('EDGE_API_KEY'),
         clientId: optionalEnv('EDGE_CLIENT_ID'),
-        extensionId: optionalEnv('EDGE_EXTENSION_ID'),
+        extensionId: identity.stores.edgeId,
         operationId: optionalEnv('EDGE_LAST_OPERATION_ID'),
         operationRunId: optionalEnv('EDGE_LAST_OPERATION_RUN_ID'),
         operationSubmittedAt: optionalEnv('EDGE_LAST_OPERATION_SUBMITTED_AT'),
         operationVersion: optionalEnv('EDGE_LAST_OPERATION_VERSION'),
-        productId: optionalEnv('EDGE_PRODUCT_ID'),
+        productId: identity.stores.edgeProductId,
       }),
     ),
   ]);
@@ -178,7 +179,6 @@ async function withStoreError(
 }
 
 async function checkChrome(chrome: ChromeConfig): Promise<StoreStatusRow> {
-  requireStoreIdentity('chromeId', chrome.extensionId);
   const publicVersion = await getChromePublicVersion(chrome.extensionId);
   if (
     !configured(chrome.publisherId) ||
@@ -212,11 +212,18 @@ async function checkChrome(chrome: ChromeConfig): Promise<StoreStatusRow> {
   );
   const liveVersion = published.version || publicVersion || 'Unavailable';
   const hasBlockingSubmission =
-    Boolean(submitted.version) && isBlockingChromeSubmissionState(submitted.state);
+    Boolean(submitted.version || submitted.state) &&
+    isBlockingChromeSubmissionState(submitted.state);
   const pendingVersion =
-    hasBlockingSubmission && submitted.version !== liveVersion ? submitted.version : '-';
+    hasBlockingSubmission && submitted.version && submitted.version !== liveVersion
+      ? submitted.version
+      : '-';
   const reviewState = mapChromeState(submitted.state || published.state);
-  const canPublishNow = hasBlockingSubmission ? 'No' : 'Yes';
+  const canPublishNow = hasBlockingSubmission
+    ? 'No'
+    : published.state !== 'PUBLISHED' || (isRecord(status) && status.takenDown === true)
+      ? 'Unknown'
+      : 'Yes';
 
   return {
     store: 'Chrome Web Store',
@@ -268,8 +275,7 @@ function mapChromeState(state: string): string {
   }
 }
 
-async function checkFirefox(firefox: FirefoxConfig): Promise<StoreStatusRow> {
-  requireStoreIdentity('firefoxSlug', firefox.slug);
+export async function checkFirefox(firefox: FirefoxConfig): Promise<StoreStatusRow> {
   const publicVersions = await getFirefoxVersions(firefox.slug, '');
   const publicLive = publicVersions.find((version) => firefoxStatus(version) === 'public');
   const authHeader =
@@ -291,7 +297,13 @@ async function checkFirefox(firefox: FirefoxConfig): Promise<StoreStatusRow> {
     liveVersion,
     pendingVersion,
     reviewState: mapFirefoxState(activeStatus),
-    canPublishNow: pending ? 'No' : 'Yes',
+    canPublishNow: !authHeader
+      ? 'Unknown'
+      : pending
+        ? 'No'
+        : activeStatus === 'public' || activeStatus === 'disabled'
+          ? 'Yes'
+          : 'Unknown',
     rawStatus: activeStatus ? `file.status=${activeStatus}` : 'no versions returned',
     notes: authHeader
       ? 'AMO developer version list fetched.'
@@ -323,8 +335,6 @@ function mapFirefoxState(status: string): string {
 }
 
 async function checkEdge(edge: EdgeConfig): Promise<StoreStatusRow> {
-  requireStoreIdentity('edgeId', edge.extensionId);
-  if (configured(edge.productId)) requireStoreIdentity('edgeProductId', edge.productId);
   const liveVersion = await getEdgePublicVersion(edge.extensionId);
   if (!configured(edge.operationId)) {
     return {
@@ -335,7 +345,7 @@ async function checkEdge(edge: EdgeConfig): Promise<StoreStatusRow> {
       canPublishNow: 'Unknown',
       rawStatus: 'no Edge operation id provided',
       notes:
-        'Live package was checked. Pending review state requires a saved Edge publish operation id.',
+        'Live package was checked. Review status and API credentials were not verified: no saved publish operation ID. Check Partner Center for manual submissions.',
     };
   }
 
@@ -351,7 +361,7 @@ async function checkEdge(edge: EdgeConfig): Promise<StoreStatusRow> {
     };
   }
 
-  const operation = await fetchJson(
+  const operation = await fetchEdgeJson(
     `https://api.addons.microsoftedge.microsoft.com/v1/products/${edge.productId}/submissions/operations/${edge.operationId}`,
     {
       headers: {
@@ -450,8 +460,7 @@ function mapEdgeState(status: string, errorCode = ''): string {
 
 function mapEdgeCanPublish(status: string, errorCode: string): 'Yes' | 'No' | 'Unknown' {
   if (status === 'InProgress' || errorCode === 'InProgressSubmission') return 'No';
-  if (status === 'Failed') return 'Unknown';
-  return 'Yes';
+  return 'Unknown';
 }
 
 function formatEdgeErrors(errors: unknown): string {

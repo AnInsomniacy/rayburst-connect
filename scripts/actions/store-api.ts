@@ -14,6 +14,22 @@ export type ChromeRevision = {
   version: string;
 };
 
+export async function fetchEdge(url: string, init: RequestInit = {}): Promise<Response> {
+  const response = await fetch(url, init);
+  if (response.status === 401 || response.status === 403) {
+    throw new Error(
+      `Edge Publish API HTTP ${response.status}: verify EDGE_CLIENT_ID and EDGE_API_KEY against Partner Center > Publish API. Use the current API key and its paired Client ID, not legacy OAuth credentials. Browser sign-in does not authenticate GitHub Actions.`,
+    );
+  }
+  return response;
+}
+
+export async function fetchEdgeJson(url: string, init: RequestInit = {}): Promise<unknown> {
+  const response = await fetchEdge(url, init);
+  if (!response.ok) throw new Error(`Edge Publish API HTTP ${response.status}`);
+  return response.json();
+}
+
 export async function getGoogleAccessToken(config: ChromeConfig): Promise<string> {
   const body = new URLSearchParams({
     client_id: config.clientId,

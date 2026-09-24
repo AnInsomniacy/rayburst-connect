@@ -200,18 +200,18 @@ All code changes must be finalized before starting. Execute in strict order:
 
 5. **Publish to stores** — go to Actions → "Publish to Stores" → Run workflow.
    Enter the version number or leave as `latest` to auto-detect. The workflow:
-   - Resolves the target tag and checks out the exact release code
+   - Resolves the target tag and commit; runs publishing scripts from the workflow commit
    - Downloads the existing packages from that release; no rebuild or repeated quality gate
-   - Builds from source and publishes to Chrome Web Store, Firefox AMO, and Edge Add-ons
+   - Submits existing packages to Chrome Web Store, Firefox AMO, and Edge Add-ons
    - Reports submission results in each store job
 
 ### Store Publishing Details
 
-| Store            | Method                          | Secrets Required                                                                          |
-| ---------------- | ------------------------------- | ----------------------------------------------------------------------------------------- |
-| Chrome Web Store | Chrome Web Store API v2         | `CHROME_EXTENSION_ID`, `CHROME_CLIENT_ID`, `CHROME_CLIENT_SECRET`, `CHROME_REFRESH_TOKEN` |
-| Firefox AMO      | `web-ext sign --channel listed` | `FIREFOX_API_KEY`, `FIREFOX_API_SECRET`                                                   |
-| Edge Add-ons     | REST API v1                     | `EDGE_PRODUCT_ID`, `EDGE_CLIENT_ID`, `EDGE_API_KEY`                                       |
+| Store            | Method                          | Secrets Required                                                   |
+| ---------------- | ------------------------------- | ------------------------------------------------------------------ |
+| Chrome Web Store | Chrome Web Store API v2         | `CHROME_CLIENT_ID`, `CHROME_CLIENT_SECRET`, `CHROME_REFRESH_TOKEN` |
+| Firefox AMO      | `web-ext sign --channel listed` | `FIREFOX_API_KEY`, `FIREFOX_API_SECRET`                            |
+| Edge Add-ons     | REST API v1.1                   | `EDGE_CLIENT_ID`, `EDGE_API_KEY`                                   |
 
 Store workflows also use repository variables for non-secret identifiers and
 cross-workflow status:
@@ -219,8 +219,6 @@ cross-workflow status:
 | Variable                           | Purpose                                     |
 | ---------------------------------- | ------------------------------------------- |
 | `CHROME_PUBLISHER_ID`              | Chrome Web Store publisher resource ID      |
-| `FIREFOX_ADDON_SLUG`               | Firefox AMO add-on slug                     |
-| `EDGE_EXTENSION_ID`                | Public Edge extension ID for live checks    |
 | `EDGE_LAST_OPERATION_ID`           | Last Edge publish review operation ID       |
 | `EDGE_LAST_OPERATION_VERSION`      | Version tied to the last Edge operation     |
 | `EDGE_LAST_OPERATION_RUN_ID`       | GitHub Actions run that saved the operation |
@@ -234,8 +232,9 @@ read/write permission and no Secrets permission.
 `git archive` and uploads it alongside the extension using `--upload-source-code`.
 This satisfies AMO's source code review requirement without exposing source in the GitHub Release.
 
-**Edge API Key rotation:** Edge API keys expire every 72 days. When the `publish-edge`
-job fails, regenerate credentials in Partner Center and update the GitHub Secret.
+**Edge API Key rotation:** Check the expiry shown in Partner Center. When the `publish-edge`
+job returns 401 or 403, verify the current API key and paired Client ID in Partner
+Center and update `EDGE_API_KEY` and `EDGE_CLIENT_ID`. Browser sign-in is unrelated.
 
 **Store conflict handling:** Known conflicts (pending review, version exists, submission
 in review) exit 0 to keep CI green. The step output shows the real outcome
@@ -290,7 +289,9 @@ Do not add a separate build before `wxt zip` or repeat the CI suite here.
 
 ### `publish.yml` (Manual Dispatch Only)
 
-The resolver selects a production release. Chrome, Firefox and Edge jobs download
+Store identities come only from `browser-identity.json`. The resolver selects a published
+production release. Publishing tools run from the workflow commit, so fixes also apply
+to existing releases. Chrome, Firefox and Edge jobs download
 its existing packages and submit them through `scripts/actions`. Firefox also receives
 the source archive for that exact tag. Store jobs do not rebuild or rerun source tests.
 Each job reports its own result; no separate summary runner is needed.

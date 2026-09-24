@@ -1,4 +1,5 @@
-import { requireStoreIdentity, validatePackage } from './workflow-utils';
+import identity from '../../browser-identity.json';
+import { validatePackage } from './workflow-utils';
 import { readFile } from 'node:fs/promises';
 import {
   getGoogleAccessToken,
@@ -53,7 +54,8 @@ export function decideChromePublishAction(
   }
 
   const hasBlockingSubmission =
-    Boolean(status.submitted.version) && isBlockingChromeSubmissionState(status.submitted.state);
+    Boolean(status.submitted.version || status.submitted.state) &&
+    isBlockingChromeSubmissionState(status.submitted.state);
 
   if (status.submitted.version === targetVersion && hasBlockingSubmission) {
     return {
@@ -76,11 +78,10 @@ async function publishChromeFromEnv(): Promise<void> {
   const config = {
     clientId: requiredEnv('CHROME_CLIENT_ID'),
     clientSecret: requiredEnv('CHROME_CLIENT_SECRET'),
-    extensionId: requiredEnv('CHROME_EXTENSION_ID'),
+    extensionId: identity.stores.chromeId,
     publisherId: requiredEnv('CHROME_PUBLISHER_ID'),
     refreshToken: requiredEnv('CHROME_REFRESH_TOKEN'),
   };
-  requireStoreIdentity('chromeId', config.extensionId);
   const version = requiredEnv('VERSION');
   const zipPath = optionalEnv('ZIP_PATH') || findZipByNamePart('chromium-mv3');
   validatePackage(zipPath, version, 'chromium');

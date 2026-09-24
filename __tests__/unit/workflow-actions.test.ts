@@ -1,8 +1,10 @@
 import identity from '../../browser-identity.json';
 import { validatePackageManifest } from '@/scripts/actions/workflow-utils';
+import { fetchEdgeJson } from '@/scripts/actions/store-api';
 import { describe, expect, it, vi } from 'vitest';
 import {
   buildDecision,
+  checkFirefox,
   isActiveFirefoxReviewStatus,
   resolveEdgeStoreStatus,
   type StoreStatusRow,
@@ -35,6 +37,45 @@ function chromeStatus(submittedVersion: string, state: string, liveVersion = '1.
 }
 
 describe('release workflow decisions', () => {
+  it('reports actionable Edge authentication failures without leaking response content', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      for (const status of [401, 403]) {
+        fetchMock.mockResolvedValueOnce(new Response('sensitive response', { status }));
+        await expect(fetchEdgeJson('https://example.invalid')).rejects.toThrow(
+          `Edge Publish API HTTP ${status}: verify EDGE_CLIENT_ID and EDGE_API_KEY`,
+        );
+      }
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('does not infer Firefox review availability from public versions alone', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            results: [{ version: '2.0.3', file: { status: 'public' } }],
+          }),
+        ),
+      ),
+    );
+    try {
+      const result = await checkFirefox({
+        slug: identity.stores.firefoxSlug,
+        apiKey: '',
+        apiSecret: '',
+      });
+      expect(result.liveVersion).toBe('2.0.3');
+      expect(result.canPublishNow).toBe('Unknown');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('accepts production release tags and rejects prereleases', () => {
     expect(normalizeReleaseInput('1.2.3')).toBe('v1.2.3');
     expect(normalizeReleaseInput('v1.2.3')).toBe('v1.2.3');
@@ -147,6 +188,14 @@ describe('release workflow decisions', () => {
   });
 
   it('resolves Edge live, pending, and in-progress store states', () => {
+    expect(
+      resolveEdgeStoreStatus({
+        errorCode: '',
+        liveVersion: '2.0.3',
+        operationStatus: '',
+        operationVersion: '2.0.4',
+      }).canPublishNow,
+    ).toBe('Unknown');
     expect(
       resolveEdgeStoreStatus({
         errorCode: '',

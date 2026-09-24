@@ -104,18 +104,6 @@ export function escapeCode(value: string): string {
     .replaceAll('\n', ' ');
 }
 
-export function requireStoreIdentity(
-  store: 'chromeId' | 'edgeId' | 'edgeProductId' | 'firefoxSlug',
-  value: string,
-): void {
-  const configuredIdentity: string | null = identity.stores[store];
-  if (!configuredIdentity || configuredIdentity !== value) {
-    throw new Error(
-      `Rayburst Connect ${store} is unset or does not match the requested store target`,
-    );
-  }
-}
-
 export function validatePackageManifest(
   value: unknown,
   version: string,

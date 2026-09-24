@@ -44,8 +44,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
-        with:
-          ref: ${{ needs.resolve-version.outputs.sha }}
 
       - uses: ./.github/actions/setup-node-pnpm
 
@@ -58,7 +56,6 @@ jobs:
 
       - name: Upload and publish to Chrome Web Store
         env:
-          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
           CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
           CHROME_PUBLISHER_ID: ${{ vars.CHROME_PUBLISHER_ID }}
@@ -74,26 +71,25 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
-        with:
-          ref: ${{ needs.resolve-version.outputs.sha }}
 
       - uses: ./.github/actions/setup-node-pnpm
 
       - name: Download published Firefox package and source
         env:
+          RELEASE_SHA: ${{ needs.resolve-version.outputs.sha }}
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ needs.resolve-version.outputs.tag }}
           VERSION: ${{ needs.resolve-version.outputs.version }}
         run: |
           gh release download "$RELEASE_TAG" --pattern "rayburst-connect-${VERSION}-firefox-mv3.zip" --dir .output
           unzip -q ".output/rayburst-connect-${VERSION}-firefox-mv3.zip" -d .output/firefox-mv3
-          git archive --format=zip HEAD > source-code.zip
+          git fetch --depth=1 origin "$RELEASE_SHA"
+          git archive --format=zip "$RELEASE_SHA" > source-code.zip
 
       - name: Sign and submit to AMO
         env:
           FIREFOX_API_KEY: ${{ secrets.FIREFOX_API_KEY }}
           FIREFOX_API_SECRET: ${{ secrets.FIREFOX_API_SECRET }}
-          FIREFOX_ADDON_SLUG: ${{ vars.FIREFOX_ADDON_SLUG }}
           VERSION: ${{ needs.resolve-version.outputs.version }}
         run: pnpm exec tsx scripts/actions/publish-firefox.ts
 
@@ -105,8 +101,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
-        with:
-          ref: ${{ needs.resolve-version.outputs.sha }}
 
       - uses: ./.github/actions/setup-node-pnpm
 
@@ -119,8 +113,6 @@ jobs:
 
       - name: Upload and publish to Edge Add-ons
         env:
-          EDGE_EXTENSION_ID: ${{ vars.EDGE_EXTENSION_ID }}
-          EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
           EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
           EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
           GITHUB_TOKEN: ${{ github.token }}
