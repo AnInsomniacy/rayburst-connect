@@ -20,6 +20,10 @@
 
 ---
 
+<p align="center">
+  <img src="docs/brand/media-discovery.png" alt="Rayburst Connect media discovery and preview" width="800" />
+</p>
+
 ## Features
 
 - **Page media discovery** — Detect HLS/DASH manifests and audio/video sources without interrupting playback. Inspect and choose native tracks from the extension's Sniffer tab, sidebar or full-page workspace through Rayburst's [media API](docs/MEDIA_API.md). See [scope and local testing](docs/MEDIA.md).
