@@ -121,7 +121,8 @@ async function launchApp(): Promise<void> {
   try {
     const response = await sendDesktopAction('START_DESKTOP');
     if (!response.ok) {
-      if (isCompatibilityErrorName(response.error)) errorType.value = response.error;
+      if (isCompatibilityErrorName(response.error) || response.error.startsWith('ApiEngine'))
+        errorType.value = response.error;
       phase.value = 'failed';
       return;
     }
@@ -362,7 +363,29 @@ onUnmounted(() => {
                       <NIcon :size="16" class="popup-banner__icon">
                         <AlertCircleOutline />
                       </NIcon>
-                      <div v-if="phase === 'failed'">
+                      <div
+                        v-if="
+                          errorType === 'ApiEngineStartingError' ||
+                          errorType === 'ApiEngineUnavailableError'
+                        "
+                      >
+                        <p class="popup-banner__title">
+                          {{
+                            errorType === 'ApiEngineStartingError'
+                              ? i18n('error_engine_starting', 'Rayburst engine is starting')
+                              : i18n('error_engine_unavailable', 'Rayburst engine is unavailable')
+                          }}
+                        </p>
+                        <p class="popup-banner__hint">
+                          {{
+                            i18n(
+                              'error_engine_hint',
+                              'Open Rayburst to check the engine, then reconnect.',
+                            )
+                          }}
+                        </p>
+                      </div>
+                      <div v-else-if="phase === 'failed'">
                         <p class="popup-banner__title">
                           {{ i18n('popup_launch_failed_title', 'Could not start Rayburst') }}
                         </p>
@@ -418,12 +441,26 @@ onUnmounted(() => {
                       </div>
                     </div>
                     <div class="popup-actions popup-actions--unavailable">
-                      <NButton size="tiny" type="primary" @click="launchApp">
+                      <NButton
+                        v-if="
+                          errorType === 'ApiEngineStartingError' ||
+                          errorType === 'ApiEngineUnavailableError'
+                        "
+                        size="tiny"
+                        :loading="opening"
+                        @click="openApp"
+                        >{{ i18n('popup_action_open', 'Open Rayburst') }}</NButton
+                      >
+                      <NButton
+                        size="tiny"
+                        type="primary"
+                        @click="errorType?.startsWith('ApiEngine') ? checkAgain() : launchApp()"
+                      >
                         <template #icon>
                           <NIcon :size="12"><RocketOutline /></NIcon>
                         </template>
                         {{
-                          phase === 'failed'
+                          phase === 'failed' || errorType?.startsWith('ApiEngine')
                             ? i18n('popup_action_retry', 'Try Again')
                             : i18n('popup_action_launch', 'Launch Rayburst')
                         }}

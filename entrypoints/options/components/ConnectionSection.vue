@@ -33,6 +33,8 @@ const ERROR_I18N: Record<string, [key: string, fallback: string]> = {
   ApiUnreachableError: ['error_api_unreachable', 'Cannot connect to Rayburst'],
   ApiAuthError: ['error_api_auth', 'API secret is incorrect'],
   ApiTimeoutError: ['error_api_timeout', 'Connection timed out'],
+  ApiEngineStartingError: ['error_engine_starting', 'Rayburst engine is starting'],
+  ApiEngineUnavailableError: ['error_engine_unavailable', 'Rayburst engine is unavailable'],
   UnknownError: ['error_unknown', 'An unknown error occurred'],
 };
 

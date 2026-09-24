@@ -1086,5 +1086,14 @@
   },
   "connection_check_again": {
     "message": "Sjekk igjen"
+  },
+  "error_engine_starting": {
+    "message": "Rayburst-motoren starter"
+  },
+  "error_engine_unavailable": {
+    "message": "Rayburst-motoren er utilgjengelig"
+  },
+  "error_engine_hint": {
+    "message": "Åpne Rayburst for å sjekke motoren, og koble til på nytt."
   }
 }

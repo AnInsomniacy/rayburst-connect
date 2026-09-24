@@ -1086,5 +1086,14 @@
   },
   "connection_check_again": {
     "message": "Проверить снова"
+  },
+  "error_engine_starting": {
+    "message": "Движок Rayburst запускается"
+  },
+  "error_engine_unavailable": {
+    "message": "Движок Rayburst недоступен"
+  },
+  "error_engine_hint": {
+    "message": "Откройте Rayburst, проверьте движок и подключитесь снова."
   }
 }

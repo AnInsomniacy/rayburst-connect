@@ -1086,5 +1086,14 @@
   },
   "connection_check_again": {
     "message": "Check again"
+  },
+  "error_engine_starting": {
+    "message": "Rayburst engine is starting"
+  },
+  "error_engine_unavailable": {
+    "message": "Rayburst engine is unavailable"
+  },
+  "error_engine_hint": {
+    "message": "Open Rayburst to check the engine, then reconnect."
   }
 }

@@ -1086,5 +1086,14 @@
   },
   "connection_check_again": {
     "message": "ตรวจสอบอีกครั้ง"
+  },
+  "error_engine_starting": {
+    "message": "กำลังเริ่มเอนจิน Rayburst"
+  },
+  "error_engine_unavailable": {
+    "message": "เอนจิน Rayburst ไม่พร้อมใช้งาน"
+  },
+  "error_engine_hint": {
+    "message": "เปิด Rayburst เพื่อตรวจสอบเอนจิน แล้วเชื่อมต่อใหม่"
   }
 }

@@ -1086,5 +1086,14 @@
   },
   "connection_check_again": {
     "message": "بررسی دوباره"
+  },
+  "error_engine_starting": {
+    "message": "موتور Rayburst در حال راه‌اندازی است"
+  },
+  "error_engine_unavailable": {
+    "message": "موتور Rayburst در دسترس نیست"
+  },
+  "error_engine_hint": {
+    "message": "Rayburst را باز کنید، موتور را بررسی و دوباره متصل شوید."
   }
 }

@@ -93,6 +93,15 @@ export class ApiTimeoutError extends ApiError {
   }
 }
 
+export class ApiEngineError extends ApiError {
+  constructor(public readonly code: 'engine_starting' | 'engine_unavailable') {
+    super(
+      code === 'engine_starting' ? 'Rayburst engine is starting' : 'Rayburst engine is unavailable',
+    );
+    this.name = code === 'engine_starting' ? 'ApiEngineStartingError' : 'ApiEngineUnavailableError';
+  }
+}
+
 export class ApiDeliveryUncertainError extends ApiError {
   constructor(cause: unknown) {
     super('The desktop may have accepted this download; its receipt is pending', cause);
@@ -443,6 +452,11 @@ export class DesktopApiClient {
 function normalizeApiError(error: unknown, label: string, timeoutMs: number): unknown {
   if (error instanceof HTTPError) {
     if (error.response.status === 401) return new ApiAuthError(error);
+    const engine = z
+      .object({ error: z.enum(['engine_starting', 'engine_unavailable']) })
+      .safeParse(error.data);
+    if (error.response.status === 503 && engine.success)
+      return new ApiEngineError(engine.data.error);
     const detail =
       typeof error.data === 'string' && error.data ? ` — ${error.data.slice(0, 200)}` : '';
     return new ApiError(`${label} failed: HTTP ${error.response.status}${detail}`, error);
@@ -475,12 +489,7 @@ export async function checkConnection(
   } catch (error) {
     return {
       status: 'disconnected',
-      version:
-        error instanceof ApiCompatibilityError
-          ? (error.version ?? version)
-          : error instanceof ApiAuthError
-            ? version
-            : null,
+      version: error instanceof ApiCompatibilityError ? (error.version ?? version) : version,
       error: error instanceof Error ? error.name : 'UnknownError',
     };
   }

@@ -1086,5 +1086,14 @@
   },
   "connection_check_again": {
     "message": "Νέος έλεγχος"
+  },
+  "error_engine_starting": {
+    "message": "Η μηχανή Rayburst ξεκινά"
+  },
+  "error_engine_unavailable": {
+    "message": "Η μηχανή Rayburst δεν είναι διαθέσιμη"
+  },
+  "error_engine_hint": {
+    "message": "Ανοίξτε το Rayburst, ελέγξτε τη μηχανή και συνδεθείτε ξανά."
   }
 }

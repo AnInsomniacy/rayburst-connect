@@ -1086,5 +1086,14 @@
   },
   "connection_check_again": {
     "message": "다시 확인"
+  },
+  "error_engine_starting": {
+    "message": "Rayburst 엔진 시작 중"
+  },
+  "error_engine_unavailable": {
+    "message": "Rayburst 엔진을 사용할 수 없음"
+  },
+  "error_engine_hint": {
+    "message": "Rayburst를 열어 엔진을 확인한 후 다시 연결하세요."
   }
 }

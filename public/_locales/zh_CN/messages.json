@@ -1086,5 +1086,14 @@
   },
   "connection_check_again": {
     "message": "重新检测"
+  },
+  "error_engine_starting": {
+    "message": "Rayburst 引擎正在启动"
+  },
+  "error_engine_unavailable": {
+    "message": "Rayburst 引擎不可用"
+  },
+  "error_engine_hint": {
+    "message": "请打开 Rayburst 检查引擎，然后重新连接。"
   }
 }

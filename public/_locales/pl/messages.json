@@ -1086,5 +1086,14 @@
   },
   "connection_check_again": {
     "message": "Sprawdź ponownie"
+  },
+  "error_engine_starting": {
+    "message": "Silnik Rayburst uruchamia się"
+  },
+  "error_engine_unavailable": {
+    "message": "Silnik Rayburst jest niedostępny"
+  },
+  "error_engine_hint": {
+    "message": "Otwórz Rayburst, sprawdź silnik i połącz się ponownie."
   }
 }

@@ -1086,5 +1086,14 @@
   },
   "connection_check_again": {
     "message": "Kiểm tra lại"
+  },
+  "error_engine_starting": {
+    "message": "Bộ máy Rayburst đang khởi động"
+  },
+  "error_engine_unavailable": {
+    "message": "Bộ máy Rayburst không khả dụng"
+  },
+  "error_engine_hint": {
+    "message": "Mở Rayburst để kiểm tra bộ máy, rồi kết nối lại."
   }
 }

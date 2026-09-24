@@ -1086,5 +1086,14 @@
   },
   "connection_check_again": {
     "message": "Vérifier à nouveau"
+  },
+  "error_engine_starting": {
+    "message": "Le moteur Rayburst démarre"
+  },
+  "error_engine_unavailable": {
+    "message": "Le moteur Rayburst est indisponible"
+  },
+  "error_engine_hint": {
+    "message": "Ouvrez Rayburst pour vérifier le moteur, puis reconnectez-vous."
   }
 }

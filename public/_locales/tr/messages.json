@@ -1086,5 +1086,14 @@
   },
   "connection_check_again": {
     "message": "Yeniden denetle"
+  },
+  "error_engine_starting": {
+    "message": "Rayburst motoru başlatılıyor"
+  },
+  "error_engine_unavailable": {
+    "message": "Rayburst motoru kullanılamıyor"
+  },
+  "error_engine_hint": {
+    "message": "Motoru kontrol etmek için Rayburst’ü açın, ardından yeniden bağlanın."
   }
 }

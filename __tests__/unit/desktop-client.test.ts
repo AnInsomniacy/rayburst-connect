@@ -4,6 +4,8 @@ import {
   API_REQUEST_TIMEOUT_MS,
   ApiAuthError,
   ApiCompatibilityError,
+  ApiEngineError,
+  checkConnection,
   ApiDeliveryUncertainError,
   ApiUnreachableError,
   DesktopApiClient,
@@ -36,6 +38,32 @@ describe('DesktopApiClient', () => {
     vi.useRealTimers();
     await browser.storage.session.clear();
     client = new DesktopApiClient({ port: 29110, secret: 'secret' });
+  });
+
+  it('preserves the desktop version when its engine is unavailable', async () => {
+    const result = await checkConnection({
+      ping: async () => ({ product: 'rayburst', status: 'ok', version: '4.0.0' }),
+      getStat: async () => {
+        throw new ApiEngineError('engine_unavailable');
+      },
+      getDownloadCapabilities: vi.fn(),
+    });
+    expect(result).toEqual({
+      status: 'disconnected',
+      version: '4.0.0',
+      error: 'ApiEngineUnavailableError',
+    });
+    vi.spyOn(globalThis, 'fetch').mockImplementation(
+      async () =>
+        new Response(JSON.stringify({ error: 'engine_starting' }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    );
+    await expect(client.checkReady()).rejects.toThrow();
+    await expect(client.getDownloadCapabilities()).rejects.toMatchObject({
+      name: 'ApiEngineStartingError',
+    });
   });
 
   it('identifies the unsupported legacy desktop without treating malformed responses as legacy', async () => {

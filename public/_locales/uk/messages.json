@@ -1086,5 +1086,14 @@
   },
   "connection_check_again": {
     "message": "Перевірити знову"
+  },
+  "error_engine_starting": {
+    "message": "Рушій Rayburst запускається"
+  },
+  "error_engine_unavailable": {
+    "message": "Рушій Rayburst недоступний"
+  },
+  "error_engine_hint": {
+    "message": "Відкрийте Rayburst, перевірте рушій і підключіться знову."
   }
 }

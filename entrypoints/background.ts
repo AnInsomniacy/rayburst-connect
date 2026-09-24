@@ -8,7 +8,7 @@ import {
   type RequestHeaderMatchResult,
 } from '@/lib/download/request-context';
 import { parseFirefoxDownloadResponse } from '@/lib/download/firefox-response';
-import { ApiAuthError, ApiCompatibilityError, DesktopApiClient } from '@/lib/api';
+import { ApiAuthError, ApiCompatibilityError, ApiEngineError, DesktopApiClient } from '@/lib/api';
 import { startMediaBackground } from '@/lib/media/background';
 import { fileRequestContext } from '@/lib/media/request-context';
 import {
@@ -171,7 +171,9 @@ export default defineBackground(() => {
         activate: activateDesktopApp,
         checkReady: () => desktopClient.checkReady(),
         isFatalReadinessError: (error) =>
-          error instanceof ApiAuthError || error instanceof ApiCompatibilityError,
+          error instanceof ApiAuthError ||
+          error instanceof ApiCompatibilityError ||
+          error instanceof ApiEngineError,
         maxWaitMs: timeoutMs,
       }),
     onDuplicateBlocked: () => {
@@ -285,7 +287,9 @@ export default defineBackground(() => {
         activate: activateDesktopApp,
         checkReady: () => desktopClient.checkReady(),
         isFatalReadinessError: (error) =>
-          error instanceof ApiAuthError || error instanceof ApiCompatibilityError,
+          error instanceof ApiAuthError ||
+          error instanceof ApiCompatibilityError ||
+          error instanceof ApiEngineError,
         maxWaitMs: settings.desktopUnavailable.startupTimeoutSeconds * 1000,
       }),
   });
@@ -489,7 +493,9 @@ export default defineBackground(() => {
         activate: activateDesktopApp,
         checkReady: () => desktopClient.checkReady(),
         isFatalReadinessError: (error) =>
-          error instanceof ApiAuthError || error instanceof ApiCompatibilityError,
+          error instanceof ApiAuthError ||
+          error instanceof ApiCompatibilityError ||
+          error instanceof ApiEngineError,
         maxWaitMs: 15_000,
       });
       if (ready) return { ok: true };
@@ -508,6 +514,7 @@ export default defineBackground(() => {
         });
         return { ok: false, error: error.name };
       }
+      if (error instanceof ApiEngineError) return { ok: false, error: error.name };
       const authFailure = error instanceof ApiAuthError;
       const code =
         error instanceof DesktopActivationError
@@ -536,6 +543,7 @@ export default defineBackground(() => {
       else await desktopClient.resumeAll();
       return { ok: true };
     } catch (error) {
+      if (error instanceof ApiEngineError) return { ok: false, error: error.name };
       const authFailure = error instanceof ApiAuthError;
       logError(
         authFailure ? 'api_auth_failed' : 'api_unreachable',

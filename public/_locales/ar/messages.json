@@ -1086,5 +1086,14 @@
   },
   "connection_check_again": {
     "message": "التحقق مجددًا"
+  },
+  "error_engine_starting": {
+    "message": "جارٍ بدء محرك Rayburst"
+  },
+  "error_engine_unavailable": {
+    "message": "محرك Rayburst غير متاح"
+  },
+  "error_engine_hint": {
+    "message": "افتح Rayburst للتحقق من المحرك، ثم أعد الاتصال."
   }
 }

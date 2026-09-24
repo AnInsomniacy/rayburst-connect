@@ -1086,5 +1086,14 @@
   },
   "connection_check_again": {
     "message": "Verifică din nou"
+  },
+  "error_engine_starting": {
+    "message": "Motorul Rayburst pornește"
+  },
+  "error_engine_unavailable": {
+    "message": "Motorul Rayburst nu este disponibil"
+  },
+  "error_engine_hint": {
+    "message": "Deschideți Rayburst pentru a verifica motorul, apoi reconectați-vă."
   }
 }

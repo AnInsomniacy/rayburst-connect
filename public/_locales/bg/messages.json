@@ -1086,5 +1086,14 @@
   },
   "connection_check_again": {
     "message": "Повторна проверка"
+  },
+  "error_engine_starting": {
+    "message": "Модулът на Rayburst се стартира"
+  },
+  "error_engine_unavailable": {
+    "message": "Модулът на Rayburst е недостъпен"
+  },
+  "error_engine_hint": {
+    "message": "Отворете Rayburst, проверете модула и се свържете отново."
   }
 }

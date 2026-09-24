@@ -1086,5 +1086,14 @@
   },
   "connection_check_again": {
     "message": "Újraellenőrzés"
+  },
+  "error_engine_starting": {
+    "message": "A Rayburst motorja indul"
+  },
+  "error_engine_unavailable": {
+    "message": "A Rayburst motorja nem érhető el"
+  },
+  "error_engine_hint": {
+    "message": "Nyissa meg a Rayburst alkalmazást, ellenőrizze a motort, majd csatlakozzon újra."
   }
 }

@@ -1086,5 +1086,14 @@
   },
   "connection_check_again": {
     "message": "Verificar novamente"
+  },
+  "error_engine_starting": {
+    "message": "O mecanismo do Rayburst está iniciando"
+  },
+  "error_engine_unavailable": {
+    "message": "O mecanismo do Rayburst está indisponível"
+  },
+  "error_engine_hint": {
+    "message": "Abra o Rayburst para verificar o mecanismo e reconecte."
   }
 }

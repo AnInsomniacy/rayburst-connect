@@ -1086,5 +1086,14 @@
   },
   "connection_check_again": {
     "message": "फिर जाँचें"
+  },
+  "error_engine_starting": {
+    "message": "Rayburst इंजन शुरू हो रहा है"
+  },
+  "error_engine_unavailable": {
+    "message": "Rayburst इंजन उपलब्ध नहीं है"
+  },
+  "error_engine_hint": {
+    "message": "इंजन जाँचने के लिए Rayburst खोलें, फिर दोबारा कनेक्ट करें।"
   }
 }

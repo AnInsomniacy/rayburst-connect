@@ -1086,5 +1086,14 @@
   },
   "connection_check_again": {
     "message": "Periksa lagi"
+  },
+  "error_engine_starting": {
+    "message": "Mesin Rayburst sedang dimulai"
+  },
+  "error_engine_unavailable": {
+    "message": "Mesin Rayburst tidak tersedia"
+  },
+  "error_engine_hint": {
+    "message": "Buka Rayburst untuk memeriksa mesin, lalu hubungkan kembali."
   }
 }
