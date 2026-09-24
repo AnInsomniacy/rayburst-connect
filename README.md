@@ -18,16 +18,9 @@
 
 > Requires Rayburst 4 or later on the same Windows, macOS or Linux computer. Configure the desktop Extension API port and secret in the extension settings.
 
----
-
-<p align="center">
-  <img src="docs/brand/media-discovery.png" alt="Rayburst Connect media discovery and preview" width="800" />
-</p>
-
 ## Features
 
 - **Page media discovery** — Detect HLS/DASH manifests and audio/video sources without interrupting playback. Inspect and choose native tracks from the extension's Sniffer tab, sidebar or full-page workspace through Rayburst's [media API](docs/MEDIA_API.md). See [scope and local testing](docs/MEDIA.md).
-
 - **Download interception** — Automatically captures browser downloads and routes them to Rayburst for multi-threaded acceleration
 - **Smart filtering** — Ordered checks for interception settings, extension-owned downloads, URL schemes, site rules, MIME types, file extensions, and minimum file size
 - **Per-site rules** — Glob-pattern rules (e.g. `*.github.com`) to always intercept, always skip, or defer to global settings
