@@ -503,7 +503,7 @@ onUnmounted(() => {
 }
 
 .popup-root {
-  width: 420px;
+  width: 100%;
   overflow: hidden;
   transition: height 200ms cubic-bezier(0.2, 0, 0, 1);
   background: var(--color-surface);
