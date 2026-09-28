@@ -61,20 +61,6 @@ const opening = ref(false);
 const checking = ref(false);
 const { view, count: resourceCount, ready: navigationReady } = usePopupNavigation();
 const settingsReady = ref(false);
-const popupContent = ref<InstanceType<typeof window.HTMLElement>>();
-const popupHeight = ref<number>();
-let resizeObserver: InstanceType<typeof window.ResizeObserver> | undefined;
-
-onMounted(() => {
-  if (!popupContent.value) return;
-  // Observe natural content size, not the animated viewport: no resize feedback loop.
-  resizeObserver = new window.ResizeObserver(([entry]) => {
-    const height = entry?.borderBoxSize[0]?.blockSize;
-    if (height !== undefined) popupHeight.value = height;
-  });
-  resizeObserver.observe(popupContent.value, { box: 'border-box' });
-});
-
 const apiClient = new DesktopApiClient({ ...DEFAULT_CONNECTION_CONFIG });
 let stopPolling: (() => void) | null = null;
 let stopStorageListener: (() => void) | null = null;
@@ -222,7 +208,6 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-  resizeObserver?.disconnect();
   stopPolling?.();
   stopStorageListener?.();
 });
@@ -236,12 +221,8 @@ onUnmounted(() => {
     :date-locale="naiveDateLocale"
     inline-theme-disabled
   >
-    <div
-      class="popup-root"
-      :style="{ height: popupHeight === undefined ? undefined : `${popupHeight}px` }"
-      :dir="['ar', 'fa'].includes(effectiveLocale) ? 'rtl' : 'ltr'"
-    >
-      <div ref="popupContent" class="popup-content">
+    <div class="popup-root" :dir="['ar', 'fa'].includes(effectiveLocale) ? 'rtl' : 'ltr'">
+      <div class="popup-content">
         <div v-if="!settingsReady || !navigationReady" class="popup-skeleton" aria-busy="true">
           <div class="popup-skeleton__header">
             <NSkeleton width="64px" height="24px" />
@@ -503,16 +484,20 @@ onUnmounted(() => {
 }
 
 .popup-root {
-  width: 420px;
+  width: 100%;
+  display: flex;
+  max-height: 600px;
   overflow: hidden;
-  transition: height 200ms cubic-bezier(0.2, 0, 0, 1);
   background: var(--color-surface);
   color: var(--color-on-surface);
   font-family: var(--font-sans);
 }
 
 .popup-content {
-  display: flow-root;
+  min-width: 0;
+  width: 100%;
+  overflow: auto;
+  overscroll-behavior: contain;
 }
 
 /* ── Skeleton ─────────────────────────────────────────────────── */

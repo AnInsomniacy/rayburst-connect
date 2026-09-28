@@ -5,7 +5,7 @@
  * ('intercept' | 'skip') or null to defer to the next stage. When every
  * stage defers, the download is intercepted.
  *
- * Order: enabled → self-trigger → scope → scheme → site-rule → mime →
+ * Order: enabled → self-trigger → scope → scheme → browser-ownership → site-rule →
  * file-extension → minimum-size.
  */
 import { matchSiteRule } from '../site-rules';
@@ -24,6 +24,8 @@ export interface FilterContext {
   mimeType: string;
   tabUrl: string;
   byExtensionId?: string;
+  requestMethod?: string;
+  incognito?: boolean;
 }
 
 type FilterVerdict = 'intercept' | 'skip';
@@ -52,7 +54,13 @@ const TORRENT_MIMES = new Set([
 ]);
 
 /** MIME types that represent documents rather than downloadable files. */
-const DOCUMENT_MIMES = new Set(['text/html', 'text/xml', 'application/xhtml+xml']);
+const DOCUMENT_MIMES = new Set([
+  'text/html',
+  'text/xml',
+  'application/xhtml+xml',
+  'application/xml',
+  'multipart/related',
+]);
 
 function isTorrentDescriptor(ctx: FilterContext): boolean {
   if (TORRENT_MIMES.has(baseMime(ctx.mimeType))) return true;
@@ -98,6 +106,19 @@ const scheme: FilterStage = {
   },
 };
 
+/** User matching rules cannot make a browser-bound operation replayable. */
+const browserOwnership: FilterStage = {
+  name: 'browser-ownership',
+  evaluate: (ctx) => {
+    if (ctx.incognito || (ctx.requestMethod && ctx.requestMethod !== 'GET')) return 'skip';
+    if (DOCUMENT_MIMES.has(baseMime(ctx.mimeType))) return 'skip';
+    const name = ctx.filename || extractFilenameFromUrl(ctx.finalUrl) || '';
+    // Complete-page saves do not expose a reliable public save-mode flag.
+    if (/\.(?:html?|xhtml|mhtml?|xml)$/i.test(name)) return 'skip';
+    return null;
+  },
+};
+
 /**
  * Per-site glob rules, matched against the page origin and both download
  * URLs (pre/post redirect). First matching rule wins.
@@ -111,16 +132,6 @@ function siteRule(getRules: () => SiteRule[]): FilterStage {
     },
   };
 }
-
-/**
- * Skip document MIME types. Cloud storage services sometimes force download
- * behavior on HTML landing pages; letting the browser render them means the
- * real binary download gets intercepted on the second pass.
- */
-const mimeType: FilterStage = {
-  name: 'mime-type',
-  evaluate: (ctx) => (ctx.mimeType && DOCUMENT_MIMES.has(baseMime(ctx.mimeType)) ? 'skip' : null),
-};
 
 /**
  * User-defined file extension rule. Metadata-only by design — content
@@ -172,8 +183,8 @@ export function createFilterPipeline(getRules: () => SiteRule[]): FilterStage[] 
     selfTrigger,
     interceptionScope,
     scheme,
+    browserOwnership,
     siteRule(getRules),
-    mimeType,
     fileExtensionRule,
     minimumFileSize,
   ];

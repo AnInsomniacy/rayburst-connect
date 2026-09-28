@@ -114,11 +114,32 @@ export function isCookieCollectableUrl(url: string): boolean {
 
 export function parseContentDispositionHeader(header: string): ParsedContentDisposition | null {
   try {
-    const { type, parameters } = contentDisposition.parse(header);
+    // The parser accepts HTTP bytes. Some browser/query APIs already decoded UTF-8.
+    const bytes = Array.from(header).some((char) => char.charCodeAt(0) > 255)
+      ? Array.from(new TextEncoder().encode(header), (byte) => String.fromCharCode(byte)).join('')
+      : header;
+    const { type, parameters } = contentDisposition.parse(bytes);
     const filename = parameters.filename;
+    // Firefox can expose a legacy filename as one character per original byte.
+    // Never reinterpret RFC 8187 values, MIME encoded words, or decoded Unicode.
+    let decoded = filename ? decodeMimeEncodedWords(filename) : undefined;
+    if (
+      decoded &&
+      decoded === filename &&
+      !/;\s*filename\*\s*=/i.test(header) &&
+      Array.from(decoded).every((char) => char.charCodeAt(0) <= 255)
+    ) {
+      try {
+        decoded = new TextDecoder('utf-8', { fatal: true }).decode(
+          Uint8Array.from(decoded, (char) => char.charCodeAt(0)),
+        );
+      } catch {
+        // A genuine Latin-1 name remains unchanged.
+      }
+    }
     return {
       type: type.toLowerCase(),
-      ...(filename ? { filename: decodeMimeEncodedWords(filename) } : {}),
+      ...(decoded ? { filename: decoded } : {}),
     };
   } catch {
     return null;

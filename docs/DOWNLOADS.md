@@ -18,19 +18,26 @@ owns output path safety, final response headers, conflicts and recovery. Do not
 perform another charset guess or percent-decoding pass over a browser filename.
 Media page titles use the separate [media API](MEDIA_API.md).
 
-Before posting, `lib/download/pending.ts` stores the request and original connection
-in native `browser.storage.session`, keyed by request ID. Worker startup replays
-unresolved requests against that connection only. This survives worker suspension;
-it does not persist across browser restart, extension reload or disable. Matching
-receipts clear the entry. An ambiguous mutation retains it and must not restart the
-download in the browser, because the desktop may already own the task. A failed
-capability/authentication check before posting can use the existing browser fallback.
+Before posting, `lib/download/pending.ts` writes a bounded journal (100 requests)
+to `browser.storage.local`, keyed by the immutable request ID. It survives worker
+and browser restarts. Replay uses only the original connection and payload. A matching
+receipt clears captured credentials after the browser download has been cancelled;
+an ambiguous mutation remains pending. Diagnostics report unresolved submissions.
+Do not sync this journal or silently evict an unresolved request to make room.
+Private browser downloads remain in the browser and never enter this journal.
 
-Native session storage avoids another persistence layer and keeps captured browser
-credentials out of disk-backed extension storage. See the browser's
-[storage lifecycle](https://developer.chrome.com/docs/extensions/reference/api/storage).
-The desktop persists confirmations until the user submits or cancels them, so a
-worker can release its request after receiving `needs-confirmation`.
+Chromium holds filename determination until handoff settles and calls `suggest`
+exactly once. Firefox holds attachment responses through its native Promise-based
+blocking callback; its downloads fallback pauses and resumes the original item.
+Preflight failures release the original request, never a synthetic replacement GET.
+HTML/page-save and known non-GET requests stay in the browser before site rules run.
+Actual request cookies take precedence; fallback uses the captured cookie store and
+the browser's partition key when available. Raw Content-Disposition header bytes
+are decoded at that boundary only, never by re-decoding browser-supplied filenames.
+
+The desktop persists confirmations until submission or cancellation. Dialog drafts
+retain receipt IDs when URLs are edited, merged or removed. Closing the draft
+cancels unresolved receipts; submitted receipts remain submitted.
 
 Behavior tests cover browser takeover, hint preservation, capability negotiation,
 receipt identity, ambiguous delivery and worker restart. Run `pnpm compile`,
@@ -54,9 +61,3 @@ activation retries and download submission before ownership transfers.
 
 The `rayburst://` scheme activates the desktop only. It never creates a download or
 transports cookies. Downloads use the authenticated HTTP handoff and its receipts.
-
-Chromium takeover owns the asynchronous `onDeterminingFilename` callback while
-cancellation completes. Successful cancellation ends filename determination;
-no suggestion is sent for that terminated download. A failed cancellation releases
-the filename callback. Cancellation rejection is observed before waiting for
-configuration, so worker startup cannot produce an unhandled rejection.

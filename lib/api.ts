@@ -14,6 +14,7 @@ import ky, {
   type Options as KyOptions,
 } from 'ky';
 import { z } from 'zod';
+import { browser } from 'wxt/browser';
 import type { ConnectionConfig } from './schema';
 import {
   AddDownloadResponseSchema,
@@ -260,9 +261,21 @@ export class DesktopApiClient {
     );
   }
 
-  async addDownload(request: AddDownloadRequest): Promise<AddDownloadResponse> {
+  addDownload(
+    request: AddDownloadRequest,
+    browserDownloadId?: number,
+  ): Promise<AddDownloadResponse> {
+    // Settings may change while capabilities/storage are awaited. Bind this
+    // mutation and its recovery record to the same connection throughout.
+    return new DesktopApiClient(this.config).submitDownload(request, browserDownloadId);
+  }
+
+  private async submitDownload(
+    request: AddDownloadRequest,
+    browserDownloadId?: number,
+  ): Promise<AddDownloadResponse> {
     await this.getDownloadCapabilities();
-    await rememberDownload(request, this.config);
+    const wasPending = await rememberDownload(request, this.config, browserDownloadId);
     try {
       const response = await this.request(
         'add',
@@ -272,10 +285,10 @@ export class DesktopApiClient {
       );
       if (response.id !== request.id || (response.action === 'submitted' && !response.gid))
         throw new Error('Download receipt does not match its request');
-      await forgetDownload(request.id);
+      if (browserDownloadId === undefined) await forgetDownload(request.id);
       return response;
     } catch (error) {
-      if (error instanceof ApiAuthError) {
+      if (error instanceof ApiAuthError && !wasPending) {
         await forgetDownload(request.id);
         throw error;
       }
@@ -284,8 +297,22 @@ export class DesktopApiClient {
   }
 
   async reconcileDownloads(): Promise<number> {
-    const pending = await pendingDownloads(this.config);
-    const results = await Promise.allSettled(pending.map((request) => this.addDownload(request)));
+    const connection = { ...this.config };
+    const pending = await pendingDownloads(connection);
+    const results = await Promise.allSettled(
+      pending.map(async ({ request, browserDownloadId }) => {
+        await new DesktopApiClient(connection).addDownload(request, browserDownloadId);
+        if (browserDownloadId !== undefined) {
+          const [item] = await browser.downloads.search({ id: browserDownloadId });
+          if (
+            item?.state === 'in_progress' &&
+            [item.url, item.finalUrl].includes(request.finalUrl || request.url)
+          )
+            await browser.downloads.cancel(browserDownloadId);
+          await forgetDownload(request.id);
+        }
+      }),
+    );
     return results.filter((result) => result.status === 'rejected').length;
   }
 

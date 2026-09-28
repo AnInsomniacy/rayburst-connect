@@ -1095,5 +1095,14 @@
   },
   "error_engine_hint": {
     "message": "Otwórz Rayburst, sprawdź silnik i połącz się ponownie."
+  },
+  "popup_site_rules": {
+    "message": "Bieżąca witryna"
+  },
+  "popup_site_allow": {
+    "message": "Włącz w tej witrynie"
+  },
+  "popup_site_exclude": {
+    "message": "Wyklucz tę witrynę"
   }
 }

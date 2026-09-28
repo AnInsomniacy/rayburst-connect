@@ -36,7 +36,7 @@ describe('DesktopApiClient', () => {
   beforeEach(async () => {
     vi.restoreAllMocks();
     vi.useRealTimers();
-    await browser.storage.session.clear();
+    await browser.storage.local.clear();
     client = new DesktopApiClient({ port: 29110, secret: 'secret' });
   });
 
@@ -241,6 +241,7 @@ describe('DesktopApiClient', () => {
       throw new TypeError('reply lost');
     });
     await expect(client.addDownload(payload)).rejects.toBeInstanceOf(ApiDeliveryUncertainError);
+    await browser.storage.session.clear();
     expect(await new DesktopApiClient({ port: 29111, secret: 'secret' }).reconcileDownloads()).toBe(
       0,
     );
@@ -259,6 +260,34 @@ describe('DesktopApiClient', () => {
     );
     const replay = fetchMock.mock.calls.at(-1)?.[0] as Request;
     await expect(jsonBody(replay)).resolves.toEqual(payload);
-    expect(await browser.storage.session.get(null)).toEqual({});
+    expect(await browser.storage.local.get(null)).toEqual({});
+  });
+
+  it('pins the connection through a settings change and retains the receipt until browser cancellation', async () => {
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      if ((input as Request).url.endsWith('/capabilities')) {
+        await gate;
+        return new Response(
+          JSON.stringify({ product: 'rayburst', protocolVersion: 2, filenameHints: true }),
+        );
+      }
+      return new Response(JSON.stringify({ id: 'pinned', action: 'submitted', gid: 'owned' }));
+    });
+    const delivery = client.addDownload({ id: 'pinned', url: 'https://example.test/file.zip' }, 42);
+    client.updateConfig({ port: 29111, secret: 'changed' });
+    release();
+    await delivery;
+    expect(requestAt(1).url).toBe('http://127.0.0.1:29110/add');
+    expect(requestAt(1).headers.get('Authorization')).toBe('Bearer secret');
+    expect((await browser.storage.local.get(null))['pending-download:pinned']).toMatchObject({
+      connection: { port: 29110, secret: 'secret' },
+      browserDownloadId: 42,
+    });
+    expect(await client.reconcileDownloads()).toBe(0);
+    expect((await browser.storage.local.get(null))['pending-download:pinned']).toBeDefined();
   });
 });

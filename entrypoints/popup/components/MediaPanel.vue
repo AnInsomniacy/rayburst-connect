@@ -595,8 +595,7 @@ onUnmounted(() => {
   display: grid;
   gap: 12px;
   padding: 4px 16px 12px;
-  max-height: 540px;
-  overflow: auto;
+  min-width: 0;
 }
 .resources.expanded {
   max-height: none;

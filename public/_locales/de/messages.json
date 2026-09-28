@@ -1095,5 +1095,14 @@
   },
   "error_engine_hint": {
     "message": "Rayburst öffnen, die Engine prüfen und erneut verbinden."
+  },
+  "popup_site_rules": {
+    "message": "Aktuelle Website"
+  },
+  "popup_site_allow": {
+    "message": "Für diese Website aktivieren"
+  },
+  "popup_site_exclude": {
+    "message": "Diese Website ausschließen"
   }
 }

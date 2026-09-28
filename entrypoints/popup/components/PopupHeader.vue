@@ -5,6 +5,7 @@ import { SettingsOutline } from '@vicons/ionicons5';
 import type { ConnectionStatus } from '@/lib/api';
 import { useI18n } from '@/shared/i18n/engine';
 import BrandLogo from '@/shared/components/BrandLogo.vue';
+import CurrentSite from './CurrentSite.vue';
 
 const props = defineProps<{
   status: ConnectionStatus | 'launching' | 'checking';
@@ -49,6 +50,7 @@ const { t: i18n } = useI18n();
       <span v-if="version" class="popup-header__version">v{{ version }}</span>
     </div>
     <div class="popup-header__controls">
+      <CurrentSite />
       <!-- Interception toggle — NSwitch + contextual label -->
       <div class="popup-header__toggle">
         <span class="popup-header__toggle-crossfade">
@@ -88,6 +90,10 @@ const { t: i18n } = useI18n();
 
 <style scoped>
 .popup-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--color-surface);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -95,6 +101,8 @@ const { t: i18n } = useI18n();
 }
 
 .popup-header__brand {
+  min-width: 0;
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -137,6 +145,9 @@ const { t: i18n } = useI18n();
 }
 
 .popup-header__version {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 11px;
   color: var(--color-on-surface-variant);
   opacity: 0.7;

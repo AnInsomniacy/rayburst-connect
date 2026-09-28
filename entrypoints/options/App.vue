@@ -50,7 +50,6 @@ import { DesktopApiClient, checkConnection, type ConnectionStatus } from '@/lib/
 import {
   hasCookieForwardingAccess,
   hasDownloadUiAccess,
-  requestCookieForwardingAccess,
   requestDownloadUiAccess,
 } from '@/lib/browser';
 import { deepEqual, jsonClone } from '@/shared/json';
@@ -265,8 +264,14 @@ async function handleForwardCookiesChange(value: boolean): Promise<void> {
     draft.value.settings.forwardCookies = false;
     return;
   }
-  if (await requestCookieForwardingAccess().catch(() => false)) {
-    draft.value.settings.forwardCookies = true;
+  try {
+    if (await hasCookieForwardingAccess()) {
+      draft.value.settings.forwardCookies = true;
+      return;
+    }
+  } catch (error) {
+    draft.value.settings.forwardCookies = false;
+    toast.error(error instanceof Error ? error.message : String(error));
     return;
   }
   draft.value.settings.forwardCookies = false;

@@ -1,7 +1,7 @@
 import { MediaApiError } from '@/lib/api';
 import { browser, type Browser } from 'wxt/browser';
 import { DownloadOrchestrator, type DownloadCandidate } from '@/lib/download/orchestrator';
-import { startChromiumTakeover, type ChromiumCancellation } from '@/lib/download/chromium-takeover';
+import { holdChromiumDownload } from '@/lib/download/chromium-takeover';
 import { DuplicateDownloadGuard } from '@/lib/download/duplicate-guard';
 import {
   RequestHeaderContextStore,
@@ -145,7 +145,8 @@ export default defineBackground(() => {
     downloads: {
       cancel: (id) => browser.downloads.cancel(id),
       erase: (query) => browser.downloads.erase(query).then(() => {}),
-      download: (options) => browser.downloads.download(options),
+      pause: (id) => browser.downloads.pause(id),
+      resume: (id) => browser.downloads.resume(id),
     },
     cookies: {
       getAll: async (details) => {
@@ -156,7 +157,24 @@ export default defineBackground(() => {
           });
           return false;
         });
-        return granted ? browser.cookies.getAll(details) : [];
+        if (!granted) return [];
+        const { tabId, frameId, ...query } = details;
+        if (
+          !import.meta.env.FIREFOX &&
+          tabId !== undefined &&
+          tabId >= 0 &&
+          browser.cookies.getPartitionKey
+        ) {
+          const { partitionKey } = await browser.cookies.getPartitionKey({ tabId, frameId });
+          const [ordinary, partitioned] = await Promise.all([
+            browser.cookies.getAll(query),
+            browser.cookies.getAll({ ...query, partitionKey }),
+          ]);
+          return [...ordinary, ...partitioned].sort(
+            (left, right) => right.path.length - left.path.length,
+          );
+        }
+        return browser.cookies.getAll(query);
       },
     },
     diagnosticLog: {
@@ -200,25 +218,17 @@ export default defineBackground(() => {
   // ─── webRequest Listeners ─────────────────────────────
 
   const ALL_HTTP_URLS = ['http://*/*', 'https://*/*'];
-  const HEADER_MATCH_DISABLED: RequestHeaderMatchResult = {
-    matched: false,
-    reason: 'not-found',
-    context: undefined,
-    source: undefined,
-  };
-
   function matchRequestHeaders(
     item: { url: string; finalUrl?: string },
     consume: boolean,
   ): RequestHeaderMatchResult {
-    if (!settings.forwardRequestHeaders) return HEADER_MATCH_DISABLED;
     return consume ? requestHeaderContexts.match(item) : requestHeaderContexts.peek(item);
   }
 
-  async function handleFirefoxResponseTakeover(candidate: DownloadCandidate): Promise<void> {
+  async function handleFirefoxResponseTakeover(candidate: DownloadCandidate): Promise<boolean> {
     await ensureConfigLoaded();
     const match = matchRequestHeaders(candidate, true);
-    await orchestrator.handleFirefoxResponseTakeover({
+    return orchestrator.handleFirefoxResponseTakeover({
       ...candidate,
       requestHeaderContext: match.context,
       requestHeaderMatchReason: settings.forwardRequestHeaders
@@ -227,24 +237,34 @@ export default defineBackground(() => {
     });
   }
 
-  /** Firefox: synchronously cancel binary responses before the native picker. */
+  /** Firefox holds the original response until durable handoff completes. */
   function registerFirefoxResponseInterception(): void {
     if (!import.meta.env.FIREFOX) return;
     try {
-      browser.webRequest.onHeadersReceived.addListener(
-        (details) => {
+      // WXT uses Chromium's synchronous listener type; Firefox natively accepts
+      // a Promise<BlockingResponse> and holds the original response until it settles.
+      type HeadersDetails = Parameters<
+        Parameters<typeof browser.webRequest.onHeadersReceived.addListener>[0]
+      >[0];
+      const event = browser.webRequest.onHeadersReceived as unknown as {
+        addListener(
+          listener: (details: HeadersDetails) => Promise<Browser.webRequest.BlockingResponse>,
+          filter: Browser.webRequest.RequestFilter,
+          extras: string[],
+        ): void;
+      };
+      event.addListener(
+        async (details) => {
           const parsed = parseFirefoxDownloadResponse(details);
-          if (!parsed) return;
-          if (configLoaded && !orchestrator.shouldClaimFirefoxResponse(parsed)) return;
-
-          void handleFirefoxResponseTakeover(parsed).catch((error) => {
-            logError('download_handler_failed', 'Firefox response takeover failed', {
-              url: parsed.url,
-              mime: parsed.mime,
+          if (!parsed) return {};
+          try {
+            return { cancel: await handleFirefoxResponseTakeover(parsed) };
+          } catch (error) {
+            logError('download_handler_failed', 'Firefox response handoff failed', {
               error: errorMessage(error),
             });
-          });
-          return { cancel: true };
+            return {};
+          }
         },
         { urls: ALL_HTTP_URLS, types: ['main_frame', 'sub_frame'] },
         ['blocking', 'responseHeaders'],
@@ -313,6 +333,7 @@ export default defineBackground(() => {
       totalBytes: item.totalBytes ?? item.fileSize ?? -1,
       mime: item.mime || '',
       byExtensionId: item.byExtensionId,
+      incognito: item.incognito,
       state: item.state || 'in_progress',
       referrer: item.referrer || '',
       requestHeaderContext: match.context,
@@ -327,14 +348,10 @@ export default defineBackground(() => {
     await orchestrator.handleFirefoxCreatedDownload(createBrowserDownloadItem(item, true));
   }
 
-  async function handleChromiumTakeover(
-    item: Browser.downloads.DownloadItem,
-    cancellation: Promise<ChromiumCancellation>,
-  ): Promise<void> {
+  async function handleChromiumTakeover(item: Browser.downloads.DownloadItem): Promise<boolean> {
     await ensureConfigLoaded();
-    await orchestrator.handleChromiumTakeover(
+    return orchestrator.handleChromiumTakeover(
       createBrowserDownloadItem(item, true, 'browser-determined'),
-      cancellation,
     );
   }
 
@@ -373,9 +390,8 @@ export default defineBackground(() => {
         return;
       }
 
-      return startChromiumTakeover(
-        () => browser.downloads.cancel(item.id),
-        (cancellation) => handleChromiumTakeover(item, cancellation),
+      return holdChromiumDownload(
+        () => handleChromiumTakeover(item),
         (error) => logDownloadHandlerError(item, error),
         suggest,
       );
@@ -389,21 +405,24 @@ export default defineBackground(() => {
   }
 
   function registerContextMenu(): void {
-    browser.contextMenus.create(
-      {
-        id: CONTEXT_MENU_ID,
-        title: contextMenuTitle(),
-        contexts: CONTEXT_MENU_CONTEXTS as unknown as [Browser.contextMenus.ContextType],
-      },
-      () => {
-        const error = browser.runtime.lastError;
-        const message = error?.message ?? '';
-        if (message && !message.includes('duplicate')) {
-          logWarn('context_menu_failed', 'Context menu could not be registered', {
-            error: message,
-          });
-        }
-      },
+    // Menu entries survive a worker restart. Update the existing entry first.
+    void browser.contextMenus.update(CONTEXT_MENU_ID, { title: contextMenuTitle() }).catch(() =>
+      browser.contextMenus.create(
+        {
+          id: CONTEXT_MENU_ID,
+          title: contextMenuTitle(),
+          contexts: CONTEXT_MENU_CONTEXTS as unknown as [Browser.contextMenus.ContextType],
+        },
+        () => {
+          const error = browser.runtime.lastError;
+          const message = error?.message ?? '';
+          if (message) {
+            logWarn('context_menu_failed', 'Context menu could not be registered', {
+              error: message,
+            });
+          }
+        },
+      ),
     );
   }
 

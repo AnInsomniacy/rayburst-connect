@@ -19,9 +19,6 @@ const DOWNLOAD_UI_PERMISSION: Browser.permissions.Permissions = {
 export const hasCookieForwardingAccess = (): Promise<boolean> =>
   browser.permissions.contains(COOKIE_FORWARDING_PERMISSION);
 
-export const requestCookieForwardingAccess = (): Promise<boolean> =>
-  browser.permissions.request(COOKIE_FORWARDING_PERMISSION);
-
 export const hasDownloadUiAccess = (): Promise<boolean> =>
   browser.permissions.contains(DOWNLOAD_UI_PERMISSION);
 

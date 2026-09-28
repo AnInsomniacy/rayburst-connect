@@ -28,7 +28,7 @@ describe('DownloadOrchestrator', () => {
     expect(baseDeps.diagnosticLog.append).not.toHaveBeenCalled();
   });
 
-  it('routes claimed Firefox responses and recreates them after routing failure', async () => {
+  it('retains Firefox responses after routing failure', async () => {
     const client = desktopClient(true);
     const add = vi
       .spyOn(client, 'addDownload')
@@ -44,7 +44,7 @@ describe('DownloadOrchestrator', () => {
     const fallbackDeps = deps({ desktopClient: client });
     const fallback = new DownloadOrchestrator(fallbackDeps);
     await expect(fallback.handleFirefoxResponseTakeover(candidate)).resolves.toBe(false);
-    expect(fallbackDeps.downloads.download).toHaveBeenCalledWith({ url: candidate.url });
+    expect(fallbackDeps.downloads.cancel).not.toHaveBeenCalled();
     await expect(fallback.handleFirefoxCreatedDownload(item())).resolves.toBe(false);
     expect(fallbackDeps.downloads.cancel).not.toHaveBeenCalled();
   });
@@ -76,6 +76,7 @@ describe('DownloadOrchestrator', () => {
         requestHeaders: [{ name: 'Accept', value: 'application/zip' }],
         filename: 'archive.zip',
       }),
+      1,
     );
     const event = vi.mocked(contextDeps.diagnosticLog.append).mock.calls.at(-1)?.[0];
     expect(event).toMatchObject({
@@ -102,6 +103,7 @@ describe('DownloadOrchestrator', () => {
 
     expect(add).toHaveBeenCalledWith(
       expect.objectContaining({ filename: 'download', filenameSource: 'suggested' }),
+      1,
     );
   });
 
@@ -125,10 +127,12 @@ describe('DownloadOrchestrator', () => {
         url: 'https://example.com/file.zip',
         referer: 'https://example.com',
       }),
+      undefined,
     );
     expect(add).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({ url: expect.stringMatching(/^magnet:/) }),
+      undefined,
     );
   });
 
@@ -178,23 +182,24 @@ describe('DownloadOrchestrator', () => {
 
     await orchestrator.handleFirefoxCreatedDownload(item());
 
-    expect(add).toHaveBeenCalledWith(expect.not.objectContaining({ cookie: expect.anything() }));
+    expect(add).toHaveBeenCalledWith(expect.not.objectContaining({ cookie: expect.anything() }), 1);
     expect(cookieDeps.diagnosticLog.append).toHaveBeenCalledWith(
       expect.objectContaining({ code: 'cookie_collect_failed', level: 'warn' }),
     );
   });
 
-  it('stops before routing when browser cancellation fails', async () => {
+  it('retains desktop ownership when browser cancellation needs reconciliation', async () => {
     const cancelDeps = deps({
       downloads: {
         cancel: vi.fn().mockRejectedValue(new Error('cancel failed')),
         erase: vi.fn().mockResolvedValue(undefined),
-        download: vi.fn().mockResolvedValue(2),
+        pause: vi.fn().mockResolvedValue(undefined),
+        resume: vi.fn().mockResolvedValue(undefined),
       },
     });
     const orchestrator = new DownloadOrchestrator(cancelDeps);
 
-    await expect(orchestrator.handleFirefoxCreatedDownload(item())).resolves.toBe(false);
+    await expect(orchestrator.handleFirefoxCreatedDownload(item())).resolves.toBe(true);
     expect(cancelDeps.diagnosticLog.append).toHaveBeenCalledWith(
       expect.objectContaining({ code: 'download_cancel_failed', level: 'warn' }),
     );
@@ -226,11 +231,9 @@ describe('DownloadOrchestrator', () => {
       .mocked(baseDeps.desktopClient.addDownload)
       .mockRejectedValue(new ApiDeliveryUncertainError(new Error('reply lost')));
     const orchestrator = new DownloadOrchestrator(baseDeps);
-    await expect(
-      orchestrator.handleChromiumTakeover(item(), Promise.resolve({ ok: true })),
-    ).resolves.toBe(true);
+    await expect(orchestrator.handleChromiumTakeover(item())).resolves.toBe(true);
     expect(add).toHaveBeenCalledTimes(2);
     expect(new Set(add.mock.calls.map(([request]) => request.id)).size).toBe(1);
-    expect(baseDeps.downloads.download).not.toHaveBeenCalled();
+    expect(baseDeps.downloads.cancel).toHaveBeenCalledWith(1);
   });
 });

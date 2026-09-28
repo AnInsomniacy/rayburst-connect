@@ -31,7 +31,8 @@ export function downloadDeps(overrides: Partial<OrchestratorDeps> = {}): Orchest
     downloads: {
       cancel: vi.fn().mockResolvedValue(undefined),
       erase: vi.fn().mockResolvedValue(undefined),
-      download: vi.fn().mockResolvedValue(2),
+      pause: vi.fn().mockResolvedValue(undefined),
+      resume: vi.fn().mockResolvedValue(undefined),
     },
     diagnosticLog: { append: vi.fn() },
     cookies: { getAll: vi.fn().mockResolvedValue([]) },

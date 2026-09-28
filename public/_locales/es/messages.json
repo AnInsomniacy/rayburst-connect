@@ -1095,5 +1095,14 @@
   },
   "error_engine_hint": {
     "message": "Abra Rayburst para revisar el motor y vuelva a conectar."
+  },
+  "popup_site_rules": {
+    "message": "Sitio actual"
+  },
+  "popup_site_allow": {
+    "message": "Activar en este sitio"
+  },
+  "popup_site_exclude": {
+    "message": "Excluir este sitio"
   }
 }

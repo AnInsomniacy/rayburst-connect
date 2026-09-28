@@ -8,7 +8,7 @@ Intercept eligible browser downloads, hand them to the local Rayburst app, and c
 
 ## storage
 
-Store connection settings, site rules, appearance preferences and a bounded diagnostic log locally. Browser session storage holds temporary media resources and pending handoffs.
+Store connection settings, site rules, appearance preferences and a bounded diagnostic log locally. A bounded local handoff journal retains unresolved requests across browser restarts and removes their credentials after acknowledgement. Browser session storage holds temporary media resources.
 
 ## contextMenus
 

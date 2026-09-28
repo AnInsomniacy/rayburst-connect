@@ -10,6 +10,8 @@ interface RawRequestHeader {
 
 export interface RequestHeaderContext {
   url: string;
+  method?: string;
+  cookieStoreId?: string;
   tabId?: number;
   frameId?: number;
   documentId?: string;
@@ -32,6 +34,8 @@ export interface RequestHeaderMatchResult {
 
 interface CaptureRequestHeaderContextInput {
   url: string;
+  method?: string;
+  cookieStoreId?: string;
   tabId?: number;
   frameId?: number;
   documentId?: string;
@@ -131,12 +135,14 @@ export function captureRequestHeaderContext(
     requestHeaders.push({ name: canonicalName, value });
   }
 
-  if (!cookie && !userAgent && !referer && requestHeaders.length === 0) {
+  if (!input.method && !cookie && !userAgent && !referer && requestHeaders.length === 0) {
     return null;
   }
 
   return {
     url: input.url,
+    method: input.method,
+    cookieStoreId: input.cookieStoreId,
     tabId: input.tabId,
     frameId: input.frameId,
     documentId: input.documentId,

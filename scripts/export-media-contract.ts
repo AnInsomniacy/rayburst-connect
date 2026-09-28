@@ -39,6 +39,6 @@ const output = await format(
   { ...(await resolveConfig(fileURLToPath(target))), parser: 'json' },
 );
 if (process.argv.includes('--check')) {
-  if ((await readFile(target, 'utf8')) !== output)
+  if ((await readFile(target, 'utf8')).replace(/\r\n/g, '\n') !== output.replace(/\r\n/g, '\n'))
     throw new Error('Media schemas are stale. Run pnpm media:contract.');
 } else await writeFile(target, output);

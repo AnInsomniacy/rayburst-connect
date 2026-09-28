@@ -1095,5 +1095,14 @@
   },
   "error_engine_hint": {
     "message": "افتح Rayburst للتحقق من المحرك، ثم أعد الاتصال."
+  },
+  "popup_site_rules": {
+    "message": "الموقع الحالي"
+  },
+  "popup_site_allow": {
+    "message": "التفعيل على هذا الموقع"
+  },
+  "popup_site_exclude": {
+    "message": "استبعاد هذا الموقع"
   }
 }

@@ -1,28 +1,9 @@
-export type ChromiumCancellation = { ok: true } | { ok: false; error: unknown };
-
-/** Cancel within the filename event turn and immediately observe rejection. */
-export function startChromiumTakeover(
-  cancel: () => Promise<void>,
-  continueTakeover: (cancellation: Promise<ChromiumCancellation>) => Promise<void>,
+/** Defer filename selection until handoff settles, preserving the original request. */
+export function holdChromiumDownload(
+  handoff: () => Promise<boolean>,
   onError: (error: unknown) => void,
-  releaseFilename: () => void,
-): true | undefined {
-  let cancellation: Promise<ChromiumCancellation>;
-  try {
-    cancellation = cancel().then(
-      () => ({ ok: true }),
-      (error: unknown) => {
-        releaseFilename();
-        return { ok: false, error };
-      },
-    );
-  } catch (error) {
-    onError(error);
-    return;
-  }
-
-  void continueTakeover(cancellation).catch(onError);
-  // Cancellation terminates filename determination. Suppress Chromium's
-  // implicit suggest(), which would otherwise target the cancelled download.
+  suggest: () => void,
+): true {
+  void Promise.resolve().then(handoff).catch(onError).finally(suggest);
   return true;
 }

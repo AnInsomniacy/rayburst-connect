@@ -169,10 +169,15 @@ export function startMediaDiscovery(options: {
             if (oldest) pending.delete(oldest);
           }
           const settings = options.settings();
-          if (settings.forwardRequestHeaders) {
-            const legacy = captureRequestHeaderContext(details);
-            if (legacy) options.requestHeaders.remember(legacy);
-          }
+          const context = captureRequestHeaderContext({
+            ...details,
+            requestHeaders: settings.forwardRequestHeaders
+              ? details.requestHeaders
+              : details.requestHeaders?.filter(
+                  (header) => settings.forwardCookies && header.name.toLowerCase() === 'cookie',
+                ),
+          });
+          if (context) options.requestHeaders.remember(context);
           if (details.tabId < 0 || !settings.mediaDiscovery.enabled) return;
           pending.set(details.requestId, {
             context: {

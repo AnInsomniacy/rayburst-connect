@@ -47,7 +47,7 @@ describe('download filter pipeline', () => {
         'interception-scope',
       ],
       [context({ url: 'blob:https://example.com/id' }), settings(), 'scheme'],
-      [context({ mimeType: 'Text/HTML; charset=utf-8' }), settings(), 'mime-type'],
+      [context({ mimeType: 'Text/HTML; charset=utf-8' }), settings(), 'browser-ownership'],
     ];
 
     for (const [candidate, config, stageName] of cases) {
@@ -74,10 +74,21 @@ describe('download filter pipeline', () => {
     const forceRules: SiteRule[] = [
       { id: 'force', pattern: 'example.com', action: 'always-intercept' },
     ];
-    expect(evaluate(context({ mimeType: 'text/html' }), settings(), forceRules)).toEqual({
+    expect(evaluate(context(), settings(), forceRules)).toEqual({
       verdict: 'intercept',
       stageName: 'site-rule',
     });
+    for (const candidate of [
+      context({ mimeType: 'text/html' }),
+      context({ filename: 'saved-page.html', mimeType: '' }),
+      context({ requestMethod: 'POST' }),
+      context({ incognito: true }),
+    ]) {
+      expect(evaluate(candidate, settings(), forceRules)).toEqual({
+        verdict: 'skip',
+        stageName: 'browser-ownership',
+      });
+    }
   });
 
   it('applies listed, compound, unknown, and unlisted extension behavior', () => {

@@ -1095,5 +1095,14 @@
   },
   "error_engine_hint": {
     "message": "Nyissa meg a Rayburst alkalmazást, ellenőrizze a motort, majd csatlakozzon újra."
+  },
+  "popup_site_rules": {
+    "message": "Jelenlegi webhely"
+  },
+  "popup_site_allow": {
+    "message": "Engedélyezés ezen a webhelyen"
+  },
+  "popup_site_exclude": {
+    "message": "Webhely kizárása"
   }
 }

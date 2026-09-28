@@ -1095,5 +1095,14 @@
   },
   "error_engine_hint": {
     "message": "Відкрийте Rayburst, перевірте рушій і підключіться знову."
+  },
+  "popup_site_rules": {
+    "message": "Поточний сайт"
+  },
+  "popup_site_allow": {
+    "message": "Увімкнути на цьому сайті"
+  },
+  "popup_site_exclude": {
+    "message": "Виключити цей сайт"
   }
 }

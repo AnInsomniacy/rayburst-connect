@@ -64,14 +64,14 @@ describe('automatic download fallback', () => {
 
     expect(intercepted).toBe(true);
     expect(deps.desktopClient.isReady).toHaveBeenCalledTimes(1);
-    expect(calls).toEqual(['cancel', 'route']);
+    expect(calls).toEqual(['route', 'cancel']);
     expect(deps.diagnosticLog.append).toHaveBeenCalledTimes(1);
     expect(deps.diagnosticLog.append).toHaveBeenCalledWith(
       expect.objectContaining({ code: 'download_delegated' }),
     );
   });
 
-  it('keeps the original cancel-first flow in launch mode when the desktop app is running', async () => {
+  it('waits for a desktop receipt before cancelling in launch mode', async () => {
     const calls: string[] = [];
     const deps = createDeps({
       action: 'launch',
@@ -84,7 +84,7 @@ describe('automatic download fallback', () => {
     const intercepted = await orchestrator.handleFirefoxCreatedDownload(createDownloadItem());
 
     expect(intercepted).toBe(true);
-    expect(calls).toEqual(['cancel', 'activate', 'route']);
+    expect(calls).toEqual(['activate', 'route', 'cancel']);
   });
 
   it('waits for Firefox startup using the configured timeout before intercepting', async () => {
@@ -110,10 +110,8 @@ describe('automatic download fallback', () => {
     const intercepted = await orchestrator.handleFirefoxCreatedDownload(createDownloadItem());
 
     expect(intercepted).toBe(false);
-    expect(deps.downloads.cancel).toHaveBeenCalledWith(1);
-    expect(deps.downloads.download).toHaveBeenCalledWith({
-      url: 'https://example.com/file.zip',
-    });
+    expect(deps.downloads.cancel).not.toHaveBeenCalled();
+    expect(deps.downloads.cancel).not.toHaveBeenCalled();
     expect(deps.diagnosticLog.append).toHaveBeenCalledWith(
       expect.objectContaining({ code: 'download_restored_to_browser', level: 'warn' }),
     );
@@ -132,11 +130,9 @@ describe('automatic download fallback', () => {
     const intercepted = await orchestrator.handleFirefoxCreatedDownload(createDownloadItem());
 
     expect(intercepted).toBe(false);
-    expect(deps.downloads.cancel).toHaveBeenCalledWith(1);
-    expect(calls).toEqual(['cancel', 'activate']);
-    expect(deps.downloads.download).toHaveBeenCalledWith({
-      url: 'https://example.com/file.zip',
-    });
+    expect(deps.downloads.cancel).not.toHaveBeenCalled();
+    expect(calls).toEqual(['activate']);
+    expect(deps.downloads.cancel).not.toHaveBeenCalled();
     expect(deps.diagnosticLog.append).toHaveBeenCalledTimes(1);
     expect(deps.diagnosticLog.append).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -154,8 +150,6 @@ describe('automatic download fallback', () => {
     expect(await orchestrator.handleFirefoxResponseTakeover(createDownloadItem())).toBe(false);
 
     expect(deps.activateDesktop).toHaveBeenCalledTimes(1);
-    expect(deps.downloads.download).toHaveBeenCalledWith({
-      url: 'https://example.com/file.zip',
-    });
+    expect(deps.downloads.cancel).not.toHaveBeenCalled();
   });
 });

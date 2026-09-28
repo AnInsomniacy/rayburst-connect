@@ -1095,5 +1095,14 @@
   },
   "error_engine_hint": {
     "message": "请打开 Rayburst 检查引擎，然后重新连接。"
+  },
+  "popup_site_rules": {
+    "message": "当前网站"
+  },
+  "popup_site_allow": {
+    "message": "在此网站启用"
+  },
+  "popup_site_exclude": {
+    "message": "排除此网站"
   }
 }

@@ -1095,5 +1095,14 @@
   },
   "error_engine_hint": {
     "message": "請開啟 Rayburst 檢查引擎，然後重新連線。"
+  },
+  "popup_site_rules": {
+    "message": "目前網站"
+  },
+  "popup_site_allow": {
+    "message": "在此網站啟用"
+  },
+  "popup_site_exclude": {
+    "message": "排除此網站"
   }
 }

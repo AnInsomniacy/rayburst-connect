@@ -1,11 +1,25 @@
 import { describe, expect, it } from 'vitest';
-import { extractFilenameFromUrl } from '@/lib/download/url';
+import { extractFilenameFromUrl, parseContentDispositionHeader } from '@/lib/download/url';
 
 function dispositionUrl(value: string, key = 'response-content-disposition'): string {
   return `https://cdn.example.com/hash?${key}=${encodeURIComponent(value)}`;
 }
 
 describe('extractFilenameFromUrl', () => {
+  it('decodes raw UTF-8 header bytes without re-decoding Unicode or Latin-1 names', () => {
+    const name = 'IMG_3701.MOV のコピー';
+    const bytes = String.fromCharCode(...new TextEncoder().encode(name));
+    expect(parseContentDispositionHeader(`attachment; filename="${bytes}"`)?.filename).toBe(name);
+    expect(parseContentDispositionHeader(`attachment; filename="${name}"`)?.filename).toBe(name);
+    expect(parseContentDispositionHeader('attachment; filename="café.zip"')?.filename).toBe(
+      'café.zip',
+    );
+    expect(
+      parseContentDispositionHeader(
+        `attachment; filename="${bytes}"; filename*=UTF-8''preferred.zip`,
+      )?.filename,
+    ).toBe('preferred.zip');
+  });
   it('extracts and decodes usable path filenames', () => {
     const cases: Array<readonly [string, string]> = [
       ['https://cdn.example.com/a/app-v2.0.zip?token=secret', 'app-v2.0.zip'],

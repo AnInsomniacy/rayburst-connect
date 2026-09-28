@@ -3,14 +3,13 @@
  *
  * Automatic flow (Chromium takeover / Firefox response / Firefox fallback):
  *   filter → duplicate guard → unavailable policy → submit over HTTP.
- *   Chromium acquires ownership before this flow and recreates the browser
- *   download when browser fallback is required. Firefox blocks attachment
- *   responses before its native download starts.
+ *   Browser-native holding points preserve the original request until the
+ *   desktop accepts it or a durable journal owns an ambiguous submission.
  *
  * Explicit flow (context menu, protocol links):
  *   submit over HTTP → activate Rayburst → retry over HTTP.
  */
-import type { ChromiumCancellation } from './chromium-takeover';
+import { forgetDownload } from './pending';
 import type { DownloadSettings, SiteRule } from '@/lib/schema';
 import type { DiagnosticInput } from '@/lib/diagnostics';
 import {
@@ -34,10 +33,16 @@ export interface OrchestratorDeps {
   downloads: {
     cancel: (id: number) => Promise<void>;
     erase: (query: { id: number }) => Promise<void>;
-    download: (options: { url: string }) => Promise<number>;
+    pause: (id: number) => Promise<void>;
+    resume: (id: number) => Promise<void>;
   };
   cookies: {
-    getAll: (details: { url: string }) => Promise<Array<{ name: string; value: string }>>;
+    getAll: (details: {
+      url: string;
+      storeId?: string;
+      tabId?: number;
+      frameId?: number;
+    }) => Promise<Array<{ name: string; value: string }>>;
   };
   diagnosticLog: { append: (event: DiagnosticInput) => void };
   getSettings: () => DownloadSettings;
@@ -61,6 +66,7 @@ export interface DownloadCandidate {
   fileSize: number;
   totalBytes: number;
   mime: string;
+  incognito?: boolean;
   filenameSource?: 'browser-determined' | 'content-disposition';
   byExtensionId?: string;
   referrer?: string;
@@ -86,6 +92,7 @@ interface DownloadJob {
   headerContext?: RequestHeaderContext;
   headerMatchReason?: RequestHeaderMatchReason | 'disabled';
   source: DownloadSource;
+  browserDownloadId?: number;
 }
 
 interface SendOptions {
@@ -129,139 +136,80 @@ function filenameHint(value: string): string | undefined {
 
 // ─── Orchestrator ───────────────────────────────────────
 
-const BROWSER_FALLBACK_TTL_MS = 30_000;
-
 export class DownloadOrchestrator {
   private readonly filterStages;
-  /** Browser fallbacks whose Firefox onCreated echo must pass through. */
-  private readonly browserFallbacks = new Map<string, number>();
-
   constructor(private readonly deps: OrchestratorDeps) {
     this.filterStages = createFilterPipeline(() => deps.getSiteRules());
   }
 
-  /**
-   * Handle a browser download exposed by the engine-specific event adapter.
-   *
-   * @returns true if the download was intercepted (cancelled in the browser).
-   */
   async handleFirefoxCreatedDownload(item: DownloadItem): Promise<boolean> {
-    // The Firefox onCreated fallback can replay interrupted or completed
-    // downloads after restarts. Only genuinely new downloads are eligible.
-    if (item.state !== 'in_progress') {
+    if (item.state !== 'in_progress' || !this.evaluateCandidate(item)) return false;
+    try {
+      await this.deps.downloads.pause(item.id);
+    } catch (error) {
+      this.logBrowserFallback(item, 'pause-failed', 'continued', errorMessage(error));
       return false;
     }
-
-    if (this.consumeBrowserFallback(item)) {
-      return false;
+    try {
+      const claimed = await this.handleBrowserDownload(item, 'firefox-download');
+      if (!claimed) await this.deps.downloads.resume(item.id);
+      return claimed;
+    } catch (error) {
+      await this.deps.downloads.resume(item.id);
+      throw error;
     }
-
-    const filterResult = this.evaluateCandidate(item);
-    if (!filterResult) return false;
-    const { tabUrl } = filterResult;
-    const effectiveUrl = item.finalUrl || item.url;
-
-    const duplicate = this.reserveDuplicate(item);
-    if (duplicate.blocked) {
-      if (!(await this.cancelBrowserDownload(item.id))) return false;
-      this.reportDuplicate(effectiveUrl, duplicate.shouldNotify, { tabUrl });
-      return true;
-    }
-
-    const settings = this.deps.getSettings();
-    if (settings.desktopUnavailable.action === 'browser') {
-      if (!(await this.deps.desktopClient.isReady())) {
-        this.deps.duplicateGuard.release(duplicate.reservation);
-        this.logBrowserFallback(item, 'desktop-unavailable', 'continued');
-        return false;
-      }
-    }
-    if (!(await this.cancelBrowserDownload(item.id))) {
-      this.deps.duplicateGuard.release(duplicate.reservation);
-      return false;
-    }
-    if (settings.desktopUnavailable.action === 'launch') {
-      const activation = await this.ensureDesktopActivated(settings);
-      if (!activation.ok) {
-        this.deps.duplicateGuard.release(duplicate.reservation);
-        await this.restartBrowserDownload(item, activation.reason, activation.error);
-        return false;
-      }
-    }
-
-    return this.deliverClaimedDownload(item, tabUrl, 'firefox-download', duplicate.reservation);
   }
 
-  /**
-   * Finish a Chromium download whose cancellation was issued synchronously by
-   * the event adapter. Browser fallback starts a fresh, self-owned download so
-   * Chrome can show exactly one save dialog under the user's global preference.
-   */
-  async handleChromiumTakeover(
+  handleChromiumTakeover(item: DownloadItem): Promise<boolean> {
+    return this.handleBrowserDownload(item, 'chromium-download');
+  }
+
+  private async handleBrowserDownload(
     item: DownloadItem,
-    cancellation: Promise<ChromiumCancellation>,
+    source: DownloadSource,
   ): Promise<boolean> {
-    if (!(await this.finishChromiumCancellation(item.id, cancellation))) return false;
-
-    const filterResult = this.evaluateCandidate(item);
-    if (!filterResult) {
-      await this.restartBrowserDownload(item);
-      return false;
-    }
-    const { tabUrl } = filterResult;
-    const effectiveUrl = item.finalUrl || item.url;
-
-    const duplicate = this.reserveDuplicate(item);
-    if (duplicate.blocked) {
-      this.reportDuplicate(effectiveUrl, duplicate.shouldNotify, { tabUrl });
-      return true;
-    }
-
-    const settings = this.deps.getSettings();
-    const readiness = await this.prepareDesktop(settings);
-    if (!readiness.ok) {
-      this.deps.duplicateGuard.release(duplicate.reservation);
-      await this.restartBrowserDownload(item, readiness.reason, readiness.error);
-      return false;
-    }
-
-    return this.deliverClaimedDownload(item, tabUrl, 'chromium-download', duplicate.reservation);
+    if (item.state !== 'in_progress') return false;
+    const claimed = await this.handleCandidate(item, source);
+    if (!claimed) return false;
+    if ((await this.cancelBrowserDownload(item.id)) && claimed.confirmed)
+      await forgetDownload(claimed.id);
+    // A durable desktop receipt or pending request now owns the operation.
+    return true;
   }
 
   shouldClaimChromiumDownload(item: DownloadItem): boolean {
-    if (item.state !== 'in_progress') return false;
-    return this.evaluateCandidate(item) !== null;
+    return item.state === 'in_progress' && this.evaluateCandidate(item) !== null;
   }
 
-  /**
-   * Route a Firefox response that the blocking listener already cancelled.
-   * Any failed desktop handoff recreates one Firefox-owned download.
-   *
-   * @returns true when the response remains owned by Rayburst.
-   */
   async handleFirefoxResponseTakeover(item: DownloadCandidate): Promise<boolean> {
-    const filterResult = this.evaluateCandidate(item);
-    if (!filterResult) {
-      await this.restartBrowserDownload(item);
-      return false;
-    }
-    const { tabUrl } = filterResult;
-    const effectiveUrl = item.finalUrl || item.url;
+    return Boolean(await this.handleCandidate(item, 'firefox-response'));
+  }
 
-    const settings = this.deps.getSettings();
-    const readiness = await this.prepareDesktop(settings);
-    if (!readiness.ok) {
-      await this.restartBrowserDownload(item, readiness.reason, readiness.error);
-      return false;
-    }
-
+  private async handleCandidate(
+    item: DownloadCandidate,
+    source: DownloadSource,
+  ): Promise<{ id: string; confirmed: boolean } | null> {
+    const candidate = this.evaluateCandidate(item);
+    if (!candidate) return null;
     const duplicate = this.reserveDuplicate(item);
     if (duplicate.blocked) {
-      this.reportDuplicate(effectiveUrl, duplicate.shouldNotify);
-      return true;
+      this.reportDuplicate(item.finalUrl || item.url, duplicate.shouldNotify);
+      // A heuristic match is not a durable receipt. Preserve this browser item.
+      return null;
     }
-
-    return this.deliverClaimedDownload(item, tabUrl, 'firefox-response', duplicate.reservation);
+    const readiness = await this.prepareDesktop(this.deps.getSettings());
+    if (!readiness.ok) {
+      this.deps.duplicateGuard.release(duplicate.reservation);
+      this.logBrowserFallback(item, readiness.reason, 'continued', readiness.error);
+      return null;
+    }
+    const job = await this.buildJob(item, candidate.tabUrl, source);
+    const delivery = await this.sendToDesktop(job, { allowActivation: false });
+    if (delivery.ok || delivery.reason === 'delivery-unknown')
+      return { id: job.id, confirmed: delivery.ok };
+    this.deps.duplicateGuard.release(duplicate.reservation);
+    this.logBrowserFallback(item, delivery.reason, 'continued', delivery.error);
+    return null;
   }
 
   shouldClaimFirefoxResponse(item: DownloadCandidate): boolean {
@@ -347,6 +295,8 @@ export class DownloadOrchestrator {
       mimeType: item.mime,
       tabUrl,
       byExtensionId: item.byExtensionId,
+      requestMethod: item.requestHeaderContext?.method,
+      incognito: item.incognito,
     };
     const { verdict, stageName } = evaluateFilterPipeline(
       ctx,
@@ -391,44 +341,6 @@ export class DownloadOrchestrator {
     }
   }
 
-  private consumeBrowserFallback(item: { url: string; finalUrl: string }): boolean {
-    const now = Date.now();
-    for (const url of new Set([item.url, item.finalUrl].filter(Boolean))) {
-      const expiresAt = this.browserFallbacks.get(url);
-      if (expiresAt === undefined) continue;
-      this.browserFallbacks.delete(url);
-      if (expiresAt > now) return true;
-    }
-    return false;
-  }
-
-  // ─── Submission ───────────────────────────────────────
-
-  private async deliverClaimedDownload(
-    item: DownloadCandidate,
-    tabUrl: string,
-    source: DownloadSource,
-    reservation: DuplicateDownloadReservation | undefined,
-  ): Promise<boolean> {
-    const job = await this.buildJob(item, tabUrl, source);
-    const delivery = await this.sendToDesktop(job, { allowActivation: false });
-    if (!delivery.ok) {
-      if (delivery.reason === 'delivery-unknown') {
-        this.log(
-          'download_delivery_failed',
-          'Desktop receipt is pending; browser restart would duplicate the download',
-          { url: job.url, requestId: job.id, reason: delivery.reason },
-          'error',
-        );
-        return true;
-      }
-      this.deps.duplicateGuard.release(reservation);
-      await this.restartBrowserDownload(item, delivery.reason, delivery.error);
-      return false;
-    }
-    return true;
-  }
-
   private async buildJob(
     item: DownloadCandidate,
     tabUrl: string,
@@ -439,6 +351,7 @@ export class DownloadOrchestrator {
     const filenameSource = item.filenameSource ?? 'suggested';
     return {
       id: crypto.randomUUID(),
+      ...('id' in item && typeof item.id === 'number' ? { browserDownloadId: item.id } : {}),
       url: effectiveUrl,
       finalUrl: effectiveUrl,
       referer: tabUrl,
@@ -510,21 +423,24 @@ export class DownloadOrchestrator {
   }
 
   private async submitToDesktopApi(job: DownloadJob, afterActivation = false): Promise<void> {
-    const response = await this.deps.desktopClient.addDownload({
-      id: job.id,
-      filenameSource: ['browser-determined', 'content-disposition'].includes(job.filenameSource)
-        ? 'browser'
-        : 'suggested',
-      url: job.url,
-      finalUrl: job.finalUrl || undefined,
-      referer: job.referer || undefined,
-      cookie: job.cookie.value || undefined,
-      ...(job.filenameHint ? { filename: job.filenameHint } : {}),
-      ...(job.headerContext?.userAgent ? { userAgent: job.headerContext.userAgent } : {}),
-      ...(job.headerContext?.requestHeaders.length
-        ? { requestHeaders: job.headerContext.requestHeaders }
-        : {}),
-    });
+    const response = await this.deps.desktopClient.addDownload(
+      {
+        id: job.id,
+        filenameSource: ['browser-determined', 'content-disposition'].includes(job.filenameSource)
+          ? 'browser'
+          : 'suggested',
+        url: job.url,
+        finalUrl: job.finalUrl || undefined,
+        referer: job.referer || undefined,
+        cookie: job.cookie.value || undefined,
+        ...(job.filenameHint ? { filename: job.filenameHint } : {}),
+        ...(job.headerContext?.userAgent ? { userAgent: job.headerContext.userAgent } : {}),
+        ...(job.headerContext?.requestHeaders.length
+          ? { requestHeaders: job.headerContext.requestHeaders }
+          : {}),
+      },
+      job.browserDownloadId,
+    );
 
     this.log('download_delegated', 'Download sent to Rayburst', {
       url: job.url,
@@ -555,7 +471,7 @@ export class DownloadOrchestrator {
     shouldNotify: boolean,
     extra: Record<string, string> = {},
   ): void {
-    this.log('download_duplicate_blocked', 'Duplicate download was blocked', {
+    this.log('download_duplicate_blocked', 'Duplicate desktop submission was skipped', {
       url,
       shouldNotify,
       ...extra,
@@ -576,7 +492,12 @@ export class DownloadOrchestrator {
 
     if (!isCookieCollectableUrl(url)) return { value: '', source: 'none' };
     try {
-      const cookies = await this.deps.cookies.getAll({ url });
+      const cookies = await this.deps.cookies.getAll({
+        url,
+        storeId: headerContext?.cookieStoreId,
+        tabId: headerContext?.tabId,
+        frameId: headerContext?.frameId,
+      });
       const value = cookies.map((c) => `${c.name}=${c.value}`).join('; ');
       return { value, source: value ? 'cookies-api' : 'none' };
     } catch (e) {
@@ -593,7 +514,7 @@ export class DownloadOrchestrator {
 
   // ─── Misc Helpers ─────────────────────────────────────
 
-  /** Cancel and erase a browser download before ownership moves to the desktop app. */
+  /** Release the browser item only after a durable handoff exists. */
   private async cancelBrowserDownload(id: number): Promise<boolean> {
     try {
       await this.deps.downloads.cancel(id);
@@ -612,30 +533,10 @@ export class DownloadOrchestrator {
     return true;
   }
 
-  private async finishChromiumCancellation(
-    id: number,
-    cancellation: Promise<ChromiumCancellation>,
-  ): Promise<boolean> {
-    const result = await cancellation;
-    if (!result.ok) {
-      this.log(
-        'download_cancel_failed',
-        'Browser download could not be cancelled',
-        { downloadId: id, error: errorMessage(result.error) },
-        'warn',
-      );
-      return false;
-    }
-    await this.deps.downloads.erase({ id }).catch(() => {
-      /* already removed from history */
-    });
-    return true;
-  }
-
   private logBrowserFallback(
     item: DownloadCandidate,
     reason: string,
-    mode: 'continued' | 'restarted',
+    mode: 'continued',
     error?: string,
   ): void {
     this.log(
@@ -649,33 +550,6 @@ export class DownloadOrchestrator {
       },
       'warn',
     );
-  }
-
-  private async restartBrowserDownload(
-    item: DownloadCandidate,
-    reason?: string,
-    deliveryError?: string,
-  ): Promise<void> {
-    const url = item.url;
-    for (const candidate of new Set([item.url, item.finalUrl].filter(Boolean))) {
-      this.browserFallbacks.set(candidate, Date.now() + BROWSER_FALLBACK_TTL_MS);
-    }
-    try {
-      await this.deps.downloads.download({ url });
-      if (reason) this.logBrowserFallback(item, reason, 'restarted', deliveryError);
-    } catch (e) {
-      this.log(
-        'download_restore_failed',
-        'Browser could not restore the download',
-        {
-          url,
-          reason: reason ?? 'filter-skip',
-          error: errorMessage(e),
-          ...(deliveryError ? { deliveryError } : {}),
-        },
-        'error',
-      );
-    }
   }
 
   private log(

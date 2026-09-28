@@ -11,6 +11,7 @@ interface FirefoxResponseDetails {
   method: string;
   type: string;
   statusCode: number;
+  incognito?: boolean;
   originUrl?: string;
   documentUrl?: string;
   responseHeaders?: FirefoxResponseHeader[];
@@ -91,6 +92,7 @@ export function parseFirefoxDownloadResponse(
   const size = contentLength(details.responseHeaders);
 
   return {
+    incognito: details.incognito,
     url: details.url,
     finalUrl: details.url,
     filename,

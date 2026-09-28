@@ -1095,5 +1095,14 @@
   },
   "error_engine_hint": {
     "message": "Obriu el Rayburst per comprovar el motor i torneu a connectar."
+  },
+  "popup_site_rules": {
+    "message": "Lloc actual"
+  },
+  "popup_site_allow": {
+    "message": "Activa en aquest lloc"
+  },
+  "popup_site_exclude": {
+    "message": "Exclou aquest lloc"
   }
 }

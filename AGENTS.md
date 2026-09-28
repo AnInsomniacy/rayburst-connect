@@ -39,7 +39,7 @@ lib/
 ├── file-extensions.ts           # File extension normalization/matching
 └── download/
     ├── contracts.ts             # Consumer validation for ordinary desktop handoff
-    ├── pending.ts               # Native session storage for unresolved request IDs
+    ├── pending.ts               # Bounded native local journal for unresolved request IDs
     ├── orchestrator.ts          # Interception flows: automatic, Firefox response, explicit
     ├── chromium-takeover.ts     # Synchronous Chromium cancellation handoff
     ├── filter.ts                # Filter pipeline (pure function stages)
@@ -69,7 +69,7 @@ public/_locales/                 # Chrome i18n bundles (27 languages, SSOT)
 `lib/download/filter.ts` evaluates candidates through ordered pure-function stages; the
 first non-null verdict wins, default is intercept:
 
-enabled → self-trigger → interception-scope → scheme → site-rule → mime-type →
+enabled → self-trigger → interception-scope → scheme → browser-ownership → site-rule →
 file-extension-rule → minimum-file-size
 
 ### A″. Persistence Model
@@ -78,7 +78,7 @@ file-extension-rule → minimum-file-size
   `Schema.parse({})` — never hand-write a default twice.
 - Every parse helper accepts `unknown` and never throws; corrupt fields collapse to
   defaults, invalid array entries are dropped.
-- Unresolved download requests use native session storage and strict consumer contracts;
+- Unresolved download requests use bounded native local storage and strict consumer contracts;
   never repair a malformed request into a new download. See [DOWNLOADS.md](docs/DOWNLOADS.md).
 - `lib/storage.ts` validates on read AND write (writes are re-parsed, which also strips
   Vue reactivity proxies).
