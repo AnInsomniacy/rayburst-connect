@@ -1,5 +1,5 @@
 /** The versioned desktop media protocol. No browser or engine implementation lives here. */
-import { z } from 'zod';
+import { z } from '@/lib/validation';
 
 export const MEDIA_API_PATH = 'media/v2';
 export const MEDIA_PROTOCOL_VERSION = 2;

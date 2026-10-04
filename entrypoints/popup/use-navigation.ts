@@ -1,6 +1,6 @@
 import { onMounted, onUnmounted, ref } from 'vue';
 import { browser } from 'wxt/browser';
-import { z } from 'zod';
+import { z } from '@/lib/validation';
 import { MEDIA_SESSION_KEY, MediaCandidateSchema } from '@/lib/schema';
 import { sendMediaCommand } from '@/lib/media/messages';
 import { countMediaResources } from '@/lib/media/resources';

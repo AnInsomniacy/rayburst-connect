@@ -71,6 +71,9 @@ Site lists support hostname or URL patterns and an allow-list mode. Existing alw
 rules still apply. Network, DOM and deep-search observations use the same policy.
 Filtering a TS or subtitle row does not suppress its document-scoped request context
 or prevent the engine from downloading it through a playlist.
+Probe requests use the freshest observed headers per origin from the same document
+and frame, including same-origin observations for sources without headers. Current
+Cookie and header forwarding preferences apply again at submission time.
 
 Settings changes save through the existing browser storage APIs. Native Web Locks
 serialize settings updates across extension contexts. Resetting media defaults leaves

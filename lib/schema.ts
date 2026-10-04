@@ -8,7 +8,8 @@
  * Every exported parse helper accepts `unknown` and never throws: invalid
  * fields collapse to their defaults, invalid array entries are dropped.
  */
-import { z } from 'zod';
+import { z } from '@/lib/validation';
+import { normalizeSitePattern } from './site-rules';
 import { normalizeFileExtensionList } from './file-extensions';
 import { MEDIA_FORMATS, MEDIA_MIMES } from './media/formats';
 import {
@@ -18,10 +19,6 @@ import {
   MediaRequestContextSchema,
   MediaSelectionSchema,
 } from './media/contracts';
-
-// MV3 CSP forbids eval/new Function() in extension contexts; use zod's
-// interpreted path instead of its JIT compiler.
-z.config({ jitless: true });
 
 // ─── Helpers ────────────────────────────────────────────
 
@@ -199,7 +196,7 @@ export type InterceptionScope = DownloadSettings['interceptionScope'];
 
 const SiteRuleSchema = z.object({
   id: z.string(),
-  pattern: z.string(),
+  pattern: z.string().transform(normalizeSitePattern).pipe(z.string().min(1)),
   action: z.enum(['always-intercept', 'always-skip', 'use-global']),
 });
 

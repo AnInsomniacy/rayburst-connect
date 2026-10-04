@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { browser } from 'wxt/browser';
-import { z } from 'zod';
+import { z } from '@/lib/validation';
 import {
   NAlert,
   NButton,

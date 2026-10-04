@@ -4,6 +4,7 @@ import { ref, computed } from 'vue';
 import { NInput, NSelect, NButton, NTag, NIcon, NEmpty } from 'naive-ui';
 import { CloseOutline, AddOutline } from '@vicons/ionicons5';
 import type { SiteRule } from '@/lib/schema';
+import { normalizeSitePattern } from '@/lib/site-rules';
 
 defineProps<{
   rules: SiteRule[];
@@ -19,6 +20,7 @@ import { useI18n } from '@/shared/i18n/engine';
 const { t: i18n } = useI18n();
 
 const newPattern = ref('');
+const normalizedPattern = computed(() => normalizeSitePattern(newPattern.value));
 const newAction = ref<SiteRule['action']>('always-intercept');
 
 const actionOptions = computed(() => [
@@ -44,8 +46,8 @@ function actionLabel(action: SiteRule['action']): string {
 }
 
 function handleAdd(): void {
-  if (!newPattern.value.trim()) return;
-  emit('add', { pattern: newPattern.value.trim(), action: newAction.value });
+  if (!normalizedPattern.value) return;
+  emit('add', { pattern: normalizedPattern.value, action: newAction.value });
   newPattern.value = '';
 }
 </script>
@@ -82,12 +84,13 @@ function handleAdd(): void {
     <div class="rule-add">
       <NInput
         v-model:value="newPattern"
+        :status="newPattern && !normalizedPattern ? 'error' : undefined"
         placeholder="*.github.com"
         style="flex: 1; font-family: var(--font-mono)"
         @keydown.enter="handleAdd"
       />
       <NSelect v-model:value="newAction" :options="actionOptions" style="width: 170px" />
-      <NButton type="primary" @click="handleAdd">
+      <NButton type="primary" :disabled="!normalizedPattern" @click="handleAdd">
         <template #icon>
           <NIcon :size="16"><AddOutline /></NIcon>
         </template>

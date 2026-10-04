@@ -6,7 +6,7 @@ import { resolveLocaleId } from '@/shared/i18n/dictionaries';
 import { PlayerCommandSchema } from './player-controls';
 import { mediaErrorCode, type createMediaWorkflow } from './workflow';
 import { browser, type Browser } from 'wxt/browser';
-import { z } from 'zod';
+import { z } from '@/lib/validation';
 import type { DesktopApiClient } from '../api';
 import { MediaApiError } from '../api';
 import type { MediaCatalog } from './catalog';

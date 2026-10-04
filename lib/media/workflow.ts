@@ -18,7 +18,7 @@ import {
   type MediaSelection,
 } from './contracts';
 import type { MediaCatalog } from './catalog';
-import { submissionContext } from './request-context';
+import { captureMediaContext, submissionContext } from './request-context';
 import { mediaOrigin } from './detection';
 
 export function mediaErrorCode(error: unknown): string {
@@ -200,10 +200,12 @@ export function createMediaWorkflow(options: {
               item.documentId === candidate.documentId &&
               item.pageUrl === candidate.pageUrl &&
               item.frameUrl === candidate.frameUrl &&
-              item.capturedAt >= Date.now() - 2 * 60_000 &&
-              mediaOrigin(item.url) !== mediaOrigin(candidate.url),
+              item.capturedAt >= Date.now() - 2 * 60_000,
           )
-          .slice(0, 7),
+          .map((item) => ({
+            ...captureMediaContext(item.url, item.headers, options.getSettings()),
+            capturedAt: item.capturedAt,
+          })),
       );
       if (!(await options.validateCandidate(candidate))) throw new MediaApiError('source_expired');
       const input = structuredClone(candidate.input ?? emptyMediaInput());
@@ -248,6 +250,13 @@ export function createMediaWorkflow(options: {
             ...(candidate.input ? { input } : {}),
             requestContexts: [context, ...related]
               .filter((item) => item.headers.length)
+              .sort((a, b) => b.capturedAt - a.capturedAt)
+              .filter(
+                (item, index, entries) =>
+                  entries.findIndex((entry) => mediaOrigin(entry.url) === mediaOrigin(item.url)) ===
+                  index,
+              )
+              .slice(0, 8)
               .map(({ url, headers }) => ({ url, headers })),
           }),
         },

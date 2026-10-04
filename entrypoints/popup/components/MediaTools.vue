@@ -4,7 +4,7 @@ import type { MediaItem } from '@/lib/media/messages';
 import MediaControls from './MediaControls.vue';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { browser } from 'wxt/browser';
-import { z } from 'zod';
+import { z } from '@/lib/validation';
 import {
   NAlert,
   NButton,

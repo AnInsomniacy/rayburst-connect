@@ -75,6 +75,40 @@ async function fixture() {
 }
 
 describe('media probe and selection lifecycle', () => {
+  it('uses fresh same-frame headers for a source discovered without headers', async () => {
+    const f = await fixture();
+    await f.catalog.run((state) => {
+      const { tabId, frameId, documentId, pageUrl, frameUrl } = f.candidate;
+      state.contexts.push({
+        tabId,
+        frameId,
+        documentId,
+        pageUrl,
+        frameUrl,
+        url: f.candidate.url,
+        capturedAt: Date.now(),
+        headers: [
+          { name: 'referer', value: pageUrl },
+          { name: 'cookie', value: 'disabled=secret' },
+        ],
+      });
+    }, true);
+    let sentContexts: unknown;
+    f.create.mockImplementationOnce(async (request) => {
+      sentContexts = structuredClone(request.source.requestContexts);
+      return {
+        id: request.id,
+        expiresAt: Date.now() + 300_000,
+        state: 'ready',
+        presentation: mediaPresentation(),
+      };
+    });
+    await f.workflow.probe(1, f.candidate.id);
+    expect(sentContexts).toEqual([
+      { url: f.candidate.url, headers: [{ name: 'referer', value: f.candidate.pageUrl }] },
+    ]);
+  });
+
   it('allows explicit file resends to reach the existing delivery guard', async () => {
     const f = await fixture();
     await f.catalog.run((state) => {

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@/lib/validation';
 
 export const PlayerCommandSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('list') }),

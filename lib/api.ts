@@ -13,7 +13,7 @@ import ky, {
   type KyInstance,
   type Options as KyOptions,
 } from 'ky';
-import { z } from 'zod';
+import { z } from '@/lib/validation';
 import { browser } from 'wxt/browser';
 import type { ConnectionConfig } from './schema';
 import {

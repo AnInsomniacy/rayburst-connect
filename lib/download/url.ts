@@ -84,6 +84,8 @@ export function extractFilenameFromUrl(url: string): string | null {
       parsed.searchParams.get('content-disposition');
     const cdFilename = raw ? extractFilenameFromContentDisposition(raw) : null;
     if (cdFilename) return cdFilename;
+    const queryFilename = parsed.searchParams.get('filename');
+    if (queryFilename) return normalizeFilename(queryFilename) || null;
 
     // Priority 2: URL pathname basename
     const decoded = decodeURIComponent(parsed.pathname);

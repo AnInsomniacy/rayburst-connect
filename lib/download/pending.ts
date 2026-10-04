@@ -1,6 +1,6 @@
 /** Bounded, restart-durable handoff journal. Terminal receipts remove credentials. */
 import { browser } from 'wxt/browser';
-import { z } from 'zod';
+import { z } from '@/lib/validation';
 import type { ConnectionConfig } from '../schema';
 import { AddDownloadRequestSchema, type AddDownloadRequest } from './contracts';
 const PREFIX = 'pending-download:';

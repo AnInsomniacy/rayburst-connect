@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@/lib/validation';
 
 export const CaptureChunkSchema = z.object({
   type: z.literal('chunk'),

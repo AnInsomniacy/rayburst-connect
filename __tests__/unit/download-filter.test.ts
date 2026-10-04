@@ -135,3 +135,30 @@ describe('download filter pipeline', () => {
     }
   });
 });
+
+it('normalizes pasted website rules and recognizes unnamed torrent responses', () => {
+  expect(
+    evaluate(context(), settings(), [
+      { id: 'site', pattern: 'https://example.com/', action: 'always-skip' },
+    ]).verdict,
+  ).toBe('skip');
+  const config = settings({
+    fileExtensionRule: {
+      enabled: true,
+      extensions: ['torrent'],
+      listedAction: 'skip',
+      unknownAction: 'intercept',
+    },
+  });
+  expect(
+    evaluate(
+      context({
+        url: 'https://cdn.test/download',
+        finalUrl: 'https://cdn.test/download',
+        filename: '',
+        mimeType: 'application/x-bittorrent',
+      }),
+      config,
+    ).verdict,
+  ).toBe('skip');
+});

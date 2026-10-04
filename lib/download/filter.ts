@@ -52,6 +52,24 @@ const TORRENT_MIMES = new Set([
   'application/x-torrent',
   'application/torrent',
 ]);
+const MIME_EXTENSIONS: Record<string, string> = {
+  'application/x-bittorrent': 'torrent',
+  'application/x-nzb': 'nzb',
+};
+
+export function candidateExtension(
+  ctx: Pick<FilterContext, 'filename' | 'url' | 'finalUrl' | 'mimeType'>,
+): string | null {
+  return (
+    resolveFileExtension([
+      ctx.filename,
+      extractFilenameFromUrl(ctx.finalUrl),
+      extractFilenameFromUrl(ctx.url),
+    ]) ??
+    MIME_EXTENSIONS[baseMime(ctx.mimeType)] ??
+    null
+  );
+}
 
 /** MIME types that represent documents rather than downloadable files. */
 const DOCUMENT_MIMES = new Set([
@@ -143,11 +161,7 @@ const fileExtensionRule: FilterStage = {
     const settings = config.fileExtensionRule;
     if (!settings.enabled) return null;
 
-    const extension = resolveFileExtension([
-      ctx.filename,
-      extractFilenameFromUrl(ctx.finalUrl),
-      extractFilenameFromUrl(ctx.url),
-    ]);
+    const extension = candidateExtension(ctx);
     if (!extension) return settings.unknownAction;
 
     return settings.extensions.some((item) => matchesFileExtension(extension, item))

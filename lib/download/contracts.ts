@@ -1,5 +1,5 @@
 /** Consumer validation for the desktop-owned download handoff protocol. */
-import { z } from 'zod';
+import { z } from '@/lib/validation';
 export const AddDownloadRequestSchema = z.object({
   id: z.string().min(1).max(128),
   url: z.string(),

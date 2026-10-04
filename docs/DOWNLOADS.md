@@ -16,7 +16,11 @@ The extension captures names from native browser events and passes decoded text.
 Content-Disposition result; `suggested` identifies a weaker name hint. The engine
 owns output path safety, final response headers, conflicts and recovery. Do not
 perform another charset guess or percent-decoding pass over a browser filename.
-Media page titles use the separate [media API](MEDIA_API.md).
+Media page titles use the separate [media API](MEDIA_API.md). URL suggestions also
+recognize `filename=` query parameters using native URL decoding and existing path
+sanitization. The original request URL remains the task source; redirect URLs are
+metadata. Native webRequest IDs preserve the original hop and its own credentials.
+Ambiguous contexts are not reused across tabs or origins.
 
 Before posting, `lib/download/pending.ts` writes a bounded journal (100 requests)
 to `browser.storage.local`, keyed by the immutable request ID. It survives worker
@@ -31,6 +35,9 @@ exactly once. Firefox holds attachment responses through its native Promise-base
 blocking callback; its downloads fallback pauses and resumes the original item.
 Preflight failures release the original request, never a synthetic replacement GET.
 HTML/page-save and known non-GET requests stay in the browser before site rules run.
+Site rules normalize pasted HTTP(S) URLs to hostnames and use the existing picomatch
+matcher. Firefox defers extension exclusions until a native filename or known MIME
+type is available instead of treating unknown response metadata as a final name.
 Actual request cookies take precedence; fallback uses the captured cookie store and
 the browser's partition key when available. Raw Content-Disposition header bytes
 are decoded at that boundary only, never by re-decoding browser-supplied filenames.

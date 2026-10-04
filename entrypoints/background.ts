@@ -218,18 +218,24 @@ export default defineBackground(() => {
   // ─── webRequest Listeners ─────────────────────────────
 
   const ALL_HTTP_URLS = ['http://*/*', 'https://*/*'];
-  function matchRequestHeaders(
-    item: { url: string; finalUrl?: string },
-    consume: boolean,
-  ): RequestHeaderMatchResult {
-    return consume ? requestHeaderContexts.match(item) : requestHeaderContexts.peek(item);
+  function matchRequestHeaders(item: { url: string; finalUrl?: string }): RequestHeaderMatchResult {
+    const observed = requestHeaderContexts.peek(item);
+    // Native download identity wins over a possibly incomplete redirect trace.
+    const originalUrl =
+      item.finalUrl && item.url !== item.finalUrl
+        ? item.url
+        : (observed.context?.originalUrl ?? item.url);
+    const source = { url: originalUrl };
+    const match = requestHeaderContexts.peek(source);
+    return { ...match, originalUrl };
   }
 
   async function handleFirefoxResponseTakeover(candidate: DownloadCandidate): Promise<boolean> {
     await ensureConfigLoaded();
-    const match = matchRequestHeaders(candidate, true);
+    const match = matchRequestHeaders(candidate);
     return orchestrator.handleFirefoxResponseTakeover({
       ...candidate,
+      url: match.originalUrl ?? candidate.url,
       requestHeaderContext: match.context,
       requestHeaderMatchReason: settings.forwardRequestHeaders
         ? match.reason
@@ -318,14 +324,13 @@ export default defineBackground(() => {
 
   function createBrowserDownloadItem(
     item: Browser.downloads.DownloadItem,
-    consumeHeaders: boolean,
     filenameSource?: 'browser-determined',
   ) {
     const identity = { url: item.url, finalUrl: item.finalUrl || item.url };
-    const match = matchRequestHeaders(identity, consumeHeaders);
+    const match = matchRequestHeaders(identity);
     return {
       id: item.id,
-      url: item.url,
+      url: match.originalUrl ?? item.url,
       finalUrl: identity.finalUrl,
       filename: item.filename || '',
       ...(filenameSource ? { filenameSource } : {}),
@@ -345,13 +350,13 @@ export default defineBackground(() => {
 
   async function handleFirefoxCreatedDownload(item: Browser.downloads.DownloadItem): Promise<void> {
     await ensureConfigLoaded();
-    await orchestrator.handleFirefoxCreatedDownload(createBrowserDownloadItem(item, true));
+    await orchestrator.handleFirefoxCreatedDownload(createBrowserDownloadItem(item));
   }
 
   async function handleChromiumTakeover(item: Browser.downloads.DownloadItem): Promise<boolean> {
     await ensureConfigLoaded();
     return orchestrator.handleChromiumTakeover(
-      createBrowserDownloadItem(item, true, 'browser-determined'),
+      createBrowserDownloadItem(item, 'browser-determined'),
     );
   }
 
@@ -384,7 +389,7 @@ export default defineBackground(() => {
       if (
         configLoaded &&
         !orchestrator.shouldClaimChromiumDownload(
-          createBrowserDownloadItem(item, false, 'browser-determined'),
+          createBrowserDownloadItem(item, 'browser-determined'),
         )
       ) {
         return;

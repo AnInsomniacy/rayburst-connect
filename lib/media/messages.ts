@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@/lib/validation';
 import { browser } from 'wxt/browser';
 import { MediaCandidateSchema, MediaOperationSchema } from '../schema';
 import { MediaSelectionSchema } from './contracts';

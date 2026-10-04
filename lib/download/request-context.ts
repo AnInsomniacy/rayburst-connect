@@ -10,6 +10,7 @@ interface RawRequestHeader {
 
 export interface RequestHeaderContext {
   url: string;
+  originalUrl?: string;
   method?: string;
   cookieStoreId?: string;
   tabId?: number;
@@ -26,6 +27,7 @@ type RequestHeaderMatchSource = 'finalUrl' | 'url';
 export type RequestHeaderMatchReason = 'matched' | 'not-found' | 'expired' | 'ambiguous';
 
 export interface RequestHeaderMatchResult {
+  originalUrl?: string;
   matched: boolean;
   reason: RequestHeaderMatchReason;
   context?: RequestHeaderContext;
@@ -156,6 +158,7 @@ export function captureRequestHeaderContext(
 
 export class RequestHeaderContextStore {
   private readonly byUrl = new Map<string, RequestHeaderContext>();
+  private readonly requests = new Map<string, { url: string; createdAt: number }>();
 
   constructor(
     private readonly now: () => number = () => Date.now(),
@@ -163,8 +166,15 @@ export class RequestHeaderContextStore {
     private readonly maxEntries: number = DEFAULT_MAX_ENTRIES,
   ) {}
 
-  remember(context: RequestHeaderContext): void {
+  remember(context: RequestHeaderContext, requestId?: string): void {
     this.prune();
+    if (requestId) {
+      const first = this.requests.get(requestId);
+      context = { ...context, originalUrl: first?.url ?? context.url };
+      this.requests.set(requestId, { url: context.originalUrl!, createdAt: context.createdAt });
+      while (this.requests.size > this.maxEntries)
+        this.requests.delete(this.requests.keys().next().value!);
+    }
     const key = JSON.stringify([
       canonicalUrl(context.url),
       context.tabId,
@@ -227,6 +237,8 @@ export class RequestHeaderContextStore {
 
   private prune(now: number = this.now()): void {
     const cutoff = now - this.ttlMs;
+    for (const [id, request] of this.requests)
+      if (request.createdAt < cutoff) this.requests.delete(id);
     for (const [url, context] of this.byUrl) {
       if (context.createdAt < cutoff) {
         this.byUrl.delete(url);
@@ -235,6 +247,7 @@ export class RequestHeaderContextStore {
   }
 
   clear(tabId?: number): void {
+    if (tabId === undefined) this.requests.clear();
     for (const [key, context] of this.byUrl) {
       if (tabId === undefined || context.tabId === tabId) this.byUrl.delete(key);
     }

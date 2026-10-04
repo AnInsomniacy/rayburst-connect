@@ -1,5 +1,5 @@
 /** Native Messaging activation and readiness coordination for Rayburst. */
-import { z } from 'zod';
+import { z } from '@/lib/validation';
 
 z.config({ jitless: true });
 

@@ -18,7 +18,12 @@ import {
   ApiDeliveryUncertainError,
   type DesktopApiClient,
 } from '@/lib/api';
-import { createFilterPipeline, evaluateFilterPipeline, type FilterContext } from './filter';
+import {
+  candidateExtension,
+  createFilterPipeline,
+  evaluateFilterPipeline,
+  type FilterContext,
+} from './filter';
 import { extractFilenameFromUrl, isCookieCollectableUrl } from './url';
 import type { RequestHeaderContext, RequestHeaderMatchReason } from './request-context';
 import type {
@@ -182,6 +187,13 @@ export class DownloadOrchestrator {
   }
 
   async handleFirefoxResponseTakeover(item: DownloadCandidate): Promise<boolean> {
+    // The browser may learn the filename after this response. Do not apply the
+    // unknown-file action before an exclusion rule can inspect native metadata.
+    if (
+      this.deps.getSettings().fileExtensionRule.enabled &&
+      !candidateExtension({ ...item, mimeType: item.mime })
+    )
+      return false;
     return Boolean(await this.handleCandidate(item, 'firefox-response'));
   }
 
@@ -352,10 +364,10 @@ export class DownloadOrchestrator {
     return {
       id: crypto.randomUUID(),
       ...('id' in item && typeof item.id === 'number' ? { browserDownloadId: item.id } : {}),
-      url: effectiveUrl,
+      url: item.url,
       finalUrl: effectiveUrl,
       referer: tabUrl,
-      cookie: await this.resolveCookieHeader(effectiveUrl, item.requestHeaderContext),
+      cookie: await this.resolveCookieHeader(item.url, item.requestHeaderContext),
       filenameHint: filename,
       filenameSource,
       headerContext: item.requestHeaderContext,
@@ -487,7 +499,7 @@ export class DownloadOrchestrator {
   ): Promise<{ value: string; source: string }> {
     if (!this.deps.getSettings().forwardCookies) return { value: '', source: 'disabled' };
 
-    const captured = headerContext?.cookie?.trim();
+    const captured = headerContext?.url === url ? headerContext.cookie?.trim() : undefined;
     if (captured) return { value: captured, source: 'request-header' };
 
     if (!isCookieCollectableUrl(url)) return { value: '', source: 'none' };

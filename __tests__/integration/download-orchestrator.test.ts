@@ -86,6 +86,32 @@ describe('DownloadOrchestrator', () => {
     expect(JSON.stringify(event)).not.toContain('session=secret');
   });
 
+  it('submits the original URL and credentials while retaining the CDN URL as metadata', async () => {
+    const client = desktopClient(true);
+    const add = vi
+      .spyOn(client, 'addDownload')
+      .mockResolvedValue({ id: 'request', action: 'needs-confirmation' });
+    const orchestrator = new DownloadOrchestrator(deps({ desktopClient: client }));
+    const url = 'https://origin.example/download';
+    const finalUrl = 'https://cdn.example/file.zip';
+    await orchestrator.handleFirefoxCreatedDownload(
+      item({
+        url,
+        finalUrl,
+        requestHeaderContext: {
+          url,
+          createdAt: Date.now(),
+          cookie: 'origin=one',
+          requestHeaders: [],
+        },
+      }),
+    );
+    expect(add).toHaveBeenCalledWith(
+      expect.objectContaining({ url, finalUrl, cookie: 'origin=one' }),
+      1,
+    );
+  });
+
   it('forwards tentative browser names as suggestions', async () => {
     const client = desktopClient(true);
     const add = vi

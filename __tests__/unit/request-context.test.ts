@@ -63,6 +63,33 @@ describe('request header context', () => {
     });
   });
 
+  it('retains the original request through redirects without mixing origin cookies', () => {
+    const store = new RequestHeaderContextStore(() => 1000);
+    const source = {
+      url: 'https://origin.example/get',
+      createdAt: 1000,
+      cookie: 'origin=one',
+      requestHeaders: [],
+    };
+    const target = {
+      url: 'https://cdn.example/file',
+      createdAt: 1000,
+      cookie: 'cdn=two',
+      requestHeaders: [],
+    };
+    store.remember(source, 'request-one');
+    store.remember(target, 'request-one');
+    expect(store.peek({ url: target.url }).context).toMatchObject({
+      originalUrl: source.url,
+      cookie: 'cdn=two',
+    });
+    expect(store.peek({ url: source.url }).context?.cookie).toBe('origin=one');
+    store.remember({ ...target, url: 'https://unrelated.example/file' }, 'request-two');
+    expect(store.peek({ url: 'https://unrelated.example/file' }).context?.originalUrl).toBe(
+      'https://unrelated.example/file',
+    );
+  });
+
   it('distinguishes expired and missing contexts without exposing values', () => {
     let now = 1000;
     const store = new RequestHeaderContextStore(() => now, 100, 16);

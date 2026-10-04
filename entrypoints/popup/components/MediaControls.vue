@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { browser } from 'wxt/browser';
-import { z } from 'zod';
+import { z } from '@/lib/validation';
 import { NAlert, NButton, NCheckbox, NInputNumber, NSelect, NSlider, NSpace } from 'naive-ui';
 import { useI18n } from '@/shared/i18n/engine';
 import type { PlayerCommandSchema } from '@/lib/media/player-controls';

@@ -177,7 +177,7 @@ export function startMediaDiscovery(options: {
                   (header) => settings.forwardCookies && header.name.toLowerCase() === 'cookie',
                 ),
           });
-          if (context) options.requestHeaders.remember(context);
+          if (context) options.requestHeaders.remember(context, details.requestId);
           if (details.tabId < 0 || !settings.mediaDiscovery.enabled) return;
           pending.set(details.requestId, {
             context: {
