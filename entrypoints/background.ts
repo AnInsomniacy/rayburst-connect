@@ -684,19 +684,11 @@ export default defineBackground(() => {
 
   void ensureConfigLoaded().then(async () => {
     await diagnosticLog.initialize();
-    // Register browser actions before waiting for desktop receipt recovery.
     registerContextMenu();
     applyDownloadBarPreferenceSafely();
-    try {
-      const pending = await desktopClient.reconcileDownloads();
-      if (pending)
-        logWarn('download_delivery_failed', 'Download receipts are still pending', {
-          count: pending,
-        });
-    } catch (error) {
-      logError('download_delivery_failed', 'Download receipt recovery failed', {
-        error: errorMessage(error),
-      });
-    }
+    // Version 2 journaled handoffs, credentials included; nothing reads them now.
+    const entries = await browser.storage.local.get(null);
+    const stale = Object.keys(entries).filter((key) => key.startsWith('pending-download:'));
+    if (stale.length) await browser.storage.local.remove(stale);
   });
 });

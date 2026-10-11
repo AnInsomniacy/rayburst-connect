@@ -2,22 +2,17 @@
  * Central download interception orchestrator.
  *
  * Automatic flow (Chromium takeover / Firefox response / Firefox fallback):
- *   filter → duplicate guard → unavailable policy → submit over HTTP.
- *   Browser-native holding points preserve the original request until the
- *   desktop accepts it or a durable journal owns an ambiguous submission.
+ *   filter → duplicate guard → unavailable policy → verify-and-add over HTTP.
+ *   The browser holds its download until the desktop answers. Only `added`
+ *   and `cancelled` release it; a fallback answer, an error or a lost answer
+ *   lets the browser continue, so a download is never lost.
  *
  * Explicit flow (context menu, protocol links):
  *   submit over HTTP → activate Rayburst → retry over HTTP.
  */
-import { forgetDownload } from './pending';
 import type { DownloadSettings, SiteRule } from '@/lib/schema';
 import type { DiagnosticInput } from '@/lib/diagnostics';
-import {
-  ApiAuthError,
-  ApiCompatibilityError,
-  ApiDeliveryUncertainError,
-  type DesktopApiClient,
-} from '@/lib/api';
+import { ApiAuthError, ApiCompatibilityError, type DesktopApiClient } from '@/lib/api';
 import {
   candidateExtension,
   createFilterPipeline,
@@ -87,7 +82,6 @@ export interface DownloadItem extends DownloadCandidate {
 
 /** Everything needed to submit one download to the desktop app. */
 interface DownloadJob {
-  id: string;
   url: string;
   finalUrl?: string;
   referer: string;
@@ -97,7 +91,8 @@ interface DownloadJob {
   headerContext?: RequestHeaderContext;
   headerMatchReason?: RequestHeaderMatchReason | 'disabled';
   source: DownloadSource;
-  browserDownloadId?: number;
+  /** What the browser received, for the desktop's verification. */
+  verify?: { mime: string; size: number };
 }
 
 interface SendOptions {
@@ -113,9 +108,13 @@ type DeliveryFailureReason =
   | 'desktop-activation-timeout'
   | 'desktop-activation-failed'
   | 'desktop-routing-failed'
-  | 'delivery-unknown';
+  | 'desktop-fallback';
 
-type DeliveryResult = { ok: true } | { ok: false; reason: DeliveryFailureReason; error?: string };
+type Readiness = { ok: true } | { ok: false; reason: DeliveryFailureReason; error?: string };
+
+type DeliveryResult =
+  | { ok: true; action: 'added' | 'cancelled' }
+  | { ok: false; reason: DeliveryFailureReason; error?: string };
 
 type DownloadSource =
   | 'chromium-download'
@@ -174,11 +173,9 @@ export class DownloadOrchestrator {
     source: DownloadSource,
   ): Promise<boolean> {
     if (item.state !== 'in_progress') return false;
-    const claimed = await this.handleCandidate(item, source);
-    if (!claimed) return false;
-    if ((await this.cancelBrowserDownload(item.id)) && claimed.confirmed)
-      await forgetDownload(claimed.id);
-    // A durable desktop receipt or pending request now owns the operation.
+    if (!(await this.handleCandidate(item, source))) return false;
+    // The desktop owns the download, or the user declined it there.
+    await this.cancelBrowserDownload(item.id);
     return true;
   }
 
@@ -194,34 +191,33 @@ export class DownloadOrchestrator {
       !candidateExtension({ ...item, mimeType: item.mime })
     )
       return false;
-    return Boolean(await this.handleCandidate(item, 'firefox-response'));
+    return this.handleCandidate(item, 'firefox-response');
   }
 
-  private async handleCandidate(
-    item: DownloadCandidate,
-    source: DownloadSource,
-  ): Promise<{ id: string; confirmed: boolean } | null> {
+  private async handleCandidate(item: DownloadCandidate, source: DownloadSource): Promise<boolean> {
     const candidate = this.evaluateCandidate(item);
-    if (!candidate) return null;
+    if (!candidate) return false;
     const duplicate = this.reserveDuplicate(item);
     if (duplicate.blocked) {
       this.reportDuplicate(item.finalUrl || item.url, duplicate.shouldNotify);
-      // A heuristic match is not a durable receipt. Preserve this browser item.
-      return null;
+      // A heuristic match is no proof the desktop has it. Keep this browser item.
+      return false;
     }
     const readiness = await this.prepareDesktop(this.deps.getSettings());
     if (!readiness.ok) {
       this.deps.duplicateGuard.release(duplicate.reservation);
       this.logBrowserFallback(item, readiness.reason, 'continued', readiness.error);
-      return null;
+      return false;
     }
     const job = await this.buildJob(item, candidate.tabUrl, source);
     const delivery = await this.sendToDesktop(job, { allowActivation: false });
-    if (delivery.ok || delivery.reason === 'delivery-unknown')
-      return { id: job.id, confirmed: delivery.ok };
+    if (delivery.ok) {
+      if (delivery.action === 'cancelled') this.deps.duplicateGuard.release(duplicate.reservation);
+      return true;
+    }
     this.deps.duplicateGuard.release(duplicate.reservation);
     this.logBrowserFallback(item, delivery.reason, 'continued', delivery.error);
-    return null;
+    return false;
   }
 
   shouldClaimFirefoxResponse(item: DownloadCandidate): boolean {
@@ -258,7 +254,6 @@ export class DownloadOrchestrator {
 
     const delivery = await this.sendToDesktop(
       {
-        id: crypto.randomUUID(),
         url,
         referer: tabUrl,
         cookie:
@@ -272,9 +267,9 @@ export class DownloadOrchestrator {
       },
       { allowActivation: options.allowActivation ?? true },
     );
+    if (!delivery.ok || delivery.action === 'cancelled')
+      this.deps.duplicateGuard.release(duplicate.reservation);
     if (!delivery.ok) {
-      if (delivery.reason !== 'delivery-unknown')
-        this.deps.duplicateGuard.release(duplicate.reservation);
       this.log(
         delivery.reason === 'api-auth-failed' ? 'api_auth_failed' : 'download_delivery_failed',
         delivery.reason === 'api-auth-failed'
@@ -329,7 +324,7 @@ export class DownloadOrchestrator {
 
   // ─── Desktop Activation ───────────────────────────────
 
-  private async prepareDesktop(settings: DownloadSettings): Promise<DeliveryResult> {
+  private async prepareDesktop(settings: DownloadSettings): Promise<Readiness> {
     if (settings.desktopUnavailable.action === 'launch')
       return this.ensureDesktopActivated(settings);
     return (await this.deps.desktopClient.isReady())
@@ -338,7 +333,7 @@ export class DownloadOrchestrator {
   }
 
   /** Launch-mode activation: start the app and wait for its API. */
-  private async ensureDesktopActivated(settings: DownloadSettings): Promise<DeliveryResult> {
+  private async ensureDesktopActivated(settings: DownloadSettings): Promise<Readiness> {
     const timeoutMs = settings.desktopUnavailable.startupTimeoutSeconds * 1000;
 
     try {
@@ -362,8 +357,6 @@ export class DownloadOrchestrator {
     const filename = filenameHint(item.filename);
     const filenameSource = item.filenameSource ?? 'suggested';
     return {
-      id: crypto.randomUUID(),
-      ...('id' in item && typeof item.id === 'number' ? { browserDownloadId: item.id } : {}),
       url: item.url,
       finalUrl: effectiveUrl,
       referer: tabUrl,
@@ -373,6 +366,7 @@ export class DownloadOrchestrator {
       headerContext: item.requestHeaderContext,
       headerMatchReason: item.requestHeaderMatchReason,
       source,
+      verify: { mime: item.mime, size: item.totalBytes > 0 ? item.totalBytes : item.fileSize },
     };
   }
 
@@ -381,19 +375,10 @@ export class DownloadOrchestrator {
    */
   private async sendToDesktop(job: DownloadJob, options: SendOptions): Promise<DeliveryResult> {
     try {
-      await this.submitToDesktopApi(job);
-      return { ok: true };
+      return await this.submitToDesktopApi(job);
     } catch (e) {
       if (e instanceof ApiCompatibilityError) {
         return { ok: false, reason: 'api-incompatible', error: e.message };
-      }
-      if (e instanceof ApiDeliveryUncertainError) {
-        try {
-          await this.submitToDesktopApi(job);
-          return { ok: true };
-        } catch (retryError) {
-          return { ok: false, reason: 'delivery-unknown', error: errorMessage(retryError) };
-        }
       }
       if (e instanceof ApiAuthError) {
         return { ok: false, reason: 'api-auth-failed', error: e.message };
@@ -422,11 +407,8 @@ export class DownloadOrchestrator {
     }
 
     try {
-      await this.submitToDesktopApi(job, true);
-      return { ok: true };
+      return await this.submitToDesktopApi(job, true);
     } catch (e) {
-      if (e instanceof ApiDeliveryUncertainError)
-        return { ok: false, reason: 'delivery-unknown', error: errorMessage(e) };
       if (e instanceof ApiAuthError) {
         return { ok: false, reason: 'api-auth-failed', error: e.message };
       }
@@ -434,25 +416,33 @@ export class DownloadOrchestrator {
     }
   }
 
-  private async submitToDesktopApi(job: DownloadJob, afterActivation = false): Promise<void> {
-    const response = await this.deps.desktopClient.addDownload(
-      {
-        id: job.id,
-        filenameSource: ['browser-determined', 'content-disposition'].includes(job.filenameSource)
-          ? 'browser'
-          : 'suggested',
-        url: job.url,
-        finalUrl: job.finalUrl || undefined,
-        referer: job.referer || undefined,
-        cookie: job.cookie.value || undefined,
-        ...(job.filenameHint ? { filename: job.filenameHint } : {}),
-        ...(job.headerContext?.userAgent ? { userAgent: job.headerContext.userAgent } : {}),
-        ...(job.headerContext?.requestHeaders.length
-          ? { requestHeaders: job.headerContext.requestHeaders }
-          : {}),
-      },
-      job.browserDownloadId,
-    );
+  private async submitToDesktopApi(
+    job: DownloadJob,
+    afterActivation = false,
+  ): Promise<DeliveryResult> {
+    const response = await this.deps.desktopClient.addDownload({
+      filenameSource: ['browser-determined', 'content-disposition'].includes(job.filenameSource)
+        ? 'browser'
+        : 'suggested',
+      url: job.url,
+      finalUrl: job.finalUrl || undefined,
+      referer: job.referer || undefined,
+      cookie: job.cookie.value || undefined,
+      ...(job.filenameHint ? { filename: job.filenameHint } : {}),
+      ...(job.headerContext?.userAgent ? { userAgent: job.headerContext.userAgent } : {}),
+      ...(job.headerContext?.requestHeaders.length
+        ? { requestHeaders: job.headerContext.requestHeaders }
+        : {}),
+      ...(job.verify
+        ? {
+            verify: true,
+            ...(job.verify.mime ? { mime: job.verify.mime } : {}),
+            ...(job.verify.size > 0 ? { size: job.verify.size } : {}),
+          }
+        : {}),
+    });
+    if (response.action === 'fallback')
+      return { ok: false, reason: 'desktop-fallback', error: response.reason };
 
     this.log('download_delegated', 'Download sent to Rayburst', {
       url: job.url,
@@ -460,12 +450,13 @@ export class DownloadOrchestrator {
       filenameSource: job.filenameSource,
       action: response.action,
       activated: afterActivation,
-      ...(response.gid ? { gid: response.gid } : {}),
+      ...(response.action === 'added' ? { gid: response.gid } : {}),
       hasCookie: job.cookie.value.length > 0,
       cookieSource: job.cookie.source,
       headerCount: job.headerContext?.requestHeaders.length ?? 0,
       headerMatchReason: job.headerMatchReason ?? (job.headerContext ? 'matched' : 'not-found'),
     });
+    return { ok: true, action: response.action };
   }
 
   // ─── Duplicate Guard ──────────────────────────────────
@@ -526,7 +517,7 @@ export class DownloadOrchestrator {
 
   // ─── Misc Helpers ─────────────────────────────────────
 
-  /** Release the browser item only after a durable handoff exists. */
+  /** Release the browser item once the desktop answered for it. */
   private async cancelBrowserDownload(id: number): Promise<boolean> {
     try {
       await this.deps.downloads.cancel(id);

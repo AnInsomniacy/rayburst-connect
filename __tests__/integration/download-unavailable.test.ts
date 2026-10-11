@@ -22,7 +22,7 @@ function createDeps(
     if (options.routeFails || !(options.ready || options.activationResult))
       throw new ApiUnreachableError();
     options.calls?.push('route');
-    return { id: 'request', action: 'needs-confirmation' };
+    return { action: 'added', gid: 'gid' };
   });
   vi.mocked(deps.downloads.cancel).mockImplementation(async () => {
     options.calls?.push('cancel');

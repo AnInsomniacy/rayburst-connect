@@ -1,15 +1,18 @@
 # Ordinary download handoff
 
-The desktop provides protocol 2 in `services/downloads/contracts.rs`. This
+The desktop provides protocol 3 in `services/downloads/contracts.rs`. This
 repository owns its consumer validators in `lib/download/contracts.ts`; it does
 not import desktop source or run desktop fixtures. The provider's full contract
 is documented in [Download ownership](https://github.com/AnInsomniacy/rayburst/blob/main/docs/DOWNLOADS.md).
 
 Before `POST /add`, check authenticated `GET /downloads/capabilities` for
-`protocolVersion: 2` and `filenameHints: true`. An old queued response is not a
-receipt. Each request has an immutable UUID `id`, URL and optional browser context.
-A retry reuses the exact request, including its ID. Receipts echo the ID and return
-`submitted` with a GID, `needs-confirmation`, or `cancelled`.
+`protocolVersion: 3`. The browser keeps holding its download until `/add` answers:
+`added` (with a GID) and `cancelled` release it; `fallback` (with a reason), an
+error, a timeout or a lost answer let the browser continue. A held download sends
+`verify: true` with the MIME type and size the browser received, so the desktop
+can check with the engine that it would receive the same file. The request may
+stay open up to 150 s while the user confirms in the desktop; the worker keeps
+itself alive meanwhile. Nothing is journaled and nothing is replayed.
 
 The extension captures names from native browser events and passes decoded text.
 `filenameSource: browser` identifies browser-resolved names, including Firefox's
@@ -22,16 +25,11 @@ sanitization. The original request URL remains the task source; redirect URLs ar
 metadata. Native webRequest IDs preserve the original hop and its own credentials.
 Ambiguous contexts are not reused across tabs or origins.
 
-Before posting, `lib/download/pending.ts` writes a bounded journal (100 requests)
-to `browser.storage.local`, keyed by the immutable request ID. It survives worker
-and browser restarts. Replay uses only the original connection and payload. A matching
-receipt clears captured credentials after the browser download has been cancelled;
-an ambiguous mutation remains pending. Diagnostics report unresolved submissions.
-Do not sync this journal or silently evict an unresolved request to make room.
-Private browser downloads remain in the browser and never enter this journal.
+Private browser downloads remain in the browser. Version 2 kept a handoff journal
+under `pending-download:` keys; the background removes those entries at startup.
 
-Chromium holds filename determination until handoff settles and calls `suggest`
-exactly once. Firefox holds attachment responses through its native Promise-based
+Chromium holds filename determination until the desktop answers and calls
+`suggest` exactly once. Firefox holds attachment responses through its native Promise-based
 blocking callback; its downloads fallback pauses and resumes the original item.
 Preflight failures release the original request, never a synthetic replacement GET.
 HTML/page-save and known non-GET requests stay in the browser before site rules run.
@@ -42,12 +40,12 @@ Actual request cookies take precedence; fallback uses the captured cookie store 
 the browser's partition key when available. Raw Content-Disposition header bytes
 are decoded at that boundary only, never by re-decoding browser-supplied filenames.
 
-The desktop persists confirmations until submission or cancellation. Dialog drafts
-retain receipt IDs when URLs are edited, merged or removed. Closing the draft
-cancels unresolved receipts; submitted receipts remain submitted.
+The desktop dialog answers a held download when the user adds or removes it;
+closing the dialog answers `cancelled`. An unanswered request falls back after
+120 s and is withdrawn from the dialog.
 
 Behavior tests cover browser takeover, hint preservation, capability negotiation,
-receipt identity, ambiguous delivery and worker restart. Run `pnpm compile`,
+verification fields, every answer and a lost answer. Run `pnpm compile`,
 `pnpm test --maxWorkers=4`, lint, i18n, format checks and Chromium/Firefox builds.
 Manual acceptance uses separately built extension, desktop and engine applications;
 there is no parent workspace package or cross-repository test runner.

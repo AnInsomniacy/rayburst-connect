@@ -1,7 +1,13 @@
-/** Consumer validation for the desktop-owned download handoff protocol. */
+/**
+ * Consumer validation for the desktop-owned download handoff protocol (v3).
+ *
+ * The browser keeps holding a download until `/add` answers: `added` (the
+ * desktop owns it), `cancelled` (the user declined it) or `fallback` (the
+ * browser should continue). Any other outcome, including a lost answer, also
+ * leaves the download to the browser.
+ */
 import { z } from '@/lib/validation';
 export const AddDownloadRequestSchema = z.object({
-  id: z.string().min(1).max(128),
   url: z.string(),
   finalUrl: z.string().optional(),
   referer: z.string().optional(),
@@ -10,14 +16,18 @@ export const AddDownloadRequestSchema = z.object({
   filenameSource: z.enum(['browser', 'suggested']).optional(),
   userAgent: z.string().optional(),
   requestHeaders: z.array(z.object({ name: z.string(), value: z.string() })).optional(),
+  /** The browser holds this download; the engine must receive the same file. */
+  verify: z.boolean().optional(),
+  mime: z.string().optional(),
+  size: z.number().int().optional(),
 });
 export const AddDownloadResponseSchema = z.discriminatedUnion('action', [
-  z.object({ id: z.string().min(1), action: z.literal('cancelled'), gid: z.string().optional() }),
-  z.object({ id: z.string().min(1), action: z.literal('submitted'), gid: z.string().min(1) }),
+  z.object({ action: z.literal('added'), gid: z.string().min(1) }),
+  z.object({ action: z.literal('cancelled') }),
   z.object({
-    id: z.string().min(1),
-    action: z.literal('needs-confirmation'),
-    gid: z.string().optional(),
+    action: z.literal('fallback'),
+    // unreachable, rejected, web-page, size-mismatch or unconfirmed
+    reason: z.string(),
   }),
 ]);
 export type AddDownloadRequest = z.infer<typeof AddDownloadRequestSchema>;

@@ -5,14 +5,14 @@ import { ApiUnreachableError } from '@/lib/api';
 import { downloadItem, downloadDeps } from '../fixtures/download';
 
 describe('browser ownership during handoff', () => {
-  it('holds filename selection until the desktop receipt arrives', async () => {
+  it('holds filename selection until the desktop answers', async () => {
     const deps = downloadDeps();
     let accept!: () => void;
-    vi.mocked(deps.desktopClient.addDownload).mockImplementation(async (request) => {
+    vi.mocked(deps.desktopClient.addDownload).mockImplementation(async () => {
       await new Promise<void>((resolve) => {
         accept = resolve;
       });
-      return { id: request.id, action: 'submitted', gid: 'original' };
+      return { action: 'added', gid: 'original' };
     });
     const suggest = vi.fn();
     const errors = vi.fn();

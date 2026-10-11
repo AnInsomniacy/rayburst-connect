@@ -1,12 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Browser } from 'wxt/browser';
 import {
   API_CONNECTIVITY_TIMEOUT_MS,
+  API_HANDOFF_TIMEOUT_MS,
   API_REQUEST_TIMEOUT_MS,
   ApiAuthError,
   ApiCompatibilityError,
   ApiEngineError,
   checkConnection,
-  ApiDeliveryUncertainError,
   ApiUnreachableError,
   DesktopApiClient,
 } from '@/lib/api';
@@ -100,15 +101,10 @@ describe('DesktopApiClient', () => {
   it('submits the complete download contract with bearer authentication', async () => {
     vi.spyOn(globalThis, 'fetch')
       .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({ product: 'rayburst', protocolVersion: 2, filenameHints: true }),
-        ),
+        new Response(JSON.stringify({ product: 'rayburst', protocolVersion: 3 })),
       )
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ id: 'request', action: 'submitted', gid: 'gid' })),
-      );
+      .mockResolvedValueOnce(new Response(JSON.stringify({ action: 'added', gid: 'gid' })));
     const payload = {
-      id: 'request',
       url: 'https://example.com/file.zip',
       finalUrl: 'https://cdn.example.com/file.zip',
       referer: 'https://example.com/page',
@@ -116,13 +112,12 @@ describe('DesktopApiClient', () => {
       filename: 'file.zip',
       userAgent: 'Browser/1.0',
       requestHeaders: [{ name: 'Accept', value: 'application/octet-stream' }],
+      verify: true,
+      mime: 'application/zip',
+      size: 1000,
     };
 
-    await expect(client.addDownload(payload)).resolves.toEqual({
-      id: 'request',
-      action: 'submitted',
-      gid: 'gid',
-    });
+    await expect(client.addDownload(payload)).resolves.toEqual({ action: 'added', gid: 'gid' });
     expect(requestAt(1).url).toBe('http://127.0.0.1:29110/add');
     expect(requestAt(1).method).toBe('POST');
     expect(requestAt(1).headers.get('authorization')).toBe('Bearer secret');
@@ -139,9 +134,7 @@ describe('DesktopApiClient', () => {
         }),
       ),
     );
-    await expect(
-      client.addDownload({ id: 'isolated', url: 'https://example.test/file' }),
-    ).rejects.toThrow();
+    await expect(client.addDownload({ url: 'https://example.test/file' })).rejects.toThrow();
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(requestAt(0).method).toBe('GET');
   });
@@ -170,10 +163,7 @@ describe('DesktopApiClient', () => {
     for (const [call, payload] of [
       [() => client.ping(), { status: 'ok' }],
       [() => client.getStat(), { downloadSpeed: '0' }],
-      [
-        () => client.addDownload({ id: 'request', url: 'https://example.com' }),
-        { gid: 'missing-action' },
-      ],
+      [() => client.addDownload({ url: 'https://example.com' }), { gid: 'missing-action' }],
     ] as const) {
       vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify(payload)));
       await expect(call()).rejects.toThrow();
@@ -193,9 +183,9 @@ describe('DesktopApiClient', () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
       new Response('Download rejected', { status: 409 }),
     );
-    await expect(
-      client.addDownload({ id: 'request', url: 'https://example.com/file.zip' }),
-    ).rejects.toThrow('HTTP 409 — Download rejected');
+    await expect(client.addDownload({ url: 'https://example.com/file.zip' })).rejects.toThrow(
+      'HTTP 409 — Download rejected',
+    );
   });
 
   it('uses short readiness timeouts and longer work-request timeouts', async () => {
@@ -210,7 +200,7 @@ describe('DesktopApiClient', () => {
     await vi.advanceTimersByTimeAsync(API_CONNECTIVITY_TIMEOUT_MS);
     expect(signals[0]?.aborted).toBe(true);
 
-    void client.addDownload({ id: 'request', url: 'https://example.com' }).catch(() => {});
+    void client.getStat().catch(() => {});
     await vi.advanceTimersByTimeAsync(API_REQUEST_TIMEOUT_MS);
     expect(signals[1]?.aborted).toBe(true);
   });
@@ -222,48 +212,38 @@ describe('DesktopApiClient', () => {
       )
       .mockResolvedValueOnce(new Response(JSON.stringify(stat)))
       .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({ product: 'rayburst', protocolVersion: 2, filenameHints: true }),
-        ),
+        new Response(JSON.stringify({ product: 'rayburst', protocolVersion: 3 })),
       )
       .mockResolvedValueOnce(new Response('Unavailable', { status: 503 }));
 
     await expect(client.isReady()).resolves.toBe(true);
     await expect(client.isReady()).resolves.toBe(false);
   });
-  it('reconciles a lost receipt after worker restart only against the original connection', async () => {
-    const payload = { id: 'durable', url: 'https://example.test/file', filename: 'literal%20.zip' };
-    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
-      if ((input as Request).url.endsWith('/capabilities'))
-        return new Response(
-          JSON.stringify({ product: 'rayburst', protocolVersion: 2, filenameHints: true }),
-        );
-      throw new TypeError('reply lost');
+  it('waits for the desktop to verify or confirm a handoff', async () => {
+    vi.useFakeTimers();
+    const signals: AbortSignal[] = [];
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const request = input as Request;
+      if (request.url.endsWith('/capabilities'))
+        return new Response(JSON.stringify({ product: 'rayburst', protocolVersion: 3 }));
+      signals.push(request.signal);
+      return new Promise<Response>(() => {});
     });
-    await expect(client.addDownload(payload)).rejects.toBeInstanceOf(ApiDeliveryUncertainError);
-    await browser.storage.session.clear();
-    expect(await new DesktopApiClient({ port: 29111, secret: 'secret' }).reconcileDownloads()).toBe(
-      0,
-    );
-    fetchMock.mockImplementation(
-      async (input) =>
-        new Response(
-          JSON.stringify(
-            (input as Request).url.endsWith('/capabilities')
-              ? { product: 'rayburst', protocolVersion: 2, filenameHints: true }
-              : { id: 'durable', action: 'submitted', gid: 'original' },
-          ),
-        ),
-    );
-    expect(await new DesktopApiClient({ port: 29110, secret: 'secret' }).reconcileDownloads()).toBe(
-      0,
-    );
-    const replay = fetchMock.mock.calls.at(-1)?.[0] as Request;
-    await expect(jsonBody(replay)).resolves.toEqual(payload);
-    expect(await browser.storage.local.get(null)).toEqual({});
+    const awake = vi
+      .spyOn(browser.runtime, 'getPlatformInfo')
+      .mockImplementation(
+        async () => ({ os: 'win', arch: 'x86-64' }) as Browser.runtime.PlatformInfo,
+      );
+    void client.addDownload({ url: 'https://example.com/file.zip' }).catch(() => {});
+    await vi.advanceTimersByTimeAsync(API_HANDOFF_TIMEOUT_MS - 1000);
+    expect(signals[0]?.aborted).toBe(false);
+    // The worker stays alive while the browser download is held.
+    expect(awake.mock.calls.length).toBeGreaterThanOrEqual(6);
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(signals[0]?.aborted).toBe(true);
   });
 
-  it('pins the connection through a settings change and retains the receipt until browser cancellation', async () => {
+  it('pins the connection through a settings change', async () => {
     let release!: () => void;
     const gate = new Promise<void>((resolve) => {
       release = resolve;
@@ -271,23 +251,38 @@ describe('DesktopApiClient', () => {
     vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
       if ((input as Request).url.endsWith('/capabilities')) {
         await gate;
-        return new Response(
-          JSON.stringify({ product: 'rayburst', protocolVersion: 2, filenameHints: true }),
-        );
+        return new Response(JSON.stringify({ product: 'rayburst', protocolVersion: 3 }));
       }
-      return new Response(JSON.stringify({ id: 'pinned', action: 'submitted', gid: 'owned' }));
+      return new Response(JSON.stringify({ action: 'added', gid: 'owned' }));
     });
-    const delivery = client.addDownload({ id: 'pinned', url: 'https://example.test/file.zip' }, 42);
+    const delivery = client.addDownload({ url: 'https://example.test/file.zip' });
     client.updateConfig({ port: 29111, secret: 'changed' });
     release();
     await delivery;
     expect(requestAt(1).url).toBe('http://127.0.0.1:29110/add');
     expect(requestAt(1).headers.get('Authorization')).toBe('Bearer secret');
-    expect((await browser.storage.local.get(null))['pending-download:pinned']).toMatchObject({
-      connection: { port: 29110, secret: 'secret' },
-      browserDownloadId: 42,
-    });
-    expect(await client.reconcileDownloads()).toBe(0);
-    expect((await browser.storage.local.get(null))['pending-download:pinned']).toBeDefined();
+    expect(await browser.storage.local.get(null)).toEqual({});
+  });
+
+  it('lists tasks and controls one task', async () => {
+    const task = {
+      gid: 'a1',
+      name: 'file.zip',
+      status: 'active',
+      totalLength: '100',
+      completedLength: '50',
+      downloadSpeed: '10',
+    };
+    vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response(JSON.stringify({ stat, tasks: [task] })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ status: 'ok' })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ status: 'ok' })));
+    await expect(client.getTasks()).resolves.toEqual({ stat, tasks: [task] });
+    await client.pauseTask('a1');
+    await client.resumeTask('a1');
+    expect(requestAt(0).url).toBe('http://127.0.0.1:29110/tasks');
+    expect(requestAt(1).url).toBe('http://127.0.0.1:29110/tasks/a1/pause');
+    expect(requestAt(2).url).toBe('http://127.0.0.1:29110/tasks/a1/resume');
+    expect(requestAt(2).headers.get('authorization')).toBe('Bearer secret');
   });
 });

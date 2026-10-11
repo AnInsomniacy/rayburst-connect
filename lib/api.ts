@@ -3,8 +3,9 @@
  * (Axum server at `127.0.0.1:{port}`), plus the extension's single error
  * taxonomy and desktop compatibility checks.
  *
- * Endpoints: GET /ping (no auth), GET /stat, POST /add, POST /pause-all,
- * POST /resume-all (Bearer auth when a secret is configured).
+ * Endpoints: GET /ping (no auth), GET /stat, POST /add, GET /tasks,
+ * POST /tasks/{gid}/pause|resume, POST /pause-all, POST /resume-all and the
+ * media API (Bearer auth when a secret is configured).
  */
 import ky, {
   HTTPError,
@@ -21,7 +22,6 @@ import {
   type AddDownloadRequest,
   type AddDownloadResponse,
 } from './download/contracts';
-import { rememberDownload, forgetDownload, pendingDownloads } from './download/pending';
 import {
   MEDIA_API_PATH,
   MediaCapabilitiesSchema,
@@ -43,6 +43,11 @@ z.config({ jitless: true });
 export const API_CONNECTIVITY_TIMEOUT_MS = 500;
 /** Timeout for API requests that perform real work. */
 export const API_REQUEST_TIMEOUT_MS = 5000;
+/**
+ * `/add` answers once the engine verified the download (at most ~25 s) or the
+ * user confirmed it in the desktop dialog (at most 120 s).
+ */
+export const API_HANDOFF_TIMEOUT_MS = 150_000;
 /** Retry attempts for failed API calls. */
 const API_MAX_RETRIES = 1;
 
@@ -103,13 +108,6 @@ export class ApiEngineError extends ApiError {
   }
 }
 
-export class ApiDeliveryUncertainError extends ApiError {
-  constructor(cause: unknown) {
-    super('The desktop may have accepted this download; its receipt is pending', cause);
-    this.name = 'ApiDeliveryUncertainError';
-  }
-}
-
 export class MediaApiError extends ApiError {
   constructor(public readonly code: string) {
     super('Media request failed');
@@ -134,8 +132,7 @@ const DiscoveryResponseSchema = z.object({
 
 const DownloadCapabilitiesSchema = z.object({
   product: z.literal('rayburst'),
-  protocolVersion: z.literal(2),
-  filenameHints: z.literal(true),
+  protocolVersion: z.literal(3),
 });
 
 const StatResponseSchema = z.object({
@@ -149,8 +146,25 @@ const StatResponseSchema = z.object({
 
 const ActionResponseSchema = z.object({ status: z.string(), error: z.string().optional() });
 
+const DesktopTaskSchema = z.object({
+  gid: z.string(),
+  name: z.string(),
+  status: z.string(),
+  totalLength: z.string(),
+  completedLength: z.string(),
+  downloadSpeed: z.string(),
+  errorMessage: z.string().optional(),
+});
+
+const TasksResponseSchema = z.object({
+  stat: StatResponseSchema,
+  tasks: z.array(DesktopTaskSchema),
+});
+
 export type PingResponse = z.output<typeof PingResponseSchema>;
 export type StatResponse = z.output<typeof StatResponseSchema>;
+export type DesktopTask = z.output<typeof DesktopTaskSchema>;
+export type TasksResponse = z.output<typeof TasksResponseSchema>;
 type ActionResponse = z.output<typeof ActionResponseSchema>;
 
 // ─── Client ─────────────────────────────────────────────
@@ -261,59 +275,65 @@ export class DesktopApiClient {
     );
   }
 
-  addDownload(
-    request: AddDownloadRequest,
-    browserDownloadId?: number,
-  ): Promise<AddDownloadResponse> {
-    // Settings may change while capabilities/storage are awaited. Bind this
-    // mutation and its recovery record to the same connection throughout.
-    return new DesktopApiClient(this.config).submitDownload(request, browserDownloadId);
+  /** Hands a download to the desktop; the answer decides who downloads it. */
+  addDownload(request: AddDownloadRequest): Promise<AddDownloadResponse> {
+    // Settings may change while capabilities are awaited. Bind the handoff to
+    // the connection it started on.
+    return new DesktopApiClient(this.config).submitDownload(request);
   }
 
-  private async submitDownload(
-    request: AddDownloadRequest,
-    browserDownloadId?: number,
-  ): Promise<AddDownloadResponse> {
+  private async submitDownload(request: AddDownloadRequest): Promise<AddDownloadResponse> {
     await this.getDownloadCapabilities();
-    const wasPending = await rememberDownload(request, this.config, browserDownloadId);
+    // A held download keeps the worker busy without browser events.
+    const awake = setInterval(() => {
+      // Any extension API call resets the worker's idle timer.
+      Promise.resolve()
+        .then(() => browser.runtime.getPlatformInfo())
+        .catch(() => undefined);
+    }, 20_000);
     try {
-      const response = await this.request(
+      return await this.request(
         'add',
         AddDownloadResponseSchema,
-        { method: 'POST', headers: this.authHeaders(), json: request, retry: 0 },
+        {
+          method: 'POST',
+          headers: this.authHeaders(),
+          json: request,
+          retry: 0,
+          timeout: API_HANDOFF_TIMEOUT_MS,
+        },
         'Add download',
       );
-      if (response.id !== request.id || (response.action === 'submitted' && !response.gid))
-        throw new Error('Download receipt does not match its request');
-      if (browserDownloadId === undefined) await forgetDownload(request.id);
-      return response;
-    } catch (error) {
-      if (error instanceof ApiAuthError && !wasPending) {
-        await forgetDownload(request.id);
-        throw error;
-      }
-      throw new ApiDeliveryUncertainError(error);
+    } finally {
+      clearInterval(awake);
     }
   }
 
-  async reconcileDownloads(): Promise<number> {
-    const connection = { ...this.config };
-    const pending = await pendingDownloads(connection);
-    const results = await Promise.allSettled(
-      pending.map(async ({ request, browserDownloadId }) => {
-        await new DesktopApiClient(connection).addDownload(request, browserDownloadId);
-        if (browserDownloadId !== undefined) {
-          const [item] = await browser.downloads.search({ id: browserDownloadId });
-          if (
-            item?.state === 'in_progress' &&
-            [item.url, item.finalUrl].includes(request.finalUrl || request.url)
-          )
-            await browser.downloads.cancel(browserDownloadId);
-          await forgetDownload(request.id);
-        }
-      }),
+  async getTasks(): Promise<TasksResponse> {
+    return this.request(
+      'tasks',
+      TasksResponseSchema,
+      { method: 'GET', headers: this.authHeaders() },
+      'List tasks',
     );
-    return results.filter((result) => result.status === 'rejected').length;
+  }
+
+  async pauseTask(gid: string): Promise<ActionResponse> {
+    return this.request(
+      `tasks/${encodeURIComponent(gid)}/pause`,
+      ActionResponseSchema,
+      { method: 'POST', headers: this.authHeaders() },
+      'Pause task',
+    );
+  }
+
+  async resumeTask(gid: string): Promise<ActionResponse> {
+    return this.request(
+      `tasks/${encodeURIComponent(gid)}/resume`,
+      ActionResponseSchema,
+      { method: 'POST', headers: this.authHeaders() },
+      'Resume task',
+    );
   }
 
   async createCapture(id: string) {

@@ -39,7 +39,6 @@ lib/
 ├── file-extensions.ts           # File extension normalization/matching
 └── download/
     ├── contracts.ts             # Consumer validation for ordinary desktop handoff
-    ├── pending.ts               # Bounded native local journal for unresolved request IDs
     ├── orchestrator.ts          # Interception flows: automatic, Firefox response, explicit
     ├── chromium-takeover.ts     # Synchronous Chromium cancellation handoff
     ├── filter.ts                # Filter pipeline (pure function stages)
@@ -321,9 +320,9 @@ locked dependencies. Keep checks directly in `ci.yml`; no configurable gate wrap
 - **`<script setup lang="ts">`** for all components; Naive UI via `NaiveUiResolver`.
 - **CSS**: plain custom properties (M3 tokens in `globals.css`, runtime values injected by
   `shared/theme.ts`). Animations are CSS-only and respect `prefers-reduced-motion`.
-- **Download ownership** — preflight failures may fall back to the browser. After an
-  ambiguous POST, retain the same request ID and reconcile; never create a second
-  browser download merely because its desktop receipt was lost.
+- **Download ownership** — the browser holds its download until `/add` answers. Only
+  `added` and `cancelled` release it; any other outcome, including a lost answer,
+  lets the browser continue. Never cancel a browser download without that answer.
 - **Formatting**: Prettier with project config (`.prettierrc`).
 
 ---
