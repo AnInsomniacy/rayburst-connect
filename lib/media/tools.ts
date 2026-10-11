@@ -1,3 +1,4 @@
+import { respondWith } from '../messaging';
 import { CaptureChunkSchema } from './capture';
 import { createThemeVars, resolveScheme } from '@/shared/theme-colors';
 import { loadUiPrefs } from '../storage';
@@ -422,315 +423,332 @@ export function startMediaTools(options: {
       }).catch(() => undefined);
     }, 300);
   });
-  browser.runtime.onMessage.addListener((raw: unknown, sender) => {
-    if (
-      raw &&
-      typeof raw === 'object' &&
-      'type' in raw &&
-      raw.type === 'MEDIA_SCRIPT_DATA' &&
-      'data' in raw
-    )
-      return run(() => observation(raw.data, sender)).catch(() => ({ ok: false }));
-    const frameReady =
-      raw &&
-      typeof raw === 'object' &&
-      'type' in raw &&
-      raw.type === 'MEDIA_FRAME_READY' &&
-      sender.id === browser.runtime.id &&
-      sender.tab?.id !== undefined &&
-      sender.frameId !== undefined;
-    const parsed = MediaToolSchema.safeParse(
-      frameReady
-        ? {
-            type: 'MEDIA_FRAME_READY',
-            tabId: sender.tab!.id,
-            frameId: sender.frameId,
-            url: sender.url ?? '',
-          }
-        : raw,
-    );
-    if (
-      !parsed.success ||
-      sender.id !== browser.runtime.id ||
-      (!frameReady && !sender.url?.startsWith(browser.runtime.getURL('')))
-    )
-      return;
-    return run(async () => {
-      await options.ensureConfig();
-      const command = parsed.data;
-      const tab = await browser.tabs.get(command.tabId);
-      if (!tab.url || !options.allowed(tab.url, tab.url)) throw new MediaApiError('source_expired');
-      const all = await sessions();
-      if (command.type === 'MEDIA_AUTOMATIC') {
-        const saved = z
-          .array(z.number().int())
-          .catch([])
-          .parse((await browser.storage.session.get('mediaAutomaticTabs')).mediaAutomaticTabs);
-        await browser.storage.session.set({
-          mediaAutomaticTabs: command.enabled
-            ? [...new Set([...saved, command.tabId])]
-            : saved.filter((id) => id !== command.tabId),
-        });
-        return { ok: true };
-      }
-      if (command.type === 'MEDIA_MOBILE') {
-        const id = command.tabId + 1000;
-        await browser.declarativeNetRequest.updateSessionRules({
-          removeRuleIds: [id],
-          addRules: command.enabled
-            ? [
-                {
-                  id,
-                  priority: 1,
-                  action: {
-                    type: 'modifyHeaders',
-                    requestHeaders: [
-                      {
-                        header: 'user-agent',
-                        operation: 'set',
-                        value:
-                          'Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 Version/18.6 Mobile/15E148 Safari/604.1',
-                      },
-                    ],
-                  },
-                  condition: {
-                    tabIds: [command.tabId],
-                    urlFilter: '|http',
-                    resourceTypes: [
-                      'main_frame',
-                      'sub_frame',
-                      'xmlhttprequest',
-                      'media',
-                      'script',
-                      'image',
-                      'other',
-                    ],
-                  },
-                },
-              ]
-            : [],
-        });
-        await browser.tabs.reload(command.tabId, { bypassCache: true });
-        return { ok: true };
-      }
-      if (command.type === 'MEDIA_BATCH') {
-        await options.catalog.run((state) => {
-          for (const item of state.candidates)
-            if (command.ids.includes(item.id)) item.downloadError = undefined;
-          state.operations = state.operations.filter(
-            (operation) =>
-              !command.ids.includes(operation.candidateId) ||
-              !['submitted', 'cancelled', 'failed'].includes(operation.state),
-          );
-        }, true);
-        const items = await options.catalog.run((state) =>
-          state.candidates.filter((item) => command.ids.includes(item.id)),
-        );
-        const queue = queueSchema
-          .catch([])
-          .parse((await browser.storage.session.get('mediaQueue')).mediaQueue);
-        for (const item of items)
-          if (!queue.some((entry) => entry.candidateId === item.id))
-            queue.push({ tabId: item.tabId, candidateId: item.id });
-        await browser.storage.session.set({ mediaQueue: queue });
-        void run(processQueue).catch(() => undefined);
-        return { ok: true };
-      }
-      if (command.type === 'MEDIA_PLAYER') {
-        if (command.command.action === 'list') {
-          const frames = await browser.webNavigation.getAllFrames({ tabId: command.tabId });
-          const players = await Promise.allSettled(
-            (frames ?? []).map(async (frame) => ({
-              frameId: frame.frameId,
-              players: await browser.tabs.sendMessage(
-                command.tabId,
-                { type: 'MEDIA_PLAYER', command: command.command },
-                { frameId: frame.frameId },
-              ),
-            })),
-          );
-          return players.flatMap((result) => (result.status === 'fulfilled' ? [result.value] : []));
-        }
-        const result: unknown = await browser.tabs.sendMessage(
-          command.tabId,
-          { type: 'MEDIA_PLAYER', command: command.command },
-          { frameId: command.frameId ?? 0 },
-        );
-        if (command.command.action === 'screenshot' && typeof result === 'string') {
-          const id = crypto.randomUUID();
-          await options.client.createCapture(id);
-          const bytes = Uint8Array.from(atob(result), (char) => char.charCodeAt(0));
-          for (let offset = 0; offset < bytes.length; offset += 256 * 1024)
-            await options.client.appendCapture(
-              id,
-              0,
-              offset,
-              bytes.slice(offset, offset + 256 * 1024),
-            );
-          await options.client.sealCapture(id);
-          const resource = options.client.captureResource(id, 0);
-          const item = await candidate(command.tabId, command.frameId ?? 0, resource.url, 'image');
-          item.evidence = 'capture';
-          item.filename = `${item.title || 'Screenshot'}.png`;
-          item.context = { ...resource, capturedAt: Date.now() };
-          await options.observe(item);
-          await options.workflow.downloadFile(item.tabId, item.id);
-          return true;
-        }
-        return result;
-      }
-      if (command.type === 'MEDIA_FRAME_READY') {
-        const tab = await browser.tabs.get(command.tabId);
-        if (!tab.url || !options.allowed(tab.url, command.url)) return { ok: true };
-        let session = all[String(command.tabId)];
-        if (session?.automatic && !options.settings().mediaDiscovery.alwaysDeepSearch) {
-          await inject(command.tabId, command.frameId, 'stop');
-          delete all[String(command.tabId)];
-          await browser.storage.session.set({ mediaTools: all });
-          return { ok: true };
-        }
-        if (!session && options.settings().mediaDiscovery.alwaysDeepSearch) {
-          session = { id: crypto.randomUUID(), mode: 'deep', automatic: true, streams: {} };
-          all[String(command.tabId)] = session;
-          await browser.storage.session.set({ mediaTools: all });
-        }
-        if (session && session.mode !== 'stop')
-          await inject(command.tabId, command.frameId, session.mode);
-        return { ok: true };
-      }
-      if (command.type === 'MEDIA_TOOLS')
-        return {
-          automatic: z
-            .array(z.number())
-            .catch([])
-            .parse((await browser.storage.session.get('mediaAutomaticTabs')).mediaAutomaticTabs)
-            .includes(command.tabId),
-          mobile: (await browser.declarativeNetRequest.getSessionRules()).some(
-            (rule) => rule.id === command.tabId + 1000,
-          ),
-          mode: all[String(command.tabId)]?.mode ?? 'stop',
-          keys: await options.catalog.run((state) =>
-            state.keys.filter((key) => key.tabId === command.tabId),
-          ),
-        };
-      if (command.type === 'MEDIA_MODE') {
-        if (command.mode !== 'stop') {
-          if (all[String(command.tabId)]?.captureId && all[String(command.tabId)]?.mode !== 'stop')
-            throw new MediaApiError('conflict');
-          const captureId = command.mode === 'deep' ? undefined : crypto.randomUUID();
-          if (captureId) await options.client.createCapture(captureId);
-          all[String(command.tabId)] = {
-            id: crypto.randomUUID(),
-            mode: command.mode,
-            captureId,
-            streams: {},
-          };
-          await browser.storage.session.set({ mediaTools: all });
-        }
-        const frames = await browser.webNavigation.getAllFrames({ tabId: command.tabId });
-        await Promise.allSettled(
-          (frames ?? []).map((frame) => inject(command.tabId, frame.frameId, command.mode)),
-        );
-        if (command.mode === 'stop' && !all[String(command.tabId)]?.captureId) {
-          const current = all[String(command.tabId)];
-          if (current) {
-            current.mode = 'stop';
-            current.automatic = false;
-          }
-          await browser.storage.session.set({ mediaTools: all });
-        }
-        const session = all[String(command.tabId)];
-        if (command.mode === 'stop' && session?.captureId && !Object.keys(session.streams).length) {
-          await options.client.discardCapture(session.captureId);
-          session.mode = 'stop';
-          await browser.storage.session.set({ mediaTools: all });
-        }
-        if (command.reload && command.mode !== 'stop')
-          await browser.tabs.reload(command.tabId, { bypassCache: true });
-        return { ok: true };
-      }
-      if (command.type === 'MEDIA_IMPORT') {
-        const item = await candidate(
-          command.tabId,
-          command.frameId ?? 0,
-          command.url,
-          command.kind,
-          command.input,
-          crypto.randomUUID(),
-        );
-        if (command.title) {
-          item.title = command.title;
-          await options.observe(item);
-        }
-        await options.probe(command.tabId, item.id);
-        return { id: item.id };
-      }
-      const sources = await options.catalog.run((state) =>
-        state.candidates.filter(
-          (item) => item.tabId === command.tabId && command.ids.includes(item.id),
-        ),
+  browser.runtime.onMessage.addListener(
+    respondWith((raw: unknown, sender) => {
+      if (
+        raw &&
+        typeof raw === 'object' &&
+        'type' in raw &&
+        raw.type === 'MEDIA_SCRIPT_DATA' &&
+        'data' in raw
+      )
+        return run(() => observation(raw.data, sender)).catch(() => ({ ok: false }));
+      const frameReady =
+        raw &&
+        typeof raw === 'object' &&
+        'type' in raw &&
+        raw.type === 'MEDIA_FRAME_READY' &&
+        sender.id === browser.runtime.id &&
+        sender.tab?.id !== undefined &&
+        sender.frameId !== undefined;
+      const parsed = MediaToolSchema.safeParse(
+        frameReady
+          ? {
+              type: 'MEDIA_FRAME_READY',
+              tabId: sender.tab!.id,
+              frameId: sender.frameId,
+              url: sender.url ?? '',
+            }
+          : raw,
       );
       if (
-        sources.length !== command.ids.length ||
-        sources.some(
-          (item) =>
-            item.frameId !== sources[0]?.frameId || item.documentId !== sources[0]?.documentId,
-        ) ||
-        sources.some((item) => !['file', 'fragment', 'subtitle'].includes(item.kind))
+        !parsed.success ||
+        sender.id !== browser.runtime.id ||
+        (!frameReady && !sender.url?.startsWith(browser.runtime.getURL('')))
       )
-        throw new MediaApiError('unsupported_source');
-      const input = emptyMediaInput();
-      if (command.sequence)
-        input.tracks.push({
-          id: 'sequence',
-          type: 'muxed',
-          urls: command.ids.map((id) => sources.find((source) => source.id === id)!.url),
-        });
-      else
-        input.tracks = sources.map((item) => ({
-          id: item.id,
-          type:
-            item.kind === 'subtitle'
-              ? 'subtitle'
-              : item.mime.startsWith('audio/')
-                ? 'audio'
-                : 'video',
-          urls: [item.url],
-        }));
-      const item = await candidate(
-        command.tabId,
-        sources[0]!.frameId,
-        `https://rayburst.invalid/collection/${crypto.randomUUID()}`,
-        'collection',
-        input,
-      );
-      item.context = sources[0]!.context;
-      await options.observe(item);
-      await options.catalog.run((state) => {
-        for (const source of sources)
-          if (
-            source.context &&
-            !state.contexts.some(
-              (context) =>
-                context.tabId === source.tabId &&
-                mediaOrigin(context.url) === mediaOrigin(source.url),
+        return;
+      return run(async () => {
+        await options.ensureConfig();
+        const command = parsed.data;
+        const tab = await browser.tabs.get(command.tabId);
+        if (!tab.url || !options.allowed(tab.url, tab.url))
+          throw new MediaApiError('source_expired');
+        const all = await sessions();
+        if (command.type === 'MEDIA_AUTOMATIC') {
+          const saved = z
+            .array(z.number().int())
+            .catch([])
+            .parse((await browser.storage.session.get('mediaAutomaticTabs')).mediaAutomaticTabs);
+          await browser.storage.session.set({
+            mediaAutomaticTabs: command.enabled
+              ? [...new Set([...saved, command.tabId])]
+              : saved.filter((id) => id !== command.tabId),
+          });
+          return { ok: true };
+        }
+        if (command.type === 'MEDIA_MOBILE') {
+          const id = command.tabId + 1000;
+          await browser.declarativeNetRequest.updateSessionRules({
+            removeRuleIds: [id],
+            addRules: command.enabled
+              ? [
+                  {
+                    id,
+                    priority: 1,
+                    action: {
+                      type: 'modifyHeaders',
+                      requestHeaders: [
+                        {
+                          header: 'user-agent',
+                          operation: 'set',
+                          value:
+                            'Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 Version/18.6 Mobile/15E148 Safari/604.1',
+                        },
+                      ],
+                    },
+                    condition: {
+                      tabIds: [command.tabId],
+                      urlFilter: '|http',
+                      resourceTypes: [
+                        'main_frame',
+                        'sub_frame',
+                        'xmlhttprequest',
+                        'media',
+                        'script',
+                        'image',
+                        'other',
+                      ],
+                    },
+                  },
+                ]
+              : [],
+          });
+          await browser.tabs.reload(command.tabId, { bypassCache: true });
+          return { ok: true };
+        }
+        if (command.type === 'MEDIA_BATCH') {
+          await options.catalog.run((state) => {
+            for (const item of state.candidates)
+              if (command.ids.includes(item.id)) item.downloadError = undefined;
+            state.operations = state.operations.filter(
+              (operation) =>
+                !command.ids.includes(operation.candidateId) ||
+                !['submitted', 'cancelled', 'failed'].includes(operation.state),
+            );
+          }, true);
+          const items = await options.catalog.run((state) =>
+            state.candidates.filter((item) => command.ids.includes(item.id)),
+          );
+          const queue = queueSchema
+            .catch([])
+            .parse((await browser.storage.session.get('mediaQueue')).mediaQueue);
+          for (const item of items)
+            if (!queue.some((entry) => entry.candidateId === item.id))
+              queue.push({ tabId: item.tabId, candidateId: item.id });
+          await browser.storage.session.set({ mediaQueue: queue });
+          void run(processQueue).catch(() => undefined);
+          return { ok: true };
+        }
+        if (command.type === 'MEDIA_PLAYER') {
+          if (command.command.action === 'list') {
+            const frames = await browser.webNavigation.getAllFrames({ tabId: command.tabId });
+            const players = await Promise.allSettled(
+              (frames ?? []).map(async (frame) => ({
+                frameId: frame.frameId,
+                players: await browser.tabs.sendMessage(
+                  command.tabId,
+                  { type: 'MEDIA_PLAYER', command: command.command },
+                  { frameId: frame.frameId },
+                ),
+              })),
+            );
+            return players.flatMap((result) =>
+              result.status === 'fulfilled' ? [result.value] : [],
+            );
+          }
+          const result: unknown = await browser.tabs.sendMessage(
+            command.tabId,
+            { type: 'MEDIA_PLAYER', command: command.command },
+            { frameId: command.frameId ?? 0 },
+          );
+          if (command.command.action === 'screenshot' && typeof result === 'string') {
+            const id = crypto.randomUUID();
+            await options.client.createCapture(id);
+            const bytes = Uint8Array.from(atob(result), (char) => char.charCodeAt(0));
+            for (let offset = 0; offset < bytes.length; offset += 256 * 1024)
+              await options.client.appendCapture(
+                id,
+                0,
+                offset,
+                bytes.slice(offset, offset + 256 * 1024),
+              );
+            await options.client.sealCapture(id);
+            const resource = options.client.captureResource(id, 0);
+            const item = await candidate(
+              command.tabId,
+              command.frameId ?? 0,
+              resource.url,
+              'image',
+            );
+            item.evidence = 'capture';
+            item.filename = `${item.title || 'Screenshot'}.png`;
+            item.context = { ...resource, capturedAt: Date.now() };
+            await options.observe(item);
+            await options.workflow.downloadFile(item.tabId, item.id);
+            return true;
+          }
+          return result;
+        }
+        if (command.type === 'MEDIA_FRAME_READY') {
+          const tab = await browser.tabs.get(command.tabId);
+          if (!tab.url || !options.allowed(tab.url, command.url)) return { ok: true };
+          let session = all[String(command.tabId)];
+          if (session?.automatic && !options.settings().mediaDiscovery.alwaysDeepSearch) {
+            await inject(command.tabId, command.frameId, 'stop');
+            delete all[String(command.tabId)];
+            await browser.storage.session.set({ mediaTools: all });
+            return { ok: true };
+          }
+          if (!session && options.settings().mediaDiscovery.alwaysDeepSearch) {
+            session = { id: crypto.randomUUID(), mode: 'deep', automatic: true, streams: {} };
+            all[String(command.tabId)] = session;
+            await browser.storage.session.set({ mediaTools: all });
+          }
+          if (session && session.mode !== 'stop')
+            await inject(command.tabId, command.frameId, session.mode);
+          return { ok: true };
+        }
+        if (command.type === 'MEDIA_TOOLS')
+          return {
+            automatic: z
+              .array(z.number())
+              .catch([])
+              .parse((await browser.storage.session.get('mediaAutomaticTabs')).mediaAutomaticTabs)
+              .includes(command.tabId),
+            mobile: (await browser.declarativeNetRequest.getSessionRules()).some(
+              (rule) => rule.id === command.tabId + 1000,
+            ),
+            mode: all[String(command.tabId)]?.mode ?? 'stop',
+            keys: await options.catalog.run((state) =>
+              state.keys.filter((key) => key.tabId === command.tabId),
+            ),
+          };
+        if (command.type === 'MEDIA_MODE') {
+          if (command.mode !== 'stop') {
+            if (
+              all[String(command.tabId)]?.captureId &&
+              all[String(command.tabId)]?.mode !== 'stop'
             )
-          )
-            state.contexts.push({
-              ...source.context,
-              tabId: source.tabId,
-              frameId: source.frameId,
-              documentId: source.documentId,
-              frameUrl: source.frameUrl,
-              pageUrl: source.pageUrl,
-            });
-      }, true);
-      await options.probe(command.tabId, item.id);
-      return { id: item.id };
-    }).catch((error: unknown) => ({
-      error: mediaErrorCode(error),
-    }));
-  });
+              throw new MediaApiError('conflict');
+            const captureId = command.mode === 'deep' ? undefined : crypto.randomUUID();
+            if (captureId) await options.client.createCapture(captureId);
+            all[String(command.tabId)] = {
+              id: crypto.randomUUID(),
+              mode: command.mode,
+              captureId,
+              streams: {},
+            };
+            await browser.storage.session.set({ mediaTools: all });
+          }
+          const frames = await browser.webNavigation.getAllFrames({ tabId: command.tabId });
+          await Promise.allSettled(
+            (frames ?? []).map((frame) => inject(command.tabId, frame.frameId, command.mode)),
+          );
+          if (command.mode === 'stop' && !all[String(command.tabId)]?.captureId) {
+            const current = all[String(command.tabId)];
+            if (current) {
+              current.mode = 'stop';
+              current.automatic = false;
+            }
+            await browser.storage.session.set({ mediaTools: all });
+          }
+          const session = all[String(command.tabId)];
+          if (
+            command.mode === 'stop' &&
+            session?.captureId &&
+            !Object.keys(session.streams).length
+          ) {
+            await options.client.discardCapture(session.captureId);
+            session.mode = 'stop';
+            await browser.storage.session.set({ mediaTools: all });
+          }
+          if (command.reload && command.mode !== 'stop')
+            await browser.tabs.reload(command.tabId, { bypassCache: true });
+          return { ok: true };
+        }
+        if (command.type === 'MEDIA_IMPORT') {
+          const item = await candidate(
+            command.tabId,
+            command.frameId ?? 0,
+            command.url,
+            command.kind,
+            command.input,
+            crypto.randomUUID(),
+          );
+          if (command.title) {
+            item.title = command.title;
+            await options.observe(item);
+          }
+          await options.probe(command.tabId, item.id);
+          return { id: item.id };
+        }
+        const sources = await options.catalog.run((state) =>
+          state.candidates.filter(
+            (item) => item.tabId === command.tabId && command.ids.includes(item.id),
+          ),
+        );
+        if (
+          sources.length !== command.ids.length ||
+          sources.some(
+            (item) =>
+              item.frameId !== sources[0]?.frameId || item.documentId !== sources[0]?.documentId,
+          ) ||
+          sources.some((item) => !['file', 'fragment', 'subtitle'].includes(item.kind))
+        )
+          throw new MediaApiError('unsupported_source');
+        const input = emptyMediaInput();
+        if (command.sequence)
+          input.tracks.push({
+            id: 'sequence',
+            type: 'muxed',
+            urls: command.ids.map((id) => sources.find((source) => source.id === id)!.url),
+          });
+        else
+          input.tracks = sources.map((item) => ({
+            id: item.id,
+            type:
+              item.kind === 'subtitle'
+                ? 'subtitle'
+                : item.mime.startsWith('audio/')
+                  ? 'audio'
+                  : 'video',
+            urls: [item.url],
+          }));
+        const item = await candidate(
+          command.tabId,
+          sources[0]!.frameId,
+          `https://rayburst.invalid/collection/${crypto.randomUUID()}`,
+          'collection',
+          input,
+        );
+        item.context = sources[0]!.context;
+        await options.observe(item);
+        await options.catalog.run((state) => {
+          for (const source of sources)
+            if (
+              source.context &&
+              !state.contexts.some(
+                (context) =>
+                  context.tabId === source.tabId &&
+                  mediaOrigin(context.url) === mediaOrigin(source.url),
+              )
+            )
+              state.contexts.push({
+                ...source.context,
+                tabId: source.tabId,
+                frameId: source.frameId,
+                documentId: source.documentId,
+                frameUrl: source.frameUrl,
+                pageUrl: source.pageUrl,
+              });
+        }, true);
+        await options.probe(command.tabId, item.id);
+        return { id: item.id };
+      }).catch((error: unknown) => ({
+        error: mediaErrorCode(error),
+      }));
+    }),
+  );
   if (import.meta.env.FIREFOX) {
     type StreamFilter = {
       ondata: ((event: { data: ArrayBuffer }) => void) | null;

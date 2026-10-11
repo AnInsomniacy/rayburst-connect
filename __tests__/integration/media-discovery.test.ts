@@ -1,4 +1,5 @@
 import { DuplicateDownloadGuard } from '@/lib/download/duplicate-guard';
+import { sendRuntimeMessage } from '../fixtures/messaging';
 import { z } from 'zod';
 import { MediaListSchema } from '@/lib/media/messages';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -107,7 +108,7 @@ afterEach(() => {
 
 describe('browser discovery integration', () => {
   it('reports an unsupported player source and removes it from the download queue', async () => {
-    await fakeBrowser.runtime.onMessage.trigger(
+    await sendRuntimeMessage(
       {
         type: 'MEDIA_OBSERVATIONS',
         title: 'Player',
@@ -129,7 +130,7 @@ describe('browser discovery integration', () => {
     );
     const source = (await snapshot()).candidates[0]!;
     expect(source.kind).toBe('embedded');
-    await fakeBrowser.runtime.onMessage.trigger(
+    await sendRuntimeMessage(
       { type: 'MEDIA_BATCH', tabId, ids: [source.id] },
       { id: browser.runtime.id, url: browser.runtime.getURL('/popup.html') },
     );
@@ -153,7 +154,7 @@ describe('browser discovery integration', () => {
     });
     response(details);
     await Promise.resolve();
-    await fakeBrowser.runtime.onMessage.trigger(
+    await sendRuntimeMessage(
       {
         type: 'MEDIA_SCRIPT_DATA',
         data: { sessionId, type: 'manifest', kind: 'hls', url: details.url, content: '#EXTM3U\n' },
@@ -199,13 +200,13 @@ describe('browser discovery integration', () => {
       offsetMs: 25,
       data: btoa('abc'),
     };
-    await fakeBrowser.runtime.onMessage.trigger({ type: 'MEDIA_SCRIPT_DATA', data }, sender);
-    await fakeBrowser.runtime.onMessage.trigger({ type: 'MEDIA_SCRIPT_DATA', data }, sender);
-    await fakeBrowser.runtime.onMessage.trigger(
+    await sendRuntimeMessage({ type: 'MEDIA_SCRIPT_DATA', data }, sender);
+    await sendRuntimeMessage({ type: 'MEDIA_SCRIPT_DATA', data }, sender);
+    await sendRuntimeMessage(
       { type: 'MEDIA_SCRIPT_DATA', data: { ...data, id: crypto.randomUUID() } },
       { ...sender, frameId: 1 },
     );
-    await fakeBrowser.runtime.onMessage.trigger(
+    await sendRuntimeMessage(
       { type: 'MEDIA_SCRIPT_DATA', data: { ...data, sessionId: crypto.randomUUID() } },
       sender,
     );
@@ -253,11 +254,10 @@ describe('browser discovery integration', () => {
         (header) => header.name === 'authorization',
       ),
     ).toBe(true);
-    const results: unknown[] = await fakeBrowser.runtime.onMessage.trigger(
+    const result = await sendRuntimeMessage(
       { type: 'MEDIA_LIST', tabId },
       { id: browser.runtime.id, url: browser.runtime.getURL('/popup.html') },
     );
-    const result = results.find((value) => value !== undefined);
     const parsed = z.object({ ok: z.literal(true), data: MediaListSchema }).parse(result).data;
     expect(parsed.items[0]?.hasRequestContext).toBe(true);
     expect(JSON.stringify(parsed)).not.toContain('session=private');
@@ -299,7 +299,7 @@ describe('browser discovery integration', () => {
     expect((await snapshot()).contexts[0]?.url).toBe(details.url);
   });
   it('ignores privileged commands from content scripts', async () => {
-    const results: unknown[] = await fakeBrowser.runtime.onMessage.trigger(
+    const result = await sendRuntimeMessage(
       { type: 'MEDIA_ENABLE', tabId, enabled: false },
       {
         id: browser.runtime.id,
@@ -308,7 +308,7 @@ describe('browser discovery integration', () => {
         frameId: 0,
       },
     );
-    expect(results.every((result) => result === undefined)).toBe(true);
+    expect(result).toBeUndefined();
     expect((await browser.storage.local.get('settings')).settings).toBeUndefined();
   });
   it('removes sources when the tab closes', async () => {

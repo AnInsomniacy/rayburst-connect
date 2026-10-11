@@ -1,3 +1,4 @@
+import { respondWith } from '@/lib/messaging';
 import { MediaApiError } from '@/lib/api';
 import { browser, type Browser } from 'wxt/browser';
 import { DownloadOrchestrator, type DownloadCandidate } from '@/lib/download/orchestrator';
@@ -107,6 +108,7 @@ export default defineBackground(() => {
         });
       } finally {
         configLoaded = true;
+        syncFilenameListener();
       }
     })();
     return configLoadPromise;
@@ -384,23 +386,39 @@ export default defineBackground(() => {
       });
     });
   } else {
-    browser.downloads.onDeterminingFilename.addListener((item, suggest) => {
-      if (!isPotentialChromiumDownload(item)) return;
-      if (
-        configLoaded &&
-        !orchestrator.shouldClaimChromiumDownload(
-          createBrowserDownloadItem(item, 'browser-determined'),
-        )
-      ) {
-        return;
-      }
+    // Registered synchronously so a download can wake the worker. Chromium
+    // drops the filenames other extensions pass to downloads.download() while
+    // any extension listens here, so the listener exists only while
+    // interception is enabled.
+    browser.downloads.onDeterminingFilename.addListener(determineFilename);
+  }
 
-      return holdChromiumDownload(
-        () => handleChromiumTakeover(item),
-        (error) => logDownloadHandlerError(item, error),
-        suggest,
-      );
-    });
+  function determineFilename(
+    item: Browser.downloads.DownloadItem,
+    suggest: () => void,
+  ): true | undefined {
+    if (!isPotentialChromiumDownload(item)) return undefined;
+    if (
+      configLoaded &&
+      !orchestrator.shouldClaimChromiumDownload(
+        createBrowserDownloadItem(item, 'browser-determined'),
+      )
+    ) {
+      return undefined;
+    }
+
+    return holdChromiumDownload(
+      () => handleChromiumTakeover(item),
+      (error) => logDownloadHandlerError(item, error),
+      suggest,
+    );
+  }
+
+  function syncFilenameListener(): void {
+    if (import.meta.env.FIREFOX) return;
+    const event = browser.downloads.onDeterminingFilename;
+    if (!settings.enabled) event.removeListener(determineFilename);
+    else if (!event.hasListener(determineFilename)) event.addListener(determineFilename);
   }
 
   // ─── Context Menu ─────────────────────────────────────
@@ -580,28 +598,30 @@ export default defineBackground(() => {
     }
   }
 
-  browser.runtime.onMessage.addListener((msg) => {
-    if (msg === null || typeof msg !== 'object') return undefined;
-    if ('type' in msg && msg.type === 'OPEN_DESKTOP') return handleDesktopOpen();
-    if ('type' in msg && msg.type === 'START_DESKTOP') return handleDesktopStart();
-    if ('type' in msg && msg.type === 'CLEAR_DIAGNOSTICS') {
-      return ensureConfigLoaded()
-        .then(() => diagnosticLog.clear())
-        .then(() => ({ ok: true as const }));
-    }
-    if ('type' in msg && msg.type === 'GET_DIAGNOSTICS') {
-      return ensureConfigLoaded()
-        .then(() => diagnosticLog.initialize())
-        .then(() => ({
-          ok: true as const,
-          events: diagnosticLog.getAll(),
-        }));
-    }
-    if ('type' in msg && msg.type === 'PAUSE_ALL') return handleDesktopCommand('pause-all');
-    if ('type' in msg && msg.type === 'RESUME_ALL') return handleDesktopCommand('resume-all');
-    const protocolMessage = parseExternalProtocolMessage(msg);
-    return protocolMessage ? handleExternalProtocol(protocolMessage) : undefined;
-  });
+  browser.runtime.onMessage.addListener(
+    respondWith((msg) => {
+      if (msg === null || typeof msg !== 'object') return undefined;
+      if ('type' in msg && msg.type === 'OPEN_DESKTOP') return handleDesktopOpen();
+      if ('type' in msg && msg.type === 'START_DESKTOP') return handleDesktopStart();
+      if ('type' in msg && msg.type === 'CLEAR_DIAGNOSTICS') {
+        return ensureConfigLoaded()
+          .then(() => diagnosticLog.clear())
+          .then(() => ({ ok: true as const }));
+      }
+      if ('type' in msg && msg.type === 'GET_DIAGNOSTICS') {
+        return ensureConfigLoaded()
+          .then(() => diagnosticLog.initialize())
+          .then(() => ({
+            ok: true as const,
+            events: diagnosticLog.getAll(),
+          }));
+      }
+      if ('type' in msg && msg.type === 'PAUSE_ALL') return handleDesktopCommand('pause-all');
+      if ('type' in msg && msg.type === 'RESUME_ALL') return handleDesktopCommand('resume-all');
+      const protocolMessage = parseExternalProtocolMessage(msg);
+      return protocolMessage ? handleExternalProtocol(protocolMessage) : undefined;
+    }),
+  );
 
   // ─── Storage Sync ─────────────────────────────────────
 
@@ -615,6 +635,7 @@ export default defineBackground(() => {
     if (changes.settings?.newValue) {
       settings = parseDownloadSettings(changes.settings.newValue);
       applyDownloadBarPreferenceSafely();
+      syncFilenameListener();
     }
     if (changes.siteRules?.newValue) {
       siteRules = parseSiteRules(changes.siteRules.newValue);

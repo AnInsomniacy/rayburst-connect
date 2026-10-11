@@ -1,3 +1,4 @@
+import { respondWith } from '../messaging';
 import { mediaSiteAllowed, selectMedia } from './rules';
 import type { DuplicateDownloadGuard } from '../download/duplicate-guard';
 import { startMediaTools } from './tools';
@@ -146,85 +147,87 @@ export function startMediaBackground(options: {
     }));
   }
 
-  browser.runtime.onMessage.addListener((raw: unknown, sender: Browser.runtime.MessageSender) => {
-    const observations = MediaObservationsSchema.safeParse(raw);
-    if (observations.success) {
+  browser.runtime.onMessage.addListener(
+    respondWith((raw: unknown, sender: Browser.runtime.MessageSender) => {
+      const observations = MediaObservationsSchema.safeParse(raw);
+      if (observations.success) {
+        if (
+          sender.id !== browser.runtime.id ||
+          sender.tab?.id === undefined ||
+          sender.frameId === undefined
+        )
+          return;
+        const tabId = sender.tab.id;
+        const frameId = sender.frameId;
+        return Promise.all(
+          observations.data.observations.map((item) =>
+            observe(
+              item,
+              tabId,
+              frameId,
+              sender.documentId,
+              observations.data.title,
+              undefined,
+              sender.url,
+            ),
+          ),
+        )
+          .then(() => ({ ok: true }))
+          .catch(() => ({ ok: false }));
+      }
+      const command = MediaCommandSchema.safeParse(raw);
       if (
+        !command.success ||
         sender.id !== browser.runtime.id ||
-        sender.tab?.id === undefined ||
-        sender.frameId === undefined
+        !sender.url?.startsWith(browser.runtime.getURL(''))
       )
         return;
-      const tabId = sender.tab.id;
-      const frameId = sender.frameId;
-      return Promise.all(
-        observations.data.observations.map((item) =>
-          observe(
-            item,
-            tabId,
-            frameId,
-            sender.documentId,
-            observations.data.title,
-            undefined,
-            sender.url,
-          ),
-        ),
-      )
-        .then(() => ({ ok: true }))
-        .catch(() => ({ ok: false }));
-    }
-    const command = MediaCommandSchema.safeParse(raw);
-    if (
-      !command.success ||
-      sender.id !== browser.runtime.id ||
-      !sender.url?.startsWith(browser.runtime.getURL(''))
-    )
-      return;
-    return (async () => {
-      await options.ensureConfig();
-      const message = command.data;
-      switch (message.type) {
-        case 'MEDIA_ENABLE':
-          await updateMediaSettings({ enabled: message.enabled });
-          break;
-        case 'MEDIA_SITE': {
-          const host = hostname((await browser.tabs.get(message.tabId)).url ?? '');
-          if (!host) throw new MediaApiError('unsupported_source');
-          const excluded = options
-            .settings()
-            .mediaDiscovery.excludedHosts.filter((value) => value !== host);
-          if (message.excluded === (options.settings().mediaDiscovery.siteMode === 'exclude'))
-            excluded.push(host);
-          if (excluded.length > 100) throw new MediaApiError('site_limit');
-          await updateMediaSettings({ excludedHosts: excluded });
-          break;
+      return (async () => {
+        await options.ensureConfig();
+        const message = command.data;
+        switch (message.type) {
+          case 'MEDIA_ENABLE':
+            await updateMediaSettings({ enabled: message.enabled });
+            break;
+          case 'MEDIA_SITE': {
+            const host = hostname((await browser.tabs.get(message.tabId)).url ?? '');
+            if (!host) throw new MediaApiError('unsupported_source');
+            const excluded = options
+              .settings()
+              .mediaDiscovery.excludedHosts.filter((value) => value !== host);
+            if (message.excluded === (options.settings().mediaDiscovery.siteMode === 'exclude'))
+              excluded.push(host);
+            if (excluded.length > 100) throw new MediaApiError('site_limit');
+            await updateMediaSettings({ excludedHosts: excluded });
+            break;
+          }
+          case 'MEDIA_RESCAN':
+            await browser.tabs.sendMessage(message.tabId, { type: 'MEDIA_RESCAN' });
+            break;
+          case 'MEDIA_CLEAR':
+            await catalog.remove(message.tabId, message.candidateId);
+            break;
+          case 'MEDIA_DOWNLOAD_FILE':
+            await workflow.downloadFile(message.tabId, message.candidateId);
+            break;
+          case 'MEDIA_PROBE':
+            await workflow.probe(message.tabId, message.candidateId);
+            break;
+          case 'MEDIA_POLL':
+            await workflow.poll(message.tabId, message.candidateId);
+            break;
+          case 'MEDIA_SUBMIT':
+            await workflow.submit(message.tabId, message.candidateId, message.selection);
+            break;
+          case 'MEDIA_CANCEL':
+            await workflow.cancel(message.tabId, message.candidateId);
+            break;
         }
-        case 'MEDIA_RESCAN':
-          await browser.tabs.sendMessage(message.tabId, { type: 'MEDIA_RESCAN' });
-          break;
-        case 'MEDIA_CLEAR':
-          await catalog.remove(message.tabId, message.candidateId);
-          break;
-        case 'MEDIA_DOWNLOAD_FILE':
-          await workflow.downloadFile(message.tabId, message.candidateId);
-          break;
-        case 'MEDIA_PROBE':
-          await workflow.probe(message.tabId, message.candidateId);
-          break;
-        case 'MEDIA_POLL':
-          await workflow.poll(message.tabId, message.candidateId);
-          break;
-        case 'MEDIA_SUBMIT':
-          await workflow.submit(message.tabId, message.candidateId, message.selection);
-          break;
-        case 'MEDIA_CANCEL':
-          await workflow.cancel(message.tabId, message.candidateId);
-          break;
-      }
-      const data = await list(message.tabId);
-      return { ok: true, data };
-    })().catch((error: unknown) => ({ ok: false, error: mediaErrorCode(error) }));
-  });
+        const data = await list(message.tabId);
+        return { ok: true, data };
+      })().catch((error: unknown) => ({ ok: false, error: mediaErrorCode(error) }));
+    }),
+  );
 
   async function cleanup() {
     await options.ensureConfig();

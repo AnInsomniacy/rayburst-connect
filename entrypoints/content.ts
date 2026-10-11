@@ -1,3 +1,4 @@
+import { respondWith } from '@/lib/messaging';
 import { encodeCaptureChunk } from '@/lib/media/capture';
 import { createPlayerControls } from '@/lib/media/player-controls';
 import { browser } from 'wxt/browser';
@@ -43,8 +44,8 @@ export default defineContentScript({
     ) => {
       if (area === 'local' && changes.settings) configure(changes.settings.newValue);
     };
-    const message: Parameters<typeof browser.runtime.onMessage.addListener>[0] = (raw: unknown) => {
-      if (!raw || typeof raw !== 'object' || !('type' in raw)) return;
+    const message = respondWith((raw: unknown) => {
+      if (!raw || typeof raw !== 'object' || !('type' in raw)) return undefined;
       if (raw.type === 'MEDIA_PLAYER' && 'command' in raw)
         return players(raw.command).catch(() => ({ error: 'operation_failed' }));
       if (raw.type === 'MEDIA_RESCAN') observer?.rescan();
@@ -52,7 +53,8 @@ export default defineContentScript({
         sessionId = 'sessionId' in raw ? raw.sessionId : undefined;
         window.postMessage({ ...raw, channel: 'rayburst-control' }, location.origin);
       }
-    };
+      return undefined;
+    });
     let windowStart = Date.now();
     let events = 0;
     ctx.addEventListener(window, 'message', (event: MessageEvent<unknown>) => {

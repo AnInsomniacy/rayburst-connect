@@ -1,4 +1,5 @@
 import { browser } from 'wxt/browser';
+import { sendRuntimeMessage } from '../fixtures/messaging';
 import { startMediaTools } from '@/lib/media/tools';
 import { DuplicateDownloadGuard } from '@/lib/download/duplicate-guard';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -330,7 +331,7 @@ describe('queued media delivery', () => {
       settings: f.args.getSettings,
     });
     const send = () =>
-      fakeBrowser.runtime.onMessage.trigger(
+      sendRuntimeMessage(
         { type: 'MEDIA_BATCH', tabId: 1, ids: [f.candidate.id] },
         { id: browser.runtime.id, url: browser.runtime.getURL('/popup.html') },
       );
