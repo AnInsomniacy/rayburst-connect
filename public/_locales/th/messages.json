@@ -859,9 +859,6 @@
   "resources_reload": {
     "message": "โหลดใหม่เพื่อจับข้อมูลตั้งแต่ต้น"
   },
-  "resources_screen": {
-    "message": "บันทึกหน้าจอ"
-  },
   "resources_screenshot": {
     "message": "บันทึกภาพหน้าจอ"
   },
@@ -945,9 +942,6 @@
   },
   "resources_play": {
     "message": "เล่น"
-  },
-  "resources_rtc": {
-    "message": "WebRTC"
   },
   "resources_kind_json": {
     "message": "JSON"

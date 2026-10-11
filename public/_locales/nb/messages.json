@@ -859,9 +859,6 @@
   "resources_reload": {
     "message": "Last inn på nytt for å fange fra starten"
   },
-  "resources_screen": {
-    "message": "Skjermopptak"
-  },
   "resources_screenshot": {
     "message": "Lagre skjermbilde"
   },
@@ -945,9 +942,6 @@
   },
   "resources_play": {
     "message": "Spill av"
-  },
-  "resources_rtc": {
-    "message": "WebRTC"
   },
   "resources_kind_json": {
     "message": "JSON"

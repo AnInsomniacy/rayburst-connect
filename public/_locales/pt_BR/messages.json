@@ -859,9 +859,6 @@
   "resources_reload": {
     "message": "Recarregar para capturar desde o início"
   },
-  "resources_screen": {
-    "message": "Gravação de tela"
-  },
   "resources_screenshot": {
     "message": "Salvar captura"
   },
@@ -945,9 +942,6 @@
   },
   "resources_play": {
     "message": "Reproduzir"
-  },
-  "resources_rtc": {
-    "message": "WebRTC"
   },
   "resources_kind_json": {
     "message": "JSON"

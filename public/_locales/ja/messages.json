@@ -859,9 +859,6 @@
   "resources_reload": {
     "message": "再読み込みして最初から取得"
   },
-  "resources_screen": {
-    "message": "画面録画"
-  },
   "resources_screenshot": {
     "message": "スクリーンショットを保存"
   },
@@ -945,9 +942,6 @@
   },
   "resources_play": {
     "message": "再生"
-  },
-  "resources_rtc": {
-    "message": "WebRTC"
   },
   "resources_kind_json": {
     "message": "JSON"

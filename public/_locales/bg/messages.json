@@ -859,9 +859,6 @@
   "resources_reload": {
     "message": "Презареди за прихващане отначало"
   },
-  "resources_screen": {
-    "message": "Запис на екрана"
-  },
   "resources_screenshot": {
     "message": "Запази снимка"
   },
@@ -945,9 +942,6 @@
   },
   "resources_play": {
     "message": "Възпроизвеждане"
-  },
-  "resources_rtc": {
-    "message": "WebRTC"
   },
   "resources_kind_json": {
     "message": "JSON"

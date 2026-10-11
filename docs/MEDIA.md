@@ -35,8 +35,6 @@ in the page only after a capture mode is enabled.
 | Deep search        | Opt-in Fetch/XHR, JSON, text/base64 and key observations | Playlists and candidate AES keys                    |
 | Buffer capture     | Copy successful SourceBuffer appends                     | One composition from a single MediaSource and frame |
 | Playback recording | Native MediaRecorder                                     | A recorded composition                              |
-| Screen recording   | Native display picker and MediaRecorder                  | A recorded composition                              |
-| WebRTC capture     | Tracks from one newly created RTCPeerConnection          | Recorded tracks with relative start offsets         |
 
 Reload before playback for hooks that must attach before a player is created.
 Firefox additionally uses native response filtering in deep/buffer modes, forwarding
@@ -81,8 +79,12 @@ the desktop connection and other settings intact. Settings backups use schema 4;
 older backups and the removed media rule structure have no compatibility adapter.
 Rules are edited in settings, not inside the popup. New sources append in discovery
 order by default, without moving when another request observes the same resource.
+New installations start with regex rules taken from cat-catch's experience: Instagram
+and Facebook CDN byte-range requests are captured once without their range, so one
+video is one resource, and Bilibili live-stream segments are ignored.
 
-Preserve-on-navigation and per-tab automatic download are optional. Always-on deep search is an explicit, disabled-by-default setting; reload pages after changing it. Buffer, screen, playback and WebRTC capture remain explicit per-tab operations. The per-tab automatic
+Preserve-on-navigation and per-tab automatic download are optional. Always-on deep search is an explicit, disabled-by-default setting; reload pages after changing it. Buffer capture and playback recording remain explicit per-tab operations. Screen and
+WebRTC recording were removed: they record what is shown, not what a page serves. The per-tab automatic
 queue does not submit live recordings or individual transport fragments. Mobile
 User-Agent uses native declarative session rules and reloads the tab; it changes
 request headers, not the rendering engine.

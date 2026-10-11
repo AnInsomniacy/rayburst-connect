@@ -11,7 +11,7 @@ Rayburst Connect sends browser downloads and discovered media to the Rayburst de
 • Download files, magnet links and torrents with Rayburst.
 • Browse media from the current tab or across tabs. Filter resources, copy URLs, preview supported formats and download selections in batches.
 • Inspect HLS and DASH streams, choose available video, audio and subtitle tracks, and set recording limits for live sources.
-• Use opt-in capture tools for media buffers, playback, screen sharing and WebRTC streams, subject to browser and site support.
+• Use opt-in capture tools for media buffers and playback, subject to browser and site support.
 • Set download and site rules, switch between light and dark themes, and use the interface in 27 languages.
 
 Requires Rayburst on the same Windows, macOS or Linux computer. Install Rayburst, then enter its Extension API port and secret in the extension settings. These are separate from aria2 RPC settings. The extension can start the installed desktop app when needed.

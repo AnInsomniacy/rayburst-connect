@@ -24,7 +24,7 @@ const props = defineProps<{ tabId: number; source?: MediaItem }>();
 const emit = defineEmits<{ created: [id: string] }>();
 const { t } = useI18n();
 const mode = ref('stop');
-const choice = ref<'deep' | 'cache' | 'video' | 'screen' | 'rtc'>('deep');
+const choice = ref<'deep' | 'cache' | 'video'>('deep');
 const reload = ref(true);
 const busy = ref(false);
 const automatic = ref(false);
@@ -71,7 +71,7 @@ async function refresh() {
   mode.value = result.mode;
   keys.value = result.keys;
 }
-async function tool(value: 'deep' | 'cache' | 'video' | 'screen' | 'rtc' | 'stop') {
+async function tool(value: 'deep' | 'cache' | 'video' | 'stop') {
   busy.value = true;
   error.value = '';
   try {
@@ -79,7 +79,7 @@ async function tool(value: 'deep' | 'cache' | 'video' | 'screen' | 'rtc' | 'stop
       type: 'MEDIA_MODE',
       tabId: props.tabId,
       mode: value,
-      reload: reload.value && ['deep', 'cache', 'rtc'].includes(value),
+      reload: reload.value && ['deep', 'cache'].includes(value),
     });
     mode.value = value;
   } catch (cause) {
@@ -195,7 +195,7 @@ onUnmounted(() => browser.storage.onChanged.removeListener(changed));
         :disabled="mode !== 'stop'"
         :aria-label="t('resources_tools')"
         :options="
-          (['deep', 'cache', 'video', 'screen', 'rtc'] as const).map((value) => ({
+          (['deep', 'cache', 'video'] as const).map((value) => ({
             value,
             label: t(`resources_${value}`),
           }))
@@ -210,7 +210,7 @@ onUnmounted(() => browser.storage.onChanged.removeListener(changed));
       >
     </div>
     <NCheckbox
-      v-if="['deep', 'cache', 'rtc'].includes(choice)"
+      v-if="['deep', 'cache'].includes(choice)"
       v-model:checked="reload"
       :disabled="mode !== 'stop'"
       >{{ t('resources_reload') }}</NCheckbox

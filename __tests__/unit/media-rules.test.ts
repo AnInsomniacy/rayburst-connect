@@ -20,6 +20,28 @@ describe('media capture policy', () => {
     ).toBe('hls');
     expect(selectMedia(network('https://cdn.test/image.png', 'image/png'), settings)).toBeNull();
   });
+  it('starts with rules that join byte-range requests and drop live segments', () => {
+    const settings = parseMediaSettings({});
+    const ranged = (start: number) =>
+      selectMedia(
+        network(
+          `https://scontent-lax3-1.cdninstagram.com/v/t50/clip.mp4?_nc_ht=x&oh=sig&bytestart=${start}&byteend=${start + 999}`,
+          'video/mp4',
+        ),
+        settings,
+      )?.url;
+    expect(ranged(0)).toBe(
+      'https://scontent-lax3-1.cdninstagram.com/v/t50/clip.mp4?_nc_ht=x&oh=sig',
+    );
+    expect(ranged(1000)).toBe(ranged(0));
+    expect(
+      selectMedia(
+        network('https://cn-gd.bilivideo.com/live-bvc/123/live_1/seg-42.m4s', 'video/mp4'),
+        settings,
+      ),
+    ).toBeNull();
+    expect(parseMediaSettings({ regexRules: [] }).regexRules).toEqual([]);
+  });
   it('honors an explicit extension disable before a broad MIME match on every discovery path', () => {
     const settings = parseMediaSettings({});
     settings.extensions.find((item) => item.value === 'mp4')!.enabled = false;

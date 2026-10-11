@@ -16,7 +16,6 @@ export default defineUnlistedScript(() => {
   const restorers: (() => void)[] = [];
   let active = false;
   let capture = false;
-  let recorder: MediaRecorder | undefined;
   const recorders = new Set<MediaRecorder>();
   let captureEpoch = 0;
   let sessionId = '';
@@ -423,7 +422,6 @@ export default defineUnlistedScript(() => {
         : ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/mp4']
     ).find((mime) => MediaRecorder.isTypeSupported(mime));
     const current = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-    recorder = current;
     recorders.add(current);
     const index = streamIndex++;
     const offsetMs = Math.max(0, Math.round(performance.now() - captureEpoch));
@@ -432,7 +430,6 @@ export default defineUnlistedScript(() => {
     );
     current.addEventListener('stop', () => {
       recorders.delete(current);
-      if (recorder === current) recorder = undefined;
       if (!recorders.size) stop();
     });
     current.addEventListener('error', () => stop('capture_failed'));
@@ -460,27 +457,19 @@ export default defineUnlistedScript(() => {
       start.disabled = true;
       try {
         let stream: MediaStream;
-        if (mode === 'screen')
-          stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+        const media =
+          [...document.querySelectorAll('video,audio')].find(
+            (item) => item instanceof HTMLMediaElement && !item.paused,
+          ) ?? document.querySelector('video,audio');
+        if (!(media instanceof HTMLMediaElement)) throw new Error('No media player');
+        if (media.srcObject instanceof MediaStream) stream = media.srcObject;
         else {
-          const media =
-            [...document.querySelectorAll('video,audio')].find(
-              (item) => item instanceof HTMLMediaElement && !item.paused,
-            ) ?? document.querySelector('video,audio');
-          if (!(media instanceof HTMLMediaElement)) throw new Error('No media player');
-          if (media.srcObject instanceof MediaStream) stream = media.srcObject;
-          else {
-            const captureStream: unknown =
-              Reflect.get(media, 'captureStream') ?? Reflect.get(media, 'mozCaptureStream');
-            if (typeof captureStream !== 'function') throw new Error('Recording unavailable');
-            stream = Reflect.apply(captureStream, media, []) as MediaStream;
-          }
+          const captureStream: unknown =
+            Reflect.get(media, 'captureStream') ?? Reflect.get(media, 'mozCaptureStream');
+          if (typeof captureStream !== 'function') throw new Error('Recording unavailable');
+          stream = Reflect.apply(captureStream, media, []) as MediaStream;
         }
         record(stream);
-        if (mode === 'screen')
-          recorder?.addEventListener('stop', () =>
-            stream.getTracks().forEach((track) => track.stop()),
-          );
         start.disabled = true;
         label.textContent = labels.recording ?? 'Rayburst';
       } catch {
@@ -488,7 +477,7 @@ export default defineUnlistedScript(() => {
         label.textContent = labels.error ?? 'Rayburst';
       }
     };
-    if (mode === 'cache' || mode === 'rtc') start.hidden = true;
+    if (mode === 'cache') start.hidden = true;
     section.append(label, start, finish);
     shadow.append(style, section);
     document.documentElement.append(panel);
@@ -532,7 +521,7 @@ export default defineUnlistedScript(() => {
       active ||
       capture ||
       typeof data.sessionId !== 'string' ||
-      !['deep', 'cache', 'video', 'screen', 'rtc'].includes(String(data.mode))
+      !['deep', 'cache', 'video'].includes(String(data.mode))
     )
       return;
     const strings = (value: unknown): Record<string, string> =>
@@ -562,31 +551,6 @@ export default defineUnlistedScript(() => {
     else if (data.mode === 'cache') {
       deep();
       cache();
-    } else if (data.mode === 'rtc') {
-      let owner: RTCPeerConnection | undefined;
-      patch(
-        window,
-        'RTCPeerConnection',
-        new Proxy(RTCPeerConnection, {
-          construct(target, args) {
-            const connection = Reflect.construct(target, args) as RTCPeerConnection;
-            const tracks = new Set<string>();
-            connection.addEventListener('track', (event) => {
-              if (
-                !capture ||
-                !active ||
-                (owner && owner !== connection) ||
-                tracks.has(event.track.id)
-              )
-                return;
-              owner ??= connection;
-              tracks.add(event.track.id);
-              record(new MediaStream([event.track]));
-            });
-            return connection;
-          },
-        }),
-      );
     }
     if (capture) {
       if (document.documentElement) controls(String(data.mode));

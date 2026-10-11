@@ -859,9 +859,6 @@
   "resources_reload": {
     "message": "Muat ulang untuk menangkap dari awal"
   },
-  "resources_screen": {
-    "message": "Perekaman layar"
-  },
   "resources_screenshot": {
     "message": "Simpan tangkapan layar"
   },
@@ -945,9 +942,6 @@
   },
   "resources_play": {
     "message": "Putar"
-  },
-  "resources_rtc": {
-    "message": "WebRTC"
   },
   "resources_kind_json": {
     "message": "JSON"

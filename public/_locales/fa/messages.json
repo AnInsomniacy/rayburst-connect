@@ -859,9 +859,6 @@
   "resources_reload": {
     "message": "بارگذاری دوباره برای ضبط از ابتدا"
   },
-  "resources_screen": {
-    "message": "ضبط صفحه"
-  },
   "resources_screenshot": {
     "message": "ذخیرهٔ تصویر"
   },
@@ -945,9 +942,6 @@
   },
   "resources_play": {
     "message": "پخش"
-  },
-  "resources_rtc": {
-    "message": "WebRTC"
   },
   "resources_kind_json": {
     "message": "JSON"

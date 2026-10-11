@@ -859,9 +859,6 @@
   "resources_reload": {
     "message": "Reîncarcă pentru a captura de la început"
   },
-  "resources_screen": {
-    "message": "Înregistrarea ecranului"
-  },
   "resources_screenshot": {
     "message": "Salvează captura"
   },
@@ -945,9 +942,6 @@
   },
   "resources_play": {
     "message": "Redă"
-  },
-  "resources_rtc": {
-    "message": "WebRTC"
   },
   "resources_kind_json": {
     "message": "JSON"

@@ -859,9 +859,6 @@
   "resources_reload": {
     "message": "शुरू से कैप्चर करने के लिए फिर लोड करें"
   },
-  "resources_screen": {
-    "message": "स्क्रीन रिकॉर्डिंग"
-  },
   "resources_screenshot": {
     "message": "स्क्रीनशॉट सहेजें"
   },
@@ -945,9 +942,6 @@
   },
   "resources_play": {
     "message": "चलाएँ"
-  },
-  "resources_rtc": {
-    "message": "WebRTC"
   },
   "resources_kind_json": {
     "message": "JSON"

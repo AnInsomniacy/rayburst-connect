@@ -859,9 +859,6 @@
   "resources_reload": {
     "message": "重新整理頁面，從頭擷取"
   },
-  "resources_screen": {
-    "message": "螢幕錄製"
-  },
   "resources_screenshot": {
     "message": "儲存截圖"
   },
@@ -945,9 +942,6 @@
   },
   "resources_play": {
     "message": "播放"
-  },
-  "resources_rtc": {
-    "message": "WebRTC"
   },
   "resources_kind_json": {
     "message": "JSON"

@@ -859,9 +859,6 @@
   "resources_reload": {
     "message": "Tải lại để thu từ đầu"
   },
-  "resources_screen": {
-    "message": "Ghi màn hình"
-  },
   "resources_screenshot": {
     "message": "Lưu ảnh chụp"
   },
@@ -945,9 +942,6 @@
   },
   "resources_play": {
     "message": "Phát"
-  },
-  "resources_rtc": {
-    "message": "WebRTC"
   },
   "resources_kind_json": {
     "message": "JSON"

@@ -859,9 +859,6 @@
   "resources_reload": {
     "message": "Перезагрузить для захвата с начала"
   },
-  "resources_screen": {
-    "message": "Запись экрана"
-  },
   "resources_screenshot": {
     "message": "Сохранить снимок"
   },
@@ -945,9 +942,6 @@
   },
   "resources_play": {
     "message": "Воспроизвести"
-  },
-  "resources_rtc": {
-    "message": "WebRTC"
   },
   "resources_kind_json": {
     "message": "JSON"

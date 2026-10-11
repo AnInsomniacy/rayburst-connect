@@ -859,9 +859,6 @@
   "resources_reload": {
     "message": "Újratöltés a rögzítés kezdetéhez"
   },
-  "resources_screen": {
-    "message": "Képernyőfelvétel"
-  },
   "resources_screenshot": {
     "message": "Képernyőkép mentése"
   },
@@ -945,9 +942,6 @@
   },
   "resources_play": {
     "message": "Lejátszás"
-  },
-  "resources_rtc": {
-    "message": "WebRTC"
   },
   "resources_kind_json": {
     "message": "JSON"

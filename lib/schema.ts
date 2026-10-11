@@ -94,6 +94,33 @@ export const MediaRegexRuleSchema = z
       ctx.addIssue({ code: 'custom', path: ['pattern'], message: 'Invalid regular expression' });
     }
   });
+/**
+ * Starter rules after cat-catch's: CDNs that split one video into byte-range
+ * requests are captured once without the range, and live-stream segments that
+ * never form a file are ignored.
+ */
+const DEFAULT_MEDIA_REGEX_RULES = [
+  {
+    id: '6f2c1f0e-5d0b-4c3e-9a51-1b7a3e1c2d01',
+    pattern: String.raw`^(https://scontent[a-z0-9-]*\.cdninstagram\.com/[^#]*?)&bytestart=\d+&byteend=\d+`,
+    action: 'capture',
+    kind: 'file',
+    captureGroup: 1,
+  },
+  {
+    id: '6f2c1f0e-5d0b-4c3e-9a51-1b7a3e1c2d02',
+    pattern: String.raw`^(https://[^/?#]+\.fbcdn\.net/[^#]*?)&bytestart=\d+&byteend=\d+`,
+    action: 'capture',
+    kind: 'file',
+    captureGroup: 1,
+  },
+  {
+    id: '6f2c1f0e-5d0b-4c3e-9a51-1b7a3e1c2d03',
+    pattern: String.raw`\.bilivideo\.(?:com|cn)/(?:[^?#]*/)?live-bvc/[^?#]*\.m4s`,
+    action: 'ignore',
+  },
+] as const;
+
 export const MediaSettingsSchema = lenient(
   z.object({
     enabled: z.boolean().catch(true),
@@ -123,7 +150,10 @@ export const MediaSettingsSchema = lenient(
           MediaTypeRuleSchema.parse({ value: mime, kind, enabled }),
         ),
       ),
-    regexRules: z.array(MediaRegexRuleSchema).max(100).catch([]),
+    regexRules: z
+      .array(MediaRegexRuleSchema)
+      .max(100)
+      .catch(() => DEFAULT_MEDIA_REGEX_RULES.map((rule) => MediaRegexRuleSchema.parse(rule))),
     excludedHosts: z.array(z.string().trim().min(1).max(512)).max(100).catch([]),
     siteMode: z.enum(['exclude', 'include']).catch('exclude'),
     preserveOnNavigation: z.boolean().catch(false),

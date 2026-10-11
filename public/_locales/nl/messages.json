@@ -859,9 +859,6 @@
   "resources_reload": {
     "message": "Herladen om vanaf het begin vast te leggen"
   },
-  "resources_screen": {
-    "message": "Schermopname"
-  },
   "resources_screenshot": {
     "message": "Schermafbeelding opslaan"
   },
@@ -945,9 +942,6 @@
   },
   "resources_play": {
     "message": "Afspelen"
-  },
-  "resources_rtc": {
-    "message": "WebRTC"
   },
   "resources_kind_json": {
     "message": "JSON"

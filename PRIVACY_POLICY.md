@@ -6,7 +6,7 @@ Rayburst Connect is the browser companion to the Rayburst desktop download manag
 
 ## Data the extension handles
 
-The extension reads download URLs, filenames, page and tab information, and selected request and response metadata to identify resources and route downloads. Sniffer keeps resource information in browser session storage. Optional deep search inspects page responses and media-related data; capture modes can record media buffers, playback, a user-selected screen or WebRTC media. These capture modes must be enabled by the user.
+The extension reads download URLs, filenames, page and tab information, and selected request and response metadata to identify resources and route downloads. Sniffer keeps resource information in browser session storage. Optional deep search inspects page responses and media-related data; capture modes can record media buffers or playback. These capture modes must be enabled by the user.
 
 When cookie forwarding is enabled, the extension reads cookies for the selected download URL and passes them to the local Rayburst app. Selected request headers may also be forwarded. These features let Rayburst request resources that require authentication. You can disable cookie and request-header forwarding in settings. Cookies and request context are not sent to the developer.
 

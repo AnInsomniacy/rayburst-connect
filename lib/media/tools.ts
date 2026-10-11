@@ -16,7 +16,7 @@ import type { DownloadSettings, MediaCandidate, MediaCapturedContext } from '../
 import { selectMedia } from './rules';
 import { mediaOrigin } from './detection';
 
-const ModeSchema = z.enum(['deep', 'cache', 'video', 'screen', 'rtc', 'stop']);
+const ModeSchema = z.enum(['deep', 'cache', 'video', 'stop']);
 const SessionSchema = z.object({
   id: z.uuid(),
   mode: ModeSchema,
@@ -133,10 +133,7 @@ export function startMediaTools(options: {
       prefs.locale === 'auto' ? resolveLocaleId(browser.i18n.getUILanguage()) : prefs.locale,
     );
     const labels = Object.fromEntries(
-      ['start', 'stop', 'deep', 'cache', 'video', 'screen', 'rtc'].map((key) => [
-        key,
-        i18n.t(`resources_${key}`),
-      ]),
+      ['start', 'stop', 'deep', 'cache', 'video'].map((key) => [key, i18n.t(`resources_${key}`)]),
     );
     labels.error = i18n.t('media_failed');
     labels.recording = i18n.t('media_live');

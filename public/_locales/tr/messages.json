@@ -859,9 +859,6 @@
   "resources_reload": {
     "message": "Baştan yakalamak için yeniden yükle"
   },
-  "resources_screen": {
-    "message": "Ekran kaydı"
-  },
   "resources_screenshot": {
     "message": "Ekran görüntüsünü kaydet"
   },
@@ -945,9 +942,6 @@
   },
   "resources_play": {
     "message": "Oynat"
-  },
-  "resources_rtc": {
-    "message": "WebRTC"
   },
   "resources_kind_json": {
     "message": "JSON"

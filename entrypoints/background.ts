@@ -541,7 +541,7 @@ export default defineBackground(() => {
           error instanceof ApiAuthError ||
           error instanceof ApiCompatibilityError ||
           error instanceof ApiEngineError,
-        maxWaitMs: 15_000,
+        maxWaitMs: settings.desktopUnavailable.startupTimeoutSeconds * 1000,
       });
       if (ready) return { ok: true };
 

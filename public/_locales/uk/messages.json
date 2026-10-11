@@ -859,9 +859,6 @@
   "resources_reload": {
     "message": "Перезавантажити для захоплення спочатку"
   },
-  "resources_screen": {
-    "message": "Запис екрана"
-  },
   "resources_screenshot": {
     "message": "Зберегти знімок"
   },
@@ -945,9 +942,6 @@
   },
   "resources_play": {
     "message": "Відтворити"
-  },
-  "resources_rtc": {
-    "message": "WebRTC"
   },
   "resources_kind_json": {
     "message": "JSON"

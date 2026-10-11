@@ -859,9 +859,6 @@
   "resources_reload": {
     "message": "إعادة التحميل للالتقاط من البداية"
   },
-  "resources_screen": {
-    "message": "تسجيل الشاشة"
-  },
   "resources_screenshot": {
     "message": "حفظ لقطة"
   },
@@ -945,9 +942,6 @@
   },
   "resources_play": {
     "message": "تشغيل"
-  },
-  "resources_rtc": {
-    "message": "WebRTC"
   },
   "resources_kind_json": {
     "message": "JSON"
