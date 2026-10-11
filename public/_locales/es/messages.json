@@ -1104,5 +1104,37 @@
   },
   "popup_site_exclude": {
     "message": "Excluir este sitio"
+  },
+  "popup_task_waiting": {
+    "message": "En espera",
+    "description": "Popup task list: queued task"
+  },
+  "popup_task_paused": {
+    "message": "En pausa",
+    "description": "Popup task list: paused task"
+  },
+  "popup_task_failed": {
+    "message": "Error",
+    "description": "Popup task list: failed task without a message"
+  },
+  "popup_task_pause": {
+    "message": "Pausar",
+    "description": "Popup task list: pause button"
+  },
+  "popup_task_resume": {
+    "message": "Reanudar",
+    "description": "Popup task list: resume button"
+  },
+  "popup_task_reveal": {
+    "message": "Mostrar en la carpeta",
+    "description": "Popup task list: show the finished file in its folder"
+  },
+  "popup_tasks_empty": {
+    "message": "Aún no hay descargas",
+    "description": "Popup task list: nothing to show"
+  },
+  "options_alt_click_bypass_label": {
+    "message": "Alt + clic descarga con el navegador",
+    "description": "Setting: holding Alt while clicking a link lets the browser download it"
   }
 }

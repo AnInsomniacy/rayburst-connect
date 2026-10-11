@@ -1104,5 +1104,37 @@
   },
   "popup_site_exclude": {
     "message": "مستثنا کردن این وب‌سایت"
+  },
+  "popup_task_waiting": {
+    "message": "در انتظار",
+    "description": "Popup task list: queued task"
+  },
+  "popup_task_paused": {
+    "message": "متوقف",
+    "description": "Popup task list: paused task"
+  },
+  "popup_task_failed": {
+    "message": "ناموفق",
+    "description": "Popup task list: failed task without a message"
+  },
+  "popup_task_pause": {
+    "message": "توقف",
+    "description": "Popup task list: pause button"
+  },
+  "popup_task_resume": {
+    "message": "ادامه",
+    "description": "Popup task list: resume button"
+  },
+  "popup_task_reveal": {
+    "message": "نمایش در پوشه",
+    "description": "Popup task list: show the finished file in its folder"
+  },
+  "popup_tasks_empty": {
+    "message": "هنوز دانلودی نیست",
+    "description": "Popup task list: nothing to show"
+  },
+  "options_alt_click_bypass_label": {
+    "message": "کلیک با Alt با مرورگر دانلود می‌کند",
+    "description": "Setting: holding Alt while clicking a link lets the browser download it"
   }
 }

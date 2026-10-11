@@ -1104,5 +1104,37 @@
   },
   "popup_site_exclude": {
     "message": "ยกเว้นเว็บไซต์นี้"
+  },
+  "popup_task_waiting": {
+    "message": "รอคิว",
+    "description": "Popup task list: queued task"
+  },
+  "popup_task_paused": {
+    "message": "หยุดชั่วคราว",
+    "description": "Popup task list: paused task"
+  },
+  "popup_task_failed": {
+    "message": "ล้มเหลว",
+    "description": "Popup task list: failed task without a message"
+  },
+  "popup_task_pause": {
+    "message": "หยุดชั่วคราว",
+    "description": "Popup task list: pause button"
+  },
+  "popup_task_resume": {
+    "message": "ดำเนินการต่อ",
+    "description": "Popup task list: resume button"
+  },
+  "popup_task_reveal": {
+    "message": "แสดงในโฟลเดอร์",
+    "description": "Popup task list: show the finished file in its folder"
+  },
+  "popup_tasks_empty": {
+    "message": "ยังไม่มีการดาวน์โหลด",
+    "description": "Popup task list: nothing to show"
+  },
+  "options_alt_click_bypass_label": {
+    "message": "กด Alt ค้างขณะคลิกเพื่อดาวน์โหลดด้วยเบราว์เซอร์",
+    "description": "Setting: holding Alt while clicking a link lets the browser download it"
   }
 }

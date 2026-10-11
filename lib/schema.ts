@@ -150,6 +150,7 @@ const DownloadSettingsSchema = lenient(
       }),
     ),
     forwardRequestHeaders: z.boolean().catch(true),
+    altClickBypass: z.boolean().catch(true),
     forwardCookies: z.boolean().catch(true),
     duplicateGuard: lenient(
       z.object({

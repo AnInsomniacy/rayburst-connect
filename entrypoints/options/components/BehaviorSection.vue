@@ -17,6 +17,7 @@ defineProps<{
   desktopUnavailable: DesktopUnavailableSettings;
   forwardRequestHeaders: boolean;
   forwardCookies: boolean;
+  altClickBypass: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -26,6 +27,7 @@ const emit = defineEmits<{
   'update:desktopUnavailable': [value: Partial<DesktopUnavailableSettings>];
   'update:forwardRequestHeaders': [value: boolean];
   'update:forwardCookies': [value: boolean];
+  'update:altClickBypass': [value: boolean];
 }>();
 
 import { useI18n } from '@/shared/i18n/engine';
@@ -133,6 +135,14 @@ const unavailableActionOptions = computed(() => [
       <h3 class="settings-group-title">
         {{ i18n('options_download_handling_section_label', 'Download Handling') }}
       </h3>
+
+      <NFormItem
+        class="settings-row"
+        :show-feedback="false"
+        :label="i18n('options_alt_click_bypass_label', 'Alt-Click Downloads With the Browser')"
+      >
+        <NSwitch :value="altClickBypass" @update:value="emit('update:altClickBypass', $event)" />
+      </NFormItem>
 
       <NFormItem
         v-if="canControlDownloadUi"

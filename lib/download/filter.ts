@@ -5,8 +5,8 @@
  * ('intercept' | 'skip') or null to defer to the next stage. When every
  * stage defers, the download is intercepted.
  *
- * Order: enabled → self-trigger → scope → scheme → browser-ownership → site-rule →
- * file-extension → minimum-size.
+ * Order: enabled → alt-click → self-trigger → scope → scheme → browser-ownership →
+ * site-rule → file-extension → minimum-size.
  */
 import { matchSiteRule } from '../site-rules';
 import type { DownloadSettings, SiteRule } from '@/lib/schema';
@@ -100,6 +100,15 @@ const enabled: FilterStage = {
   evaluate: (_ctx, config) => (config.enabled ? null : 'skip'),
 };
 
+/** Downloads the user started with Alt held stay with the browser. */
+function altClick(isBypassed: (urls: string[]) => boolean): FilterStage {
+  return {
+    name: 'alt-click',
+    evaluate: (ctx, config) =>
+      config.altClickBypass && isBypassed([ctx.url, ctx.finalUrl]) ? 'skip' : null,
+  };
+}
+
 /** Skip downloads triggered by another extension (including ourselves). */
 const selfTrigger: FilterStage = {
   name: 'self-trigger',
@@ -191,9 +200,13 @@ const minimumFileSize: FilterStage = {
 
 // ─── Pipeline ───────────────────────────────────────────
 
-export function createFilterPipeline(getRules: () => SiteRule[]): FilterStage[] {
+export function createFilterPipeline(
+  getRules: () => SiteRule[],
+  isBypassed: (urls: string[]) => boolean = () => false,
+): FilterStage[] {
   return [
     enabled,
+    altClick(isBypassed),
     selfTrigger,
     interceptionScope,
     scheme,

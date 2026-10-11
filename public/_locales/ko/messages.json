@@ -1104,5 +1104,37 @@
   },
   "popup_site_exclude": {
     "message": "이 사이트 제외"
+  },
+  "popup_task_waiting": {
+    "message": "대기 중",
+    "description": "Popup task list: queued task"
+  },
+  "popup_task_paused": {
+    "message": "일시 중지됨",
+    "description": "Popup task list: paused task"
+  },
+  "popup_task_failed": {
+    "message": "실패",
+    "description": "Popup task list: failed task without a message"
+  },
+  "popup_task_pause": {
+    "message": "일시 중지",
+    "description": "Popup task list: pause button"
+  },
+  "popup_task_resume": {
+    "message": "재개",
+    "description": "Popup task list: resume button"
+  },
+  "popup_task_reveal": {
+    "message": "폴더에서 보기",
+    "description": "Popup task list: show the finished file in its folder"
+  },
+  "popup_tasks_empty": {
+    "message": "아직 다운로드가 없습니다",
+    "description": "Popup task list: nothing to show"
+  },
+  "options_alt_click_bypass_label": {
+    "message": "Alt를 누른 채 클릭하면 브라우저로 다운로드",
+    "description": "Setting: holding Alt while clicking a link lets the browser download it"
   }
 }

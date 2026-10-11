@@ -1104,5 +1104,37 @@
   },
   "popup_site_exclude": {
     "message": "Exclude acest site"
+  },
+  "popup_task_waiting": {
+    "message": "În așteptare",
+    "description": "Popup task list: queued task"
+  },
+  "popup_task_paused": {
+    "message": "Întrerupt",
+    "description": "Popup task list: paused task"
+  },
+  "popup_task_failed": {
+    "message": "Eșuat",
+    "description": "Popup task list: failed task without a message"
+  },
+  "popup_task_pause": {
+    "message": "Întrerupe",
+    "description": "Popup task list: pause button"
+  },
+  "popup_task_resume": {
+    "message": "Reia",
+    "description": "Popup task list: resume button"
+  },
+  "popup_task_reveal": {
+    "message": "Arată în dosar",
+    "description": "Popup task list: show the finished file in its folder"
+  },
+  "popup_tasks_empty": {
+    "message": "Nicio descărcare încă",
+    "description": "Popup task list: nothing to show"
+  },
+  "options_alt_click_bypass_label": {
+    "message": "Alt + clic descarcă prin browser",
+    "description": "Setting: holding Alt while clicking a link lets the browser download it"
   }
 }

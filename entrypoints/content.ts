@@ -115,6 +115,21 @@ export default defineContentScript({
       openInBrowser: (url) => window.location.assign(url),
     });
     ctx.addEventListener(document, 'click', click, { capture: true });
+    // Alt-click keeps the download in the browser. Mouse-down reaches the
+    // worker before the browser starts the download that the click causes.
+    ctx.addEventListener(
+      document,
+      'mousedown',
+      (event: MouseEvent) => {
+        if (!settings.enabled || !settings.altClickBypass || event.button !== 0) return;
+        if (!event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+        const link = event.target instanceof Element ? event.target.closest('a[href]') : null;
+        const url =
+          link instanceof HTMLAnchorElement && /^https?:/i.test(link.href) ? link.href : '';
+        void browser.runtime.sendMessage({ type: 'BYPASS_DOWNLOAD', url }).catch(() => undefined);
+      },
+      { capture: true },
+    );
     ctx.addEventListener(window, 'pageshow', () => observer?.rescan());
     ctx.onInvalidated(() => {
       disposed = true;

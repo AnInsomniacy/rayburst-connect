@@ -10,6 +10,7 @@ import {
   CheckmarkDoneOutline,
 } from '@vicons/ionicons5';
 import type { StatResponse } from '@/lib/api';
+import { formatSpeed } from '@/lib/format';
 
 import { useI18n } from '@/shared/i18n/engine';
 
@@ -19,17 +20,6 @@ const props = defineProps<{
   stat: StatResponse;
   disabled: boolean;
 }>();
-
-/* ── Speed Formatting ───────────────────────────────────────────── */
-
-function formatSpeed(bytesPerSec: string): string {
-  const n = parseInt(bytesPerSec, 10);
-  if (isNaN(n) || n === 0) return '0 B/s';
-  if (n < 1024) return `${n} B/s`;
-  if (n < 1048576) return `${(n / 1024).toFixed(1)} KB/s`;
-  if (n < 1073741824) return `${(n / 1048576).toFixed(1)} MB/s`;
-  return `${(n / 1073741824).toFixed(2)} GB/s`;
-}
 
 /* ── Derived State ──────────────────────────────────────────────── */
 

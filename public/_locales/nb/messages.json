@@ -1104,5 +1104,37 @@
   },
   "popup_site_exclude": {
     "message": "Utelat dette nettstedet"
+  },
+  "popup_task_waiting": {
+    "message": "Venter",
+    "description": "Popup task list: queued task"
+  },
+  "popup_task_paused": {
+    "message": "Satt på pause",
+    "description": "Popup task list: paused task"
+  },
+  "popup_task_failed": {
+    "message": "Mislyktes",
+    "description": "Popup task list: failed task without a message"
+  },
+  "popup_task_pause": {
+    "message": "Pause",
+    "description": "Popup task list: pause button"
+  },
+  "popup_task_resume": {
+    "message": "Fortsett",
+    "description": "Popup task list: resume button"
+  },
+  "popup_task_reveal": {
+    "message": "Vis i mappe",
+    "description": "Popup task list: show the finished file in its folder"
+  },
+  "popup_tasks_empty": {
+    "message": "Ingen nedlastinger ennå",
+    "description": "Popup task list: nothing to show"
+  },
+  "options_alt_click_bypass_label": {
+    "message": "Alt-klikk laster ned med nettleseren",
+    "description": "Setting: holding Alt while clicking a link lets the browser download it"
   }
 }

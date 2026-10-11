@@ -599,6 +599,7 @@ onUnmounted(() => {
                   :desktop-unavailable="draft.settings.desktopUnavailable"
                   :forward-request-headers="draft.settings.forwardRequestHeaders"
                   :forward-cookies="draft.settings.forwardCookies"
+                  :alt-click-bypass="draft.settings.altClickBypass"
                   @update:enabled="handleEnabledChange"
                   @update:scope="handleInterceptionScopeChange"
                   @update:hide-download-bar="handleHideDownloadBarChange"
@@ -610,6 +611,7 @@ onUnmounted(() => {
                   "
                   @update:forward-request-headers="draft.settings.forwardRequestHeaders = $event"
                   @update:forward-cookies="handleForwardCookiesChange"
+                  @update:alt-click-bypass="draft.settings.altClickBypass = $event"
                 />
               </div>
             </div>

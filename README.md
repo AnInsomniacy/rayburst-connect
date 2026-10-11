@@ -22,12 +22,13 @@
 
 - **Page media discovery** — Detect HLS/DASH manifests and audio/video sources without interrupting playback. Inspect and choose native tracks from the extension's Sniffer tab, sidebar or full-page workspace through Rayburst's [media API](docs/MEDIA_API.md). See [scope and local testing](docs/MEDIA.md).
 - **Download interception** — Automatically captures browser downloads and routes them to Rayburst for multi-threaded acceleration
-- **Smart filtering** — Ordered checks for interception settings, extension-owned downloads, URL schemes, site rules, MIME types, file extensions, and minimum file size
+- **Smart filtering** — Ordered checks for interception settings, Alt-click, extension-owned downloads, URL schemes, site rules, MIME types, file extensions, and minimum file size
+- **Alt-click bypass** — Hold Alt while clicking a link to let the browser download it this once
 - **Per-site rules** — Glob-pattern rules (e.g. `*.github.com`) to always intercept, always skip, or defer to global settings
 - **Context menu** — Right-click any link, image, audio, or video → "Download with Rayburst"
-- **Magnet & torrent** — `magnet:` URIs and `.torrent` files are automatically captured and routed to aria2
+- **Magnet & torrent** — `magnet:` URIs and `.torrent` links are captured and routed to Rayburst, which opens the torrent or saves the file as its settings say
 - **Cookie forwarding** — Cookie forwarding is enabled by default for authenticated downloads and uses required cookie and site permissions
-- **Real-time dashboard** — Popup shows live download/upload speeds, active/waiting/completed task counts
+- **Real-time dashboard** — Popup shows live download/upload speeds, task counts and a task list with progress, pause/resume and show-in-folder
 - **Auto-launch** — Activates Rayburst through its allowlisted Native Messaging host, waits for API readiness, then retries
 - **Duplicate notifications** — Alerts when a repeated download request is skipped
 - **Download bar control** — Optionally hides Chrome's native download shelf (Chromium 115+, not available on Firefox)

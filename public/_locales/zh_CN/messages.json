@@ -1104,5 +1104,37 @@
   },
   "popup_site_exclude": {
     "message": "排除此网站"
+  },
+  "popup_task_waiting": {
+    "message": "等待中",
+    "description": "Popup task list: queued task"
+  },
+  "popup_task_paused": {
+    "message": "已暂停",
+    "description": "Popup task list: paused task"
+  },
+  "popup_task_failed": {
+    "message": "失败",
+    "description": "Popup task list: failed task without a message"
+  },
+  "popup_task_pause": {
+    "message": "暂停",
+    "description": "Popup task list: pause button"
+  },
+  "popup_task_resume": {
+    "message": "继续",
+    "description": "Popup task list: resume button"
+  },
+  "popup_task_reveal": {
+    "message": "在文件夹中显示",
+    "description": "Popup task list: show the finished file in its folder"
+  },
+  "popup_tasks_empty": {
+    "message": "还没有下载",
+    "description": "Popup task list: nothing to show"
+  },
+  "options_alt_click_bypass_label": {
+    "message": "按住 Alt 点击时用浏览器下载",
+    "description": "Setting: holding Alt while clicking a link lets the browser download it"
   }
 }

@@ -1104,5 +1104,37 @@
   },
   "popup_site_exclude": {
     "message": "Exclou aquest lloc"
+  },
+  "popup_task_waiting": {
+    "message": "En espera",
+    "description": "Popup task list: queued task"
+  },
+  "popup_task_paused": {
+    "message": "En pausa",
+    "description": "Popup task list: paused task"
+  },
+  "popup_task_failed": {
+    "message": "Error",
+    "description": "Popup task list: failed task without a message"
+  },
+  "popup_task_pause": {
+    "message": "Posa en pausa",
+    "description": "Popup task list: pause button"
+  },
+  "popup_task_resume": {
+    "message": "Reprèn",
+    "description": "Popup task list: resume button"
+  },
+  "popup_task_reveal": {
+    "message": "Mostra a la carpeta",
+    "description": "Popup task list: show the finished file in its folder"
+  },
+  "popup_tasks_empty": {
+    "message": "Encara no hi ha baixades",
+    "description": "Popup task list: nothing to show"
+  },
+  "options_alt_click_bypass_label": {
+    "message": "Alt + clic baixa amb el navegador",
+    "description": "Setting: holding Alt while clicking a link lets the browser download it"
   }
 }

@@ -14,6 +14,7 @@ import {
   DesktopApiClient,
   checkConnection,
   isCompatibilityErrorName,
+  type DesktopTask,
   type StatResponse,
 } from '@/lib/api';
 import UnsupportedDesktop from '@/shared/components/UnsupportedDesktop.vue';
@@ -35,6 +36,7 @@ import { createI18n, I18N_KEY, useNaiveLocale } from '@/shared/i18n/engine';
 
 import PopupHeader from './components/PopupHeader.vue';
 import StatDashboard from './components/StatDashboard.vue';
+import TaskList from './components/TaskList.vue';
 import MediaPanel from './components/MediaPanel.vue';
 import ResourceCount from './components/ResourceCount.vue';
 import { usePopupNavigation } from './use-navigation';
@@ -56,6 +58,8 @@ const version = ref<string | null>(null);
 const errorType = ref<string | null>(null);
 const connectionPort = ref(DEFAULT_CONNECTION_CONFIG.port);
 const globalStat = ref<StatResponse | null>(null);
+const tasks = ref<DesktopTask[]>([]);
+const taskBusy = ref<string | null>(null);
 const enabled = ref(true);
 const opening = ref(false);
 const checking = ref(false);
@@ -75,6 +79,7 @@ async function fetchData(): Promise<boolean> {
     if (result.status === 'connected') {
       globalStat.value = result.stat;
       phase.value = 'connected';
+      await refreshTasks();
       return true;
     } else if (phase.value !== 'launching' && phase.value !== 'failed') {
       phase.value = 'disconnected';
@@ -86,7 +91,31 @@ async function fetchData(): Promise<boolean> {
   }
 }
 
+/** Keeps the last list when the desktop is briefly busy. */
+async function refreshTasks(): Promise<void> {
+  try {
+    tasks.value = (await apiClient.getTasks()).tasks;
+  } catch {
+    // The next poll retries.
+  }
+}
+
 // ─── Actions ────────────────────────────────────────────
+
+async function controlTask(gid: string, action: 'pause' | 'resume' | 'reveal'): Promise<void> {
+  if (taskBusy.value) return;
+  taskBusy.value = gid;
+  try {
+    if (action === 'pause') await apiClient.pauseTask(gid);
+    else if (action === 'resume') await apiClient.resumeTask(gid);
+    else await apiClient.revealTask(gid);
+  } catch {
+    // The list shows the state the desktop reports next.
+  } finally {
+    taskBusy.value = null;
+  }
+  await refreshTasks();
+}
 
 async function pauseAll(): Promise<void> {
   await sendBackgroundCommand('PAUSE_ALL');
@@ -315,6 +344,13 @@ onUnmounted(() => {
                     class="popup-page"
                   >
                     <StatDashboard :stat="globalStat" :disabled="!enabled" />
+                    <TaskList
+                      :tasks="tasks"
+                      :busy="taskBusy"
+                      @pause="(gid) => controlTask(gid, 'pause')"
+                      @resume="(gid) => controlTask(gid, 'resume')"
+                      @reveal="(gid) => controlTask(gid, 'reveal')"
+                    />
                     <div class="popup-actions">
                       <div class="popup-actions__left">
                         <NButton size="tiny" quaternary :disabled="!enabled" @click="pauseAll">

@@ -1104,5 +1104,37 @@
   },
   "popup_site_exclude": {
     "message": "Kecualikan situs ini"
+  },
+  "popup_task_waiting": {
+    "message": "Menunggu",
+    "description": "Popup task list: queued task"
+  },
+  "popup_task_paused": {
+    "message": "Dijeda",
+    "description": "Popup task list: paused task"
+  },
+  "popup_task_failed": {
+    "message": "Gagal",
+    "description": "Popup task list: failed task without a message"
+  },
+  "popup_task_pause": {
+    "message": "Jeda",
+    "description": "Popup task list: pause button"
+  },
+  "popup_task_resume": {
+    "message": "Lanjutkan",
+    "description": "Popup task list: resume button"
+  },
+  "popup_task_reveal": {
+    "message": "Tampilkan di folder",
+    "description": "Popup task list: show the finished file in its folder"
+  },
+  "popup_tasks_empty": {
+    "message": "Belum ada unduhan",
+    "description": "Popup task list: nothing to show"
+  },
+  "options_alt_click_bypass_label": {
+    "message": "Alt + klik mengunduh dengan browser",
+    "description": "Setting: holding Alt while clicking a link lets the browser download it"
   }
 }

@@ -1104,5 +1104,37 @@
   },
   "popup_site_exclude": {
     "message": "Bu siteyi hariç tut"
+  },
+  "popup_task_waiting": {
+    "message": "Bekliyor",
+    "description": "Popup task list: queued task"
+  },
+  "popup_task_paused": {
+    "message": "Duraklatıldı",
+    "description": "Popup task list: paused task"
+  },
+  "popup_task_failed": {
+    "message": "Başarısız",
+    "description": "Popup task list: failed task without a message"
+  },
+  "popup_task_pause": {
+    "message": "Duraklat",
+    "description": "Popup task list: pause button"
+  },
+  "popup_task_resume": {
+    "message": "Sürdür",
+    "description": "Popup task list: resume button"
+  },
+  "popup_task_reveal": {
+    "message": "Klasörde göster",
+    "description": "Popup task list: show the finished file in its folder"
+  },
+  "popup_tasks_empty": {
+    "message": "Henüz indirme yok",
+    "description": "Popup task list: nothing to show"
+  },
+  "options_alt_click_bypass_label": {
+    "message": "Alt ile tıklama tarayıcıyla indirir",
+    "description": "Setting: holding Alt while clicking a link lets the browser download it"
   }
 }

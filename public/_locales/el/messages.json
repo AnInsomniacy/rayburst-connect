@@ -1104,5 +1104,37 @@
   },
   "popup_site_exclude": {
     "message": "Εξαίρεση αυτού του ιστοτόπου"
+  },
+  "popup_task_waiting": {
+    "message": "Σε αναμονή",
+    "description": "Popup task list: queued task"
+  },
+  "popup_task_paused": {
+    "message": "Σε παύση",
+    "description": "Popup task list: paused task"
+  },
+  "popup_task_failed": {
+    "message": "Απέτυχε",
+    "description": "Popup task list: failed task without a message"
+  },
+  "popup_task_pause": {
+    "message": "Παύση",
+    "description": "Popup task list: pause button"
+  },
+  "popup_task_resume": {
+    "message": "Συνέχεια",
+    "description": "Popup task list: resume button"
+  },
+  "popup_task_reveal": {
+    "message": "Εμφάνιση στον φάκελο",
+    "description": "Popup task list: show the finished file in its folder"
+  },
+  "popup_tasks_empty": {
+    "message": "Δεν υπάρχουν λήψεις ακόμη",
+    "description": "Popup task list: nothing to show"
+  },
+  "options_alt_click_bypass_label": {
+    "message": "Alt + κλικ κάνει λήψη με το πρόγραμμα περιήγησης",
+    "description": "Setting: holding Alt while clicking a link lets the browser download it"
   }
 }

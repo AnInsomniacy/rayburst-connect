@@ -42,6 +42,7 @@ import {
   type SiteRule,
 } from '@/lib/schema';
 import { createDiagnosticJournal, type DiagnosticInput } from '@/lib/diagnostics';
+import { BrowserBypass, parseBypassMessage } from '@/lib/download/bypass';
 import { I18nEngine } from '@/shared/i18n/engine';
 import { resolveLocaleId } from '@/shared/i18n/dictionaries';
 import { FALLBACK_LOCALE } from '@/shared/i18n/locales';
@@ -143,6 +144,7 @@ export default defineBackground(() => {
   const activateDesktopApp = () =>
     activateDesktop((hostName, message) => browser.runtime.sendNativeMessage(hostName, message));
 
+  const browserBypass = new BrowserBypass();
   const orchestrator = new DownloadOrchestrator({
     downloads: {
       cancel: (id) => browser.downloads.cancel(id),
@@ -184,6 +186,7 @@ export default defineBackground(() => {
     },
     getSettings: () => settings,
     getSiteRules: () => siteRules,
+    isBypassed: (urls) => browserBypass.matches(urls),
     duplicateGuard: duplicateDownloadGuard,
     desktopClient,
     activateDesktop: (timeoutMs) =>
@@ -618,6 +621,11 @@ export default defineBackground(() => {
       }
       if ('type' in msg && msg.type === 'PAUSE_ALL') return handleDesktopCommand('pause-all');
       if ('type' in msg && msg.type === 'RESUME_ALL') return handleDesktopCommand('resume-all');
+      const bypassUrl = parseBypassMessage(msg);
+      if (bypassUrl !== null) {
+        browserBypass.add(bypassUrl);
+        return Promise.resolve({ ok: true as const });
+      }
       const protocolMessage = parseExternalProtocolMessage(msg);
       return protocolMessage ? handleExternalProtocol(protocolMessage) : undefined;
     }),

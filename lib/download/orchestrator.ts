@@ -47,6 +47,8 @@ export interface OrchestratorDeps {
   diagnosticLog: { append: (event: DiagnosticInput) => void };
   getSettings: () => DownloadSettings;
   getSiteRules: () => SiteRule[];
+  /** Whether the user Alt-clicked one of these URLs moments ago. */
+  isBypassed?: (urls: string[]) => boolean;
   duplicateGuard: DuplicateDownloadGuard;
   /** Primary submission path when the desktop app and engine are ready. */
   desktopClient: DesktopApiClient;
@@ -143,7 +145,10 @@ function filenameHint(value: string): string | undefined {
 export class DownloadOrchestrator {
   private readonly filterStages;
   constructor(private readonly deps: OrchestratorDeps) {
-    this.filterStages = createFilterPipeline(() => deps.getSiteRules());
+    this.filterStages = createFilterPipeline(
+      () => deps.getSiteRules(),
+      (urls) => deps.isBypassed?.(urls) ?? false,
+    );
   }
 
   async handleFirefoxCreatedDownload(item: DownloadItem): Promise<boolean> {

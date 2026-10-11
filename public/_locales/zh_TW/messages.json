@@ -1104,5 +1104,37 @@
   },
   "popup_site_exclude": {
     "message": "排除此網站"
+  },
+  "popup_task_waiting": {
+    "message": "等待中",
+    "description": "Popup task list: queued task"
+  },
+  "popup_task_paused": {
+    "message": "已暫停",
+    "description": "Popup task list: paused task"
+  },
+  "popup_task_failed": {
+    "message": "失敗",
+    "description": "Popup task list: failed task without a message"
+  },
+  "popup_task_pause": {
+    "message": "暫停",
+    "description": "Popup task list: pause button"
+  },
+  "popup_task_resume": {
+    "message": "繼續",
+    "description": "Popup task list: resume button"
+  },
+  "popup_task_reveal": {
+    "message": "在資料夾中顯示",
+    "description": "Popup task list: show the finished file in its folder"
+  },
+  "popup_tasks_empty": {
+    "message": "還沒有下載",
+    "description": "Popup task list: nothing to show"
+  },
+  "options_alt_click_bypass_label": {
+    "message": "按住 Alt 點擊時用瀏覽器下載",
+    "description": "Setting: holding Alt while clicking a link lets the browser download it"
   }
 }

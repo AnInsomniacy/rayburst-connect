@@ -336,6 +336,15 @@ export class DesktopApiClient {
     );
   }
 
+  async revealTask(gid: string): Promise<ActionResponse> {
+    return this.request(
+      `tasks/${encodeURIComponent(gid)}/reveal`,
+      ActionResponseSchema,
+      { method: 'POST', headers: this.authHeaders() },
+      'Show task in folder',
+    );
+  }
+
   async createCapture(id: string) {
     return this.request(
       `${MEDIA_API_PATH}/assets/${id}`,

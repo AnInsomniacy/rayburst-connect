@@ -1104,5 +1104,37 @@
   },
   "popup_site_exclude": {
     "message": "このサイトを除外"
+  },
+  "popup_task_waiting": {
+    "message": "待機中",
+    "description": "Popup task list: queued task"
+  },
+  "popup_task_paused": {
+    "message": "一時停止中",
+    "description": "Popup task list: paused task"
+  },
+  "popup_task_failed": {
+    "message": "失敗",
+    "description": "Popup task list: failed task without a message"
+  },
+  "popup_task_pause": {
+    "message": "一時停止",
+    "description": "Popup task list: pause button"
+  },
+  "popup_task_resume": {
+    "message": "再開",
+    "description": "Popup task list: resume button"
+  },
+  "popup_task_reveal": {
+    "message": "フォルダーに表示",
+    "description": "Popup task list: show the finished file in its folder"
+  },
+  "popup_tasks_empty": {
+    "message": "ダウンロードはまだありません",
+    "description": "Popup task list: nothing to show"
+  },
+  "options_alt_click_bypass_label": {
+    "message": "Alt を押しながらクリックでブラウザーにダウンロードさせる",
+    "description": "Setting: holding Alt while clicking a link lets the browser download it"
   }
 }

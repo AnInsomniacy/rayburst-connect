@@ -25,6 +25,11 @@ sanitization. The original request URL remains the task source; redirect URLs ar
 metadata. Native webRequest IDs preserve the original hop and its own credentials.
 Ambiguous contexts are not reused across tabs or origins.
 
+An Alt-click on a link (or anywhere, for script-started downloads) leaves the
+download that begins within five seconds to the browser. The content script reports
+the click on mouse-down so the worker knows before the browser creates the item;
+browser download items carry no tab, so the clicked URL is the match.
+
 Private browser downloads remain in the browser. Version 2 kept a handoff journal
 under `pending-download:` keys; the background removes those entries at startup.
 
