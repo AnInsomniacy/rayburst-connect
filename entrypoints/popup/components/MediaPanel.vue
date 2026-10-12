@@ -22,7 +22,12 @@ import {
   type MediaList,
 } from '@/lib/media/messages';
 import { mediaFailureKey, mediaSize } from '@/lib/media/presentation';
-import { countMediaResources, isMediaResource } from '@/lib/media/resources';
+import {
+  countMediaResources,
+  groupMediaResources,
+  isMediaResource,
+  trackCollection,
+} from '@/lib/media/resources';
 import { useI18n } from '@/shared/i18n/engine';
 import { usePolling } from '@/shared/use-polling';
 import { MEDIA_SESSION_KEY, parseMediaSettings, parseDownloadSettings } from '@/lib/schema';
@@ -42,6 +47,8 @@ import {
   OpenOutline,
   AlbumsOutline,
   CheckmarkOutline,
+  ChevronDownOutline,
+  FilmOutline,
 } from '@vicons/ionicons5';
 
 const props = withDefaults(defineProps<{ active?: boolean; expanded?: boolean }>(), {
@@ -87,6 +94,60 @@ const filtered = computed(() => {
           : a.firstSeen - b.firstSeen,
   );
 });
+/** Complete videos made of track files come first; their files show on request. */
+const expandedGroups = ref(new Set<string>());
+const groupKey = (item: MediaItem) => `${item.tabId}:${item.frameId}:${item.documentId}`;
+type Row =
+  | { key: string; item: MediaItem; member: boolean; group?: undefined }
+  | { key: string; group: MediaItem[]; collection?: MediaItem; item?: undefined };
+const rows = computed<Row[]>(() => {
+  const entries = groupMediaResources(filtered.value);
+  return [
+    ...entries.filter((entry): entry is MediaItem[] => Array.isArray(entry)),
+    ...entries.filter((entry): entry is MediaItem => !Array.isArray(entry)),
+  ].flatMap((entry): Row[] => {
+    if (!Array.isArray(entry)) return [{ key: entry.id, item: entry, member: false }];
+    const key = groupKey(entry[0]!);
+    return [
+      { key, group: entry, collection: trackCollection(entry, state.value?.items ?? []) },
+      ...(expandedGroups.value.has(key)
+        ? entry.map((item) => ({ key: item.id, item, member: true }))
+        : []),
+    ];
+  });
+});
+const mergeable = computed(() => {
+  const items = filtered.value.filter((item) => checked.value.has(item.id));
+  return (
+    !allTabs.value &&
+    items.length > 1 &&
+    items.every(
+      (item) =>
+        ['file', 'fragment', 'subtitle'].includes(item.kind) &&
+        item.method === 'GET' &&
+        item.frameId === items[0]!.frameId &&
+        item.documentId === items[0]!.documentId,
+    )
+  );
+});
+function toggleGroup(key: string) {
+  const next = new Set(expandedGroups.value);
+  if (!next.delete(key)) next.add(key);
+  expandedGroups.value = next;
+}
+function groupSize(group: MediaItem[]) {
+  return group.every((item) => item.size !== null)
+    ? group.reduce((sum, item) => sum + (item.size ?? 0), 0)
+    : null;
+}
+async function inspectTracks(group: MediaItem[], download = false) {
+  const id = await merge(
+    group.map((item) => item.id),
+    false,
+    group[0]!.tabId,
+  );
+  if (id && download && preferences.value.quickDownload) downloadIntent.value = id;
+}
 const kinds = computed(() =>
   ['all', ...new Set(state.value?.items.filter(isMediaResource).map((item) => item.kind))].map(
     (value) => ({
@@ -283,20 +344,22 @@ async function batch(action: 'download' | 'copy' | 'clear') {
     for (const item of items)
       await command({ type: 'MEDIA_CLEAR', tabId: item.tabId, candidateId: item.id });
 }
-async function merge(sequence: boolean) {
-  if (tabId.value === undefined) return;
+async function merge(ids: string[], sequence: boolean, tab = tabId.value) {
+  if (tab === undefined || busy.value) return;
   busy.value = true;
   try {
     const result: unknown = await browser.runtime.sendMessage({
       type: 'MEDIA_MERGE',
-      tabId: tabId.value,
-      ids: [...checked.value],
+      tabId: tab,
+      ids,
       sequence,
     });
     if (result && typeof result === 'object' && 'id' in result && typeof result.id === 'string') {
       await refresh();
       selectedId.value = result.id;
-    } else error.value = 'media_unsupported';
+      return result.id;
+    }
+    error.value = 'media_unsupported';
   } finally {
     busy.value = false;
   }
@@ -323,7 +386,8 @@ function action(value: string) {
   else if (value === 'all') filtered.value.forEach((item) => toggle(item.id, true));
   else if (value === 'invert')
     filtered.value.forEach((item) => toggle(item.id, !checked.value.has(item.id)));
-  else if (value === 'merge' || value === 'sequence') void merge(value === 'sequence');
+  else if (value === 'merge' || value === 'sequence')
+    void merge([...checked.value], value === 'sequence');
   else if (value === 'copy' || value === 'clear') void batch(value);
 }
 async function openPage() {
@@ -485,48 +549,121 @@ onUnmounted(() => {
               {{ tSub('sniffer_results', [String(filtered.length), String(resourceCount)]) }}
             </p>
             <div class="resource-list">
-              <template v-for="item in filtered" :key="item.id">
-                <article class="resource-row">
+              <template v-for="row in rows" :key="row.key">
+                <article v-if="row.group" class="resource-row resource-row--tracks">
+                  <span class="resource-tracks-icon" aria-hidden="true"
+                    ><NIcon :size="18"><FilmOutline /></NIcon
+                  ></span>
+                  <button class="resource-title" @click="inspectTracks(row.group)">
+                    <strong :title="row.group[0]!.title">{{
+                      row.group[0]!.title || t('media_complete_video')
+                    }}</strong>
+                    <span
+                      >{{ t('media_complete_video') }} ·
+                      {{ tSub('media_tracks', [String(row.group.length)]) }} ·
+                      {{
+                        mediaSize(groupSize(row.group), effectiveLocale, t('media_size_unknown'))
+                      }}</span
+                    >
+                    <small v-if="allTabs">{{ row.group[0]!.title }}</small>
+                    <small v-if="row.collection?.operation?.error">{{
+                      t(mediaFailureKey(row.collection.operation.error))
+                    }}</small>
+                    <small v-else-if="row.collection && sent(row.collection)">{{
+                      t('media_submitted')
+                    }}</small>
+                  </button>
+                  <div class="row-actions">
+                    <NTooltip trigger="hover">
+                      <template #trigger>
+                        <NButton
+                          size="small"
+                          quaternary
+                          circle
+                          :aria-label="t('media_track_files')"
+                          :aria-expanded="expandedGroups.has(row.key)"
+                          @click="toggleGroup(row.key)"
+                        >
+                          <template #icon
+                            ><NIcon
+                              class="resource-expand"
+                              :class="{ 'resource-expand--open': expandedGroups.has(row.key) }"
+                              ><ChevronDownOutline /></NIcon
+                          ></template>
+                        </NButton>
+                      </template>
+                      {{ t('media_track_files') }}
+                    </NTooltip>
+                    <NTooltip trigger="hover">
+                      <template #trigger>
+                        <NButton
+                          size="small"
+                          quaternary
+                          circle
+                          type="primary"
+                          :aria-label="t('media_download')"
+                          :loading="busy"
+                          @click="inspectTracks(row.group, true)"
+                        >
+                          <template #icon
+                            ><NIcon
+                              ><Transition name="icon-swap" mode="out-in"
+                                ><CheckmarkOutline
+                                  v-if="row.collection && sent(row.collection)" /><DownloadOutline
+                                  v-else /></Transition></NIcon
+                          ></template>
+                        </NButton>
+                      </template>
+                      {{ t('media_download') }}
+                    </NTooltip>
+                  </div>
+                </article>
+                <article
+                  v-else-if="row.item"
+                  :class="['resource-row', { 'resource-row--member': row.member }]"
+                >
                   <NCheckbox
-                    :checked="checked.has(item.id)"
-                    :disabled="item.method !== 'GET'"
-                    :aria-label="item.filename || item.title"
-                    @update:checked="toggle(item.id, $event)"
+                    :checked="checked.has(row.item.id)"
+                    :disabled="row.item.method !== 'GET'"
+                    :aria-label="row.item.filename || row.item.title"
+                    @update:checked="toggle(row.item.id, $event)"
                   />
-                  <button class="resource-title" @click="select(item)">
-                    <strong :title="sourceName(item).full"
-                      ><span class="name-prefix">{{ sourceName(item).prefix }}</span
-                      ><span class="name-suffix">{{ sourceName(item).suffix }}</span></strong
+                  <button class="resource-title" @click="select(row.item)">
+                    <strong :title="sourceName(row.item).full"
+                      ><span class="name-prefix">{{ sourceName(row.item).prefix }}</span
+                      ><span class="name-suffix">{{ sourceName(row.item).suffix }}</span></strong
                     >
                     <span
                       >{{
-                        ['hls', 'dash'].includes(item.kind)
-                          ? item.kind.toUpperCase()
-                          : t(`resources_kind_${item.kind}`)
+                        ['hls', 'dash'].includes(row.item.kind)
+                          ? row.item.kind.toUpperCase()
+                          : t(`resources_kind_${row.item.kind}`)
                       }}
-                      <template v-if="!['hls', 'dash'].includes(item.kind)">
+                      <template v-if="!['hls', 'dash'].includes(row.item.kind)">
                         ·
                         {{
-                          mediaSize(item.size, effectiveLocale, t('media_size_unknown'))
+                          mediaSize(row.item.size, effectiveLocale, t('media_size_unknown'))
                         }}</template
                       ></span
                     >
-                    <small v-if="allTabs">{{ item.title }}</small>
-                    <small v-if="item.downloadError || item.operation?.error">{{
+                    <small v-if="allTabs">{{ row.item.title }}</small>
+                    <small v-if="row.item.downloadError || row.item.operation?.error">{{
                       t(
                         mediaFailureKey(
-                          item.downloadError || item.operation?.error || 'operation_failed',
+                          row.item.downloadError || row.item.operation?.error || 'operation_failed',
                         ),
                       )
                     }}</small>
                     <small
-                      v-else-if="item.sentToDesktop || item.operation?.state === 'submitted'"
+                      v-else-if="
+                        row.item.sentToDesktop || row.item.operation?.state === 'submitted'
+                      "
                       >{{ t('media_submitted') }}</small
                     >
                   </button>
                   <div class="row-actions">
                     <NTooltip
-                      v-for="rowAction in rowActions(item)"
+                      v-for="rowAction in rowActions(row.item)"
                       :key="rowAction.key"
                       trigger="hover"
                     >
@@ -541,8 +678,8 @@ onUnmounted(() => {
                               : 'default'
                           "
                           :aria-label="rowAction.label"
-                          :loading="rowAction.key === 'download' && rowBusy.has(item.id)"
-                          :disabled="rowAction.key === 'download' && item.method !== 'GET'"
+                          :loading="rowAction.key === 'download' && rowBusy.has(row.item.id)"
+                          :disabled="rowAction.key === 'download' && row.item.method !== 'GET'"
                           @click="rowAction.run()"
                         >
                           <template #icon
@@ -559,8 +696,8 @@ onUnmounted(() => {
                   </div>
                 </article>
                 <MediaPreview
-                  v-if="preview?.id === item.id"
-                  :item="item"
+                  v-if="row.item && preview?.id === row.item.id"
+                  :item="row.item"
                   @close="preview = undefined"
                 />
               </template>
@@ -592,6 +729,16 @@ onUnmounted(() => {
                 >{{ tool.label }}</NTooltip
               >
               <span class="toolbar-space" />
+              <Transition name="fade">
+                <NButton
+                  v-if="mergeable"
+                  size="small"
+                  secondary
+                  :disabled="busy"
+                  @click="merge([...checked], false)"
+                  >{{ t('resources_merge') }}</NButton
+                >
+              </Transition>
               <NButton
                 size="small"
                 :disabled="!checked.size || busy"
@@ -725,6 +872,34 @@ onUnmounted(() => {
   outline: 2px solid var(--color-primary);
   outline-offset: 4px;
   border-radius: var(--radius-sm);
+}
+/* A complete video made of track files, and its files when expanded. */
+.resource-row--tracks {
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-primary-container) 22%, transparent);
+}
+.resource-tracks-icon {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: center;
+  width: 16px;
+  color: var(--color-primary);
+}
+.resource-row--member {
+  padding-inline-start: 20px;
+  animation: resource-member-in 0.2s var(--m3-ease-emphasized);
+}
+@keyframes resource-member-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+.resource-expand {
+  transition: transform 0.2s var(--m3-ease-emphasized);
+}
+.resource-expand--open {
+  transform: rotate(180deg);
 }
 .resource-row:has(.n-checkbox--checked) {
   background: color-mix(in srgb, var(--color-primary-container) 30%, transparent);

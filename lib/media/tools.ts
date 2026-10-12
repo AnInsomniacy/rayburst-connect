@@ -711,6 +711,20 @@ export function startMediaTools(options: {
                   : 'video',
             urls: [item.url],
           }));
+        // Combining the same resources again reuses the earlier entry.
+        const previous = await options.catalog.run((state) =>
+          state.candidates.find(
+            (item) =>
+              item.kind === 'collection' &&
+              item.tabId === command.tabId &&
+              item.documentId === sources[0]!.documentId &&
+              JSON.stringify(item.input?.tracks) === JSON.stringify(input.tracks),
+          ),
+        );
+        if (previous) {
+          await options.probe(command.tabId, previous.id);
+          return { id: previous.id };
+        }
         const item = await candidate(
           command.tabId,
           sources[0]!.frameId,

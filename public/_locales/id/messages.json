@@ -1130,5 +1130,17 @@
   "options_alt_click_bypass_label": {
     "message": "Alt + klik mengunduh dengan browser",
     "description": "Setting: holding Alt while clicking a link lets the browser download it"
+  },
+  "media_complete_video": {
+    "message": "Video lengkap",
+    "description": "Media discovery: separate video and audio track files listed as one video"
+  },
+  "media_tracks": {
+    "message": "$1 trek",
+    "description": "Media discovery: number of track files in a complete video; $1 is the count"
+  },
+  "media_track_files": {
+    "message": "Berkas trek",
+    "description": "Media discovery: shows or hides the track files of a complete video"
   }
 }

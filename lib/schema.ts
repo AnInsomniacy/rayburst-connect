@@ -430,6 +430,8 @@ export const MediaCandidateSchema = z.strictObject({
   evidence: z.enum(['network', 'element', 'resource', 'script', 'capture']),
   input: MediaInputPlanSchema.optional(),
   variant: z.string().max(64).optional(),
+  /** Served in byte ranges: a whole track the player reads piece by piece. */
+  ranged: z.boolean().optional(),
   firstSeen: z.number().nonnegative(),
   lastSeen: z.number().nonnegative(),
   context: MediaCapturedContextSchema.optional(),

@@ -43,7 +43,7 @@ export function detectMedia(
   input: MediaObservation,
 ): Pick<
   MediaCandidate,
-  'url' | 'kind' | 'filename' | 'mime' | 'size' | 'method' | 'evidence'
+  'url' | 'kind' | 'filename' | 'mime' | 'size' | 'method' | 'evidence' | 'ranged'
 > | null {
   const url = mediaUrl(input.url);
   if (!url || (input.status !== undefined && ![200, 206, 304].includes(input.status))) return null;
@@ -87,6 +87,7 @@ export function detectMedia(
     size: Number.isSafeInteger(size) && size >= 0 ? size : null,
     method: (input.method || 'GET').toUpperCase().slice(0, 16),
     evidence: input.evidence,
+    ...(input.status === 206 || total ? { ranged: true } : {}),
   };
 }
 

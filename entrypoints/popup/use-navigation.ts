@@ -5,9 +5,20 @@ import { MEDIA_SESSION_KEY, MediaCandidateSchema } from '@/lib/schema';
 import { sendMediaCommand } from '@/lib/media/messages';
 import { countMediaResources } from '@/lib/media/resources';
 
-// Read only the fields needed for navigation, without retaining URLs or credentials.
+// Read only the fields needed to count list entries; nothing here is retained.
 const summarySchema = z.object({
-  candidates: z.array(MediaCandidateSchema.pick({ tabId: true, kind: true }).strip()),
+  candidates: z.array(
+    MediaCandidateSchema.pick({
+      tabId: true,
+      frameId: true,
+      documentId: true,
+      url: true,
+      kind: true,
+      method: true,
+      ranged: true,
+      input: true,
+    }).strip(),
+  ),
 });
 
 export function usePopupNavigation() {

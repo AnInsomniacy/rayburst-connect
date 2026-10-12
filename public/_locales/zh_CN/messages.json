@@ -1130,5 +1130,17 @@
   "options_alt_click_bypass_label": {
     "message": "按住 Alt 点击时用浏览器下载",
     "description": "Setting: holding Alt while clicking a link lets the browser download it"
+  },
+  "media_complete_video": {
+    "message": "完整视频",
+    "description": "Media discovery: separate video and audio track files listed as one video"
+  },
+  "media_tracks": {
+    "message": "$1 个轨道",
+    "description": "Media discovery: number of track files in a complete video; $1 is the count"
+  },
+  "media_track_files": {
+    "message": "轨道文件",
+    "description": "Media discovery: shows or hides the track files of a complete video"
   }
 }

@@ -12,7 +12,7 @@ import {
   NSpin,
 } from 'naive-ui';
 import type { MediaItem } from '@/lib/media/messages';
-import { selectionError, type MediaSelection } from '@/lib/media/contracts';
+import { selectionError, type MediaSelection, type MediaTrack } from '@/lib/media/contracts';
 import {
   mediaFailureKey,
   mediaTrackLabel,
@@ -48,15 +48,18 @@ watch(
   },
   { immediate: true },
 );
+/** A collection whose tracks could not be told apart lists them as one composition. */
+function trackLabel(track: MediaTrack) {
+  return track.id.startsWith('composition')
+    ? i18n('resources_kind_collection')
+    : mediaTrackLabel(track, effectiveLocale.value, i18n('media_includes_audio'));
+}
 const videoOptions = computed(
   () =>
     presentation.value?.tracks
       .filter((track) => ['video', 'muxed'].includes(track.type))
       .map((track) => ({
-        label:
-          props.item.kind === 'collection'
-            ? i18n('resources_kind_collection')
-            : mediaTrackLabel(track, effectiveLocale.value, i18n('media_includes_audio')),
+        label: trackLabel(track),
         value: track.id,
       })) ?? [],
 );
@@ -69,10 +72,7 @@ const audioOptions = computed(
         return track.type === 'audio' || (!video && track.type === 'muxed');
       })
       .map((track) => ({
-        label:
-          props.item.kind === 'collection'
-            ? i18n('resources_kind_collection')
-            : mediaTrackLabel(track, effectiveLocale.value, i18n('media_includes_audio')),
+        label: trackLabel(track),
         value: track.id,
       })) ?? [],
 );
@@ -81,10 +81,7 @@ const subtitleOptions = computed(
     presentation.value?.tracks
       .filter((track) => track.type === 'subtitle')
       .map((track) => ({
-        label:
-          props.item.kind === 'collection'
-            ? i18n('resources_kind_collection')
-            : mediaTrackLabel(track, effectiveLocale.value, i18n('media_includes_audio')),
+        label: trackLabel(track),
         value: track.id,
       })) ?? [],
 );

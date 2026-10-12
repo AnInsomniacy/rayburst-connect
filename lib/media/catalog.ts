@@ -107,7 +107,7 @@ export function createMediaCatalog() {
     return transact(action, write);
   }
   function merge(existing: MediaCandidate, incoming: MediaCandidate) {
-    const { id, firstSeen, context, input } = existing;
+    const { id, firstSeen, context, input, ranged } = existing;
     if (incoming.evidence === 'network' || existing.evidence !== 'network')
       Object.assign(existing, incoming);
     Object.assign(existing, {
@@ -119,6 +119,8 @@ export function createMediaCatalog() {
       context: incoming.context ?? context,
       input: incoming.input ?? input,
     });
+    // One ranged response marks the whole file as a track the player streams.
+    if (ranged || incoming.ranged) existing.ranged = true;
     if (incoming.input?.manifests.length) existing.kind = incoming.kind;
   }
   function observe(candidate: MediaCandidate): Promise<void> {
