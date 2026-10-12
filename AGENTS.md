@@ -354,7 +354,12 @@ Required CI must pass. Keep coverage optional and do not add percentage quotas. 
 
 ## I. Testing Constraints
 
-> **DO NOT use browser tools (Playwright, puppeteer, etc.) to test this extension.** Extension popup and options pages run in a restricted Chrome extension context — they cannot be accessed via `localhost` URLs. Use CLI checks (`vue-tsc`, `pnpm test`) for automated verification. For UI testing, ask the user to load the unpacked extension via `chrome://extensions` and verify manually.
+> **End-to-end checks cover only the linkage between the extension and Rayburst:** sniffed media and taken-over downloads reaching the desktop, and popup control of them. Everything else is verified by unit and integration tests and by the user.
+>
+> - `pnpm e2e:install` fetches Chrome for Testing (branded Chrome no longer loads unpacked extensions); `pnpm e2e` builds and runs `e2e/specs` in a fresh temporary profile, never a personal one.
+> - Start the desktop first with `pnpm e2e:app` in the `rayburst` repository; specs skip when it is not reachable. `RAYBURST_E2E_PUBLIC=1` adds the opt-in public-site check.
+> - Specs touch only tasks they create and delete them afterwards; the desktop may be running the user's own downloads.
+> - `pnpm compile` and `pnpm test` remain the required gate.
 
 > **Test behavior, not glue.** Cover filter verdicts, orchestrator flows, schema repair,
 > header/filename heuristics, and real bug regressions (e.g. the stale-download state
@@ -370,8 +375,9 @@ and Chinese slogans. Keep the approved promotional banners in English. Review pr
 
 Follow `docs/BRAND.md` and `docs/RELEASING.md`. Store identities and update signing must
 be configured explicitly for Rayburst. Local verification never submits to a store,
-publishes a website, changes remotes or starts release automation. Native end-to-end
-acceptance belongs to the user. Work on the current branch; do not spawn agents.
+publishes a website, changes remotes or starts release automation. Agents may run
+end-to-end debugging across the extension, desktop and engine; final acceptance
+belongs to the user. Work on the current branch; do not spawn agents.
 
 ## Documentation editing
 
