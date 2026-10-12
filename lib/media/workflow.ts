@@ -153,6 +153,12 @@ export function createMediaWorkflow(options: {
       !['submitting', 'cancelling'].includes(operation.state)
     )
       operation.state = 'failed';
+    // Probes live only in the desktop's memory: when it cannot be reached at
+    // all, nothing remains to cancel. A timeout stays ambiguous and pending.
+    if (error instanceof ApiUnreachableError && operation.state === 'cancelling') {
+      operation.state = 'cancelled';
+      operation.error = undefined;
+    }
     await save(operation);
   }
 

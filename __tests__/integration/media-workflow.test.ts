@@ -4,7 +4,7 @@ import { startMediaTools } from '@/lib/media/tools';
 import { DuplicateDownloadGuard } from '@/lib/download/duplicate-guard';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fakeBrowser } from 'wxt/testing';
-import { ApiTimeoutError, DesktopApiClient, MediaApiError } from '@/lib/api';
+import { ApiTimeoutError, ApiUnreachableError, DesktopApiClient, MediaApiError } from '@/lib/api';
 import { createMediaCatalog } from '@/lib/media/catalog';
 import { createMediaWorkflow } from '@/lib/media/workflow';
 import { parseDownloadSettings } from '@/lib/schema';
@@ -286,6 +286,15 @@ describe('media probe and selection lifecycle', () => {
     await f.workflow.cancel(1, f.candidate.id);
     expect(f.cancel).toHaveBeenCalledTimes(2);
     expect((await f.operation())?.state).toBe('submitted');
+  });
+  it('settles a cancellation when the desktop cannot be reached at all', async () => {
+    const f = await fixture();
+    await f.workflow.probe(1, f.candidate.id);
+    f.cancel.mockRejectedValueOnce(new ApiUnreachableError(new Error('refused')));
+    await f.workflow.cancel(1, f.candidate.id);
+    expect(await f.operation()).toMatchObject({ state: 'cancelled', error: undefined });
+    await f.workflow.probe(1, f.candidate.id);
+    expect((await f.operation())?.state).toBe('ready');
   });
   it('does not reinterpret malformed submission replies as a definitive failure', async () => {
     const f = await fixture();
