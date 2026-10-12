@@ -26,7 +26,7 @@ export default defineConfig({
   dev: {
     // Native extension CSP and injected Vite URLs must share one origin.
     // Fail on duplicate dev servers instead of emitting an unloadable build.
-    server: { port: 3000 },
+    server: { port: 3026 },
   },
   zip: {
     artifactTemplate: '{{name}}-{{version}}-{{browser}}-mv3.zip',
