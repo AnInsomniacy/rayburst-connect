@@ -74,6 +74,10 @@ watch(
   },
   { immediate: true },
 );
+const canPauseAll = computed(() =>
+  tasks.value.some((task) => task.status === 'active' || task.status === 'waiting'),
+);
+const canResumeAll = computed(() => tasks.value.some((task) => task.status === 'paused'));
 const tabTransition = computed(() => (view.value === 'media' ? 'tab-forward' : 'tab-back'));
 const apiClient = new DesktopApiClient({ ...DEFAULT_CONNECTION_CONFIG });
 let stopPolling: (() => void) | null = null;
@@ -325,7 +329,7 @@ onUnmounted(() => {
             @toggle-enabled="toggleEnabled"
           />
 
-          <NTabs v-model:value="view" type="line" :tabs-padding="16" size="small">
+          <NTabs v-model:value="view" type="line" justify-content="space-evenly" size="small">
             <NTab name="downloads" :tab="i18n('media_downloads')" />
             <NTab name="media">
               <span class="sniffer-tab">
@@ -398,23 +402,32 @@ onUnmounted(() => {
                       @reveal="(gid) => controlTask(gid, 'reveal')"
                     />
                     <div class="popup-actions">
-                      <div class="popup-actions__left">
-                        <NButton size="tiny" quaternary :disabled="!enabled" @click="pauseAll">
-                          <template #icon>
-                            <NIcon :size="12"><PauseOutline /></NIcon>
-                          </template>
-                          {{ i18n('popup_action_pause_all', 'Pause All') }}
-                        </NButton>
-                        <NButton size="tiny" quaternary :disabled="!enabled" @click="resumeAll">
-                          <template #icon>
-                            <NIcon :size="12"><PlayOutline /></NIcon>
-                          </template>
-                          {{ i18n('popup_action_resume_all', 'Resume All') }}
-                        </NButton>
-                      </div>
-                      <NButton size="tiny" type="primary" :loading="opening" @click="openApp">
+                      <!-- Three equal actions keep the footer balanced in every state. -->
+                      <NButton
+                        size="small"
+                        secondary
+                        :disabled="!enabled || !canPauseAll"
+                        @click="pauseAll"
+                      >
                         <template #icon>
-                          <NIcon :size="12"><RocketOutline /></NIcon>
+                          <NIcon><PauseOutline /></NIcon>
+                        </template>
+                        {{ i18n('popup_action_pause_all', 'Pause All') }}
+                      </NButton>
+                      <NButton
+                        size="small"
+                        secondary
+                        :disabled="!enabled || !canResumeAll"
+                        @click="resumeAll"
+                      >
+                        <template #icon>
+                          <NIcon><PlayOutline /></NIcon>
+                        </template>
+                        {{ i18n('popup_action_resume_all', 'Resume All') }}
+                      </NButton>
+                      <NButton size="small" type="primary" :loading="opening" @click="openApp">
+                        <template #icon>
+                          <NIcon><RocketOutline /></NIcon>
                         </template>
                         {{ i18n('popup_action_open', 'Open Rayburst') }}
                       </NButton>
@@ -723,14 +736,19 @@ onUnmounted(() => {
 .popup-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 8px 12px 12px;
 }
 
-.popup-actions__left {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.popup-page:not(.popup-unavailable) > .popup-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.popup-actions :deep(.n-button__content) {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .popup-actions--unavailable {

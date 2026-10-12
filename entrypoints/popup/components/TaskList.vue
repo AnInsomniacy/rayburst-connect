@@ -119,7 +119,7 @@ function detail(task: DesktopTask): string {
     </li>
   </TransitionGroup>
   <div v-else class="task-list-empty">
-    <NIcon :size="24"><CloudDownloadOutline /></NIcon>
+    <NIcon :size="18"><CloudDownloadOutline /></NIcon>
     <p>{{ i18n('popup_tasks_empty', 'No downloads yet') }}</p>
   </div>
 </template>
@@ -127,12 +127,13 @@ function detail(task: DesktopTask): string {
 <style scoped>
 .task-list {
   position: relative;
+  display: grid;
+  gap: 2px;
   max-height: 220px;
-  margin: 0 12px;
+  margin: 0 8px;
   padding: 0;
   overflow-y: auto;
   list-style: none;
-  border-top: 1px solid var(--color-outline-variant);
 }
 
 .task-move,
@@ -158,8 +159,13 @@ function detail(task: DesktopTask): string {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 2px;
-  border-bottom: 1px solid var(--color-outline-variant);
+  padding: 8px 6px 8px 10px;
+  border-radius: 10px;
+  transition: background-color 0.2s var(--m3-ease-emphasized);
+}
+
+.task-row:hover {
+  background: var(--color-surface-container-low);
 }
 
 .task-row__text {
@@ -226,14 +232,13 @@ function detail(task: DesktopTask): string {
 
 .task-list-empty {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 8px;
   margin: 0 12px;
-  padding: 16px 0 4px;
-  border-top: 1px solid var(--color-outline-variant);
+  padding: 14px 0 6px;
   color: var(--color-on-surface-variant);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .task-list-empty .n-icon {

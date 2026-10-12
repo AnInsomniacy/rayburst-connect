@@ -8,10 +8,10 @@ import {
   NCheckbox,
   NEmpty,
   NInput,
-  NSelect,
   NSwitch,
   NSpin,
   NDropdown,
+  NPopselect,
   NIcon,
   NTooltip,
 } from 'naive-ui';
@@ -44,8 +44,9 @@ import {
   OptionsOutline,
   EllipsisHorizontalOutline,
   RefreshOutline,
+  SearchOutline,
+  SwapVerticalOutline,
   OpenOutline,
-  AlbumsOutline,
   CheckmarkOutline,
   ChevronDownOutline,
   FilmOutline,
@@ -116,6 +117,10 @@ const rows = computed<Row[]>(() => {
     ];
   });
 });
+/** Rows a selection can reach; a collapsed complete video keeps its files out. */
+const visibleItems = computed(() =>
+  rows.value.flatMap((row) => (row.item && row.item.method === 'GET' ? [row.item] : [])),
+);
 const mergeable = computed(() => {
   const items = filtered.value.filter((item) => checked.value.has(item.id));
   return (
@@ -148,6 +153,16 @@ async function inspectTracks(group: MediaItem[], download = false) {
   );
   if (id && download && preferences.value.quickDownload) downloadIntent.value = id;
 }
+const scopes = computed(() => [
+  { value: 'current', label: t('resources_current') },
+  { value: 'all', label: t('resources_other') },
+]);
+const sorts = computed(() => [
+  { value: 'time', label: t('resources_time') },
+  { value: 'size', label: t('resources_size') },
+  { value: 'name', label: t('resources_name') },
+]);
+const showFilters = computed(() => resourceCount.value >= 4 || hasFilter.value);
 const kinds = computed(() =>
   ['all', ...new Set(state.value?.items.filter(isMediaResource).map((item) => item.kind))].map(
     (value) => ({
@@ -296,10 +311,7 @@ const footerTools = computed(() => [
   { key: 'scan', icon: RefreshOutline, label: t('media_scan'), run: rescan },
   ...(props.expanded
     ? []
-    : [
-        { key: 'sidebar', icon: AlbumsOutline, label: t('resources_sidebar'), run: openSidebar },
-        { key: 'page', icon: OpenOutline, label: t('resources_expand'), run: openPage },
-      ]),
+    : [{ key: 'page', icon: OpenOutline, label: t('resources_expand'), run: openPage }]),
 ]);
 function sent(item: MediaItem) {
   return item.sentToDesktop || item.operation?.state === 'submitted';
@@ -368,6 +380,7 @@ function copy(url: string) {
   void navigator.clipboard.writeText(url);
 }
 const actions = computed(() => [
+  ...(props.expanded ? [] : [{ key: 'sidebar', label: t('resources_sidebar') }]),
   { key: 'settings', label: t('media_settings_title') },
   { key: 'all', label: t('resources_select_all') },
   { key: 'invert', label: t('resources_invert') },
@@ -381,11 +394,12 @@ const actions = computed(() => [
   { key: 'clear', label: t('media_clear'), disabled: !checked.value.size },
 ]);
 function action(value: string) {
-  if (value === 'settings')
+  if (value === 'sidebar') void openSidebar();
+  else if (value === 'settings')
     void browser.tabs.create({ url: browser.runtime.getURL('/options.html') + '#media' });
-  else if (value === 'all') filtered.value.forEach((item) => toggle(item.id, true));
+  else if (value === 'all') visibleItems.value.forEach((item) => toggle(item.id, true));
   else if (value === 'invert')
-    filtered.value.forEach((item) => toggle(item.id, !checked.value.has(item.id)));
+    visibleItems.value.forEach((item) => toggle(item.id, !checked.value.has(item.id)));
   else if (value === 'merge' || value === 'sequence')
     void merge([...checked.value], value === 'sequence');
   else if (value === 'copy' || value === 'clear') void batch(value);
@@ -449,24 +463,37 @@ onUnmounted(() => {
     <template v-else>
       <div class="resource-head">
         <header class="resource-toolbar">
-          <NSelect
+          <NPopselect
             :value="allTabs ? 'all' : 'current'"
-            size="small"
-            :consistent-menu-width="false"
-            :options="[
-              { value: 'current', label: t('resources_current') },
-              { value: 'all', label: t('resources_other') },
-            ]"
-            :aria-label="t('media_sources')"
+            :options="scopes"
+            trigger="click"
             @update:value="allTabs = $event === 'all'"
-          />
+          >
+            <NButton
+              size="small"
+              quaternary
+              icon-placement="right"
+              class="resource-picker"
+              :aria-label="t('media_sources')"
+            >
+              {{ allTabs ? t('resources_other') : t('resources_current') }}
+              <template #icon>
+                <NIcon><ChevronDownOutline /></NIcon>
+              </template>
+            </NButton>
+          </NPopselect>
           <span class="toolbar-space" />
-          <NSwitch
-            size="small"
-            :value="state?.enabled"
-            :aria-label="t('media_discover')"
-            @update:value="command({ type: 'MEDIA_ENABLE', tabId, enabled: $event })"
-          />
+          <NTooltip trigger="hover">
+            <template #trigger>
+              <NSwitch
+                size="small"
+                :value="state?.enabled"
+                :aria-label="t('media_discover')"
+                @update:value="command({ type: 'MEDIA_ENABLE', tabId, enabled: $event })"
+              />
+            </template>
+            {{ t('media_discover') }}
+          </NTooltip>
           <NTooltip
             ><template #trigger
               ><NButton
@@ -527,24 +554,50 @@ onUnmounted(() => {
             "
           />
           <div v-else key="catalog" class="resource-catalog">
-            <div class="resource-filters">
-              <NInput
-                v-model:value="query"
-                clearable
-                :placeholder="t('media_filter')"
-                :aria-label="t('media_filter')"
-              />
-              <NSelect v-model:value="kind" :options="kinds" :aria-label="t('resources_type')" />
-              <NSelect
-                v-model:value="sort"
-                :options="[
-                  { value: 'time', label: t('resources_time') },
-                  { value: 'size', label: t('resources_size') },
-                  { value: 'name', label: t('resources_name') },
-                ]"
-                :aria-label="t('resources_sort')"
-              />
-            </div>
+            <!-- Filters earn their space once the list is long enough to need them. -->
+            <CollapsePanel :open="showFilters">
+              <div class="resource-filters">
+                <NInput
+                  v-model:value="query"
+                  size="small"
+                  clearable
+                  :placeholder="t('media_filter')"
+                  :aria-label="t('media_filter')"
+                >
+                  <template #prefix>
+                    <NIcon><SearchOutline /></NIcon>
+                  </template>
+                </NInput>
+                <NPopselect v-model:value="kind" :options="kinds" trigger="click">
+                  <NButton
+                    size="small"
+                    quaternary
+                    icon-placement="right"
+                    class="resource-picker"
+                    :aria-label="t('resources_type')"
+                  >
+                    {{ kinds.find((option) => option.value === kind)?.label }}
+                    <template #icon>
+                      <NIcon><ChevronDownOutline /></NIcon>
+                    </template>
+                  </NButton>
+                </NPopselect>
+                <NPopselect v-model:value="sort" :options="sorts" trigger="click">
+                  <NButton
+                    size="small"
+                    quaternary
+                    icon-placement="right"
+                    class="resource-picker"
+                    :aria-label="t('resources_sort')"
+                  >
+                    {{ sorts.find((option) => option.value === sort)?.label }}
+                    <template #icon>
+                      <NIcon><SwapVerticalOutline /></NIcon>
+                    </template>
+                  </NButton>
+                </NPopselect>
+              </div>
+            </CollapsePanel>
             <p v-if="expanded || allTabs || hasFilter" class="resource-summary">
               {{ tSub('sniffer_results', [String(filtered.length), String(resourceCount)]) }}
             </p>
@@ -729,25 +782,36 @@ onUnmounted(() => {
                 >{{ tool.label }}</NTooltip
               >
               <span class="toolbar-space" />
-              <Transition name="fade">
+              <!-- The right side always holds the next step: select, then act. -->
+              <TransitionGroup tag="div" name="pop" class="resource-batch">
                 <NButton
-                  v-if="mergeable"
+                  v-if="!checked.size && visibleItems.length > 1"
+                  key="select"
                   size="small"
                   secondary
+                  @click="action('all')"
+                  >{{ t('resources_select_all') }}</NButton
+                >
+                <NButton
+                  v-if="mergeable"
+                  key="merge"
+                  size="small"
+                  secondary
+                  type="primary"
                   :disabled="busy"
                   @click="merge([...checked], false)"
                   >{{ t('resources_merge') }}</NButton
                 >
-              </Transition>
-              <NButton
-                size="small"
-                :disabled="!checked.size || busy"
-                type="primary"
-                :loading="busy"
-                @click="batch('download')"
-                >{{ t('media_download')
-                }}<span v-if="checked.size"> ({{ checked.size }})</span></NButton
-              >
+                <NButton
+                  v-if="checked.size"
+                  key="download"
+                  size="small"
+                  type="primary"
+                  :loading="busy"
+                  @click="batch('download')"
+                  >{{ t('media_download') }} · {{ checked.size }}</NButton
+                >
+              </TransitionGroup>
             </footer>
           </div></Transition
         >
@@ -757,6 +821,7 @@ onUnmounted(() => {
 </template>
 <style scoped>
 .resource-summary {
+  padding: 0 4px 6px;
   color: var(--color-on-surface-variant);
   font-size: 12px;
 }
@@ -764,8 +829,8 @@ onUnmounted(() => {
 .resources {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 4px 16px 12px;
+  gap: 8px;
+  padding: 0 12px 12px;
   min-width: 0;
 }
 /* In the popup the list scrolls on its own, keeping the window within its limit. */
@@ -812,12 +877,26 @@ onUnmounted(() => {
 .resource-catalog {
   display: flex;
   flex-direction: column;
-  gap: 12px;
 }
 .resource-filters {
-  display: grid;
-  grid-template-columns: minmax(100px, 1fr) 100px 110px;
-  gap: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-bottom: 8px;
+}
+.resource-filters > .n-input {
+  flex: 1;
+  min-width: 0;
+}
+/* Text pickers read as labels until hovered. */
+.resource-picker {
+  padding-inline: 8px;
+  color: var(--color-on-surface-variant);
+  font-weight: 500;
+}
+.resource-batch {
+  display: flex;
+  gap: 6px;
 }
 .resource-list {
   display: grid;
@@ -826,12 +905,16 @@ onUnmounted(() => {
 }
 .resource-row {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
-  padding: 10px 4px;
-  border-bottom: 1px solid var(--color-outline-variant);
+  padding: 8px 6px 8px 10px;
+  border-radius: 12px;
   content-visibility: auto;
-  contain-intrinsic-size: auto 64px;
+  contain-intrinsic-size: auto 60px;
+  transition: background-color 0.2s var(--m3-ease-emphasized);
+}
+.resource-row:hover {
+  background: var(--color-surface-container-low);
 }
 .resource-title {
   min-width: 0;
@@ -875,8 +958,10 @@ onUnmounted(() => {
 }
 /* A complete video made of track files, and its files when expanded. */
 .resource-row--tracks {
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--color-primary-container) 22%, transparent);
+  background: color-mix(in srgb, var(--color-primary-container) 26%, transparent);
+}
+.resource-row--tracks:hover {
+  background: color-mix(in srgb, var(--color-primary-container) 40%, transparent);
 }
 .resource-tracks-icon {
   display: flex;
@@ -914,12 +999,6 @@ onUnmounted(() => {
   background: var(--color-surface);
 }
 @media (max-width: 440px) {
-  .resource-filters {
-    grid-template-columns: 1fr 1fr;
-  }
-  .resource-filters > :first-child {
-    grid-column: 1/-1;
-  }
   .resources.expanded {
     padding: 8px 16px;
   }

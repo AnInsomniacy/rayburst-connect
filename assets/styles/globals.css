@@ -317,6 +317,21 @@ body {
   transform: translateY(6px);
 }
 
+/* ── pop: a control appearing or leaving where it is needed ─────── */
+.pop-enter-active,
+.pop-leave-active,
+.pop-move {
+  transition:
+    opacity 0.18s var(--m3-ease-emphasized),
+    transform 0.18s var(--m3-ease-emphasized);
+}
+
+.pop-enter-from,
+.pop-leave-to {
+  opacity: 0;
+  transform: scale(0.7);
+}
+
 /* ── icon-swap: a control's icon turning into the next one ──────── */
 .icon-swap-enter-active {
   transition:

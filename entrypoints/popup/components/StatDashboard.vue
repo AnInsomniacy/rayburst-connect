@@ -1,17 +1,10 @@
 <script lang="ts" setup>
-/** Global stat dashboard for the popup. */
+/** Global speed and task counts for the popup: two speed halves over three count thirds. */
 import { computed } from 'vue';
 import { NIcon } from 'naive-ui';
-import {
-  ArrowDownOutline,
-  ArrowUpOutline,
-  FlashOutline,
-  TimeOutline,
-  CheckmarkDoneOutline,
-} from '@vicons/ionicons5';
+import { ArrowDownOutline, ArrowUpOutline } from '@vicons/ionicons5';
 import type { StatResponse } from '@/lib/api';
 import { formatSpeed } from '@/lib/format';
-
 import { useI18n } from '@/shared/i18n/engine';
 
 const { t: i18n } = useI18n();
@@ -21,157 +14,136 @@ const props = defineProps<{
   disabled: boolean;
 }>();
 
-/* ── Derived State ──────────────────────────────────────────────── */
-
-const numActive = computed(() => parseInt(props.stat.numActive, 10) || 0);
-const numWaiting = computed(() => parseInt(props.stat.numWaiting, 10) || 0);
-const numStopped = computed(() => parseInt(props.stat.numStopped, 10) || 0);
-const isIdle = computed(() => numActive.value === 0);
+const count = (value: string) => parseInt(value, 10) || 0;
+const counts = computed(() => [
+  { key: 'active', label: i18n('popup_stat_active', 'Active'), value: count(props.stat.numActive) },
+  {
+    key: 'waiting',
+    label: i18n('popup_stat_waiting', 'Waiting'),
+    value: count(props.stat.numWaiting),
+  },
+  {
+    key: 'stopped',
+    label: i18n('popup_stat_stopped', 'Done'),
+    value: count(props.stat.numStopped),
+  },
+]);
+const downloading = computed(() => count(props.stat.downloadSpeed) > 0);
+const uploading = computed(() => count(props.stat.uploadSpeed) > 0);
 </script>
 
 <template>
-  <div class="stat-dash">
-    <!-- ── Speed Row (side-by-side) ───────────────────────── -->
-    <div :class="['stat-dash__speed', { 'stat-dash__speed--idle': isIdle }]">
-      <div class="stat-dash__speed-col stat-dash__speed-col--dl">
-        <NIcon :size="16" class="stat-dash__speed-icon">
-          <ArrowDownOutline />
-        </NIcon>
-        <span class="stat-dash__speed-value">{{ formatSpeed(stat.downloadSpeed) }}</span>
-      </div>
-      <div class="stat-dash__speed-divider" />
-      <div class="stat-dash__speed-col stat-dash__speed-col--ul">
-        <NIcon :size="13" class="stat-dash__speed-icon">
-          <ArrowUpOutline />
-        </NIcon>
-        <span class="stat-dash__speed-value">{{ formatSpeed(stat.uploadSpeed) }}</span>
-      </div>
+  <section :class="['stat-card', { 'stat-card--disabled': disabled }]">
+    <div class="stat-card__speeds">
+      <span :class="['stat-card__speed', { 'stat-card__speed--live': downloading }]">
+        <NIcon :size="16"><ArrowDownOutline /></NIcon>
+        {{ formatSpeed(stat.downloadSpeed) }}
+      </span>
+      <span
+        :class="[
+          'stat-card__speed',
+          'stat-card__speed--up',
+          { 'stat-card__speed--live': uploading },
+        ]"
+      >
+        <NIcon :size="16"><ArrowUpOutline /></NIcon>
+        {{ formatSpeed(stat.uploadSpeed) }}
+      </span>
     </div>
-
-    <!-- ── Task Counts ─────────────────────────────────────── -->
-    <div :class="['stat-dash__counts', { 'stat-dash__counts--disabled': props.disabled }]">
-      <div class="stat-dash__count stat-dash__count--waiting">
-        <NIcon :size="13"><TimeOutline /></NIcon>
-        <span class="stat-dash__count-label">{{ i18n('popup_stat_waiting', 'Waiting') }}</span>
-        <span class="stat-dash__count-value">{{ numWaiting }}</span>
-      </div>
-      <div class="stat-dash__count stat-dash__count--active">
-        <NIcon :size="13"><FlashOutline /></NIcon>
-        <span class="stat-dash__count-label">{{ i18n('popup_stat_active', 'Active') }}</span>
-        <span class="stat-dash__count-value">{{ numActive }}</span>
-      </div>
-      <div class="stat-dash__count stat-dash__count--stopped">
-        <NIcon :size="13"><CheckmarkDoneOutline /></NIcon>
-        <span class="stat-dash__count-label">{{ i18n('popup_stat_stopped', 'Done') }}</span>
-        <span class="stat-dash__count-value">{{ numStopped }}</span>
-      </div>
+    <div class="stat-card__counts">
+      <span
+        v-for="item in counts"
+        :key="item.key"
+        :class="[
+          'stat-card__count',
+          `stat-card__count--${item.key}`,
+          { 'stat-card__count--live': item.value > 0 },
+        ]"
+      >
+        <strong>{{ item.value }}</strong>
+        {{ item.label }}
+      </span>
     </div>
-  </div>
+  </section>
 </template>
 
 <style scoped>
-.stat-dash {
-  padding: 0 16px;
+.stat-card {
+  margin: 4px 12px 8px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--color-surface-container-low);
+  font-variant-numeric: tabular-nums;
 }
 
-/* ── Speed Row ────────────────────────────────────────────────── */
+/* Two halves, split by a hairline. */
+.stat-card__speeds {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
 
-.stat-dash__speed {
+.stat-card__speed {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0;
-  padding: 18px 0 14px;
-  transition: opacity 0.4s cubic-bezier(0.2, 0, 0, 1);
-}
-
-.stat-dash__speed--idle {
-  opacity: 0.4;
-}
-
-.stat-dash__speed-col {
-  display: flex;
-  align-items: center;
   gap: 6px;
-  flex: 1;
-  justify-content: center;
-  font-variant-numeric: tabular-nums;
-}
-
-.stat-dash__speed-col--dl {
-  color: var(--color-primary);
-}
-
-.stat-dash__speed-col--dl .stat-dash__speed-value {
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.stat-dash__speed-col--ul {
+  padding: 16px 8px 14px;
   color: var(--color-on-surface-variant);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: color 0.3s var(--m3-ease-emphasized);
 }
 
-.stat-dash__speed-col--ul .stat-dash__speed-value {
-  font-size: 14px;
-  font-weight: 500;
+.stat-card__speed--up {
+  border-inline-start: 1px solid var(--color-outline-variant);
 }
 
-.stat-dash__speed-icon {
-  flex-shrink: 0;
-}
-
-.stat-dash__speed-divider {
-  width: 1px;
-  height: 24px;
-  background: var(--color-outline-variant);
-  flex-shrink: 0;
-}
-
-/* ── Task Counts ──────────────────────────────────────────────── */
-
-.stat-dash__counts {
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  padding: 10px 0;
-  border-top: 1px solid var(--color-outline-variant);
-}
-
-.stat-dash__count {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-}
-
-.stat-dash__count--active {
+.stat-card__speed--live {
   color: var(--color-primary);
 }
 
-.stat-dash__count--waiting {
-  color: var(--color-warning);
+.stat-card__speed--up.stat-card__speed--live {
+  color: var(--color-tertiary);
 }
 
-.stat-dash__count--stopped {
-  color: var(--color-success);
+/* Three thirds on a slightly deeper tone. */
+.stat-card__counts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 10px 8px 12px;
+  background: color-mix(in srgb, var(--color-on-surface) 3%, transparent);
+  transition: opacity 0.3s var(--m3-ease-emphasized);
 }
 
-.stat-dash__count-label {
-  font-weight: 500;
+.stat-card__count {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  color: var(--color-on-surface-variant);
+  font-size: 11px;
 }
 
-.stat-dash__count-value {
-  font-weight: 700;
-  font-size: 14px;
-  min-width: 16px;
-  text-align: center;
+.stat-card__count strong {
+  color: var(--color-on-surface-variant);
+  font-size: 15px;
+  font-weight: 600;
+  opacity: 0.6;
+  transition:
+    color 0.3s var(--m3-ease-emphasized),
+    opacity 0.3s var(--m3-ease-emphasized);
 }
 
-.stat-dash__counts--disabled {
-  opacity: 0.35;
-  pointer-events: none;
-  transition: opacity 0.4s cubic-bezier(0.2, 0, 0, 1);
+.stat-card__count--live strong {
+  color: var(--color-on-surface);
+  opacity: 1;
+}
+
+.stat-card__count--active.stat-card__count--live strong {
+  color: var(--color-primary);
+}
+
+.stat-card--disabled .stat-card__counts {
+  opacity: 0.45;
 }
 </style>
