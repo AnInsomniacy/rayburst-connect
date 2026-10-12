@@ -202,7 +202,7 @@ A self-contained static page for manually verifying download interception:
 npx serve test-site -p 3001
 ```
 
-Covers: Apple IPSW direct links, `.torrent` files, `magnet:` URIs, Linux ISOs, speed test binaries, and edge cases (`blob:`, `data:`).
+Covers: Apple IPSW direct links, `.torrent` files and `magnet:` URIs (Sintel, Big Buck Bunny, Debian), `ed2k:` and `thunder:` links, and edge cases (`blob:`, `data:`).
 
 ## Contributing
 
