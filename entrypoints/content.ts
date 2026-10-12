@@ -48,10 +48,15 @@ export default defineContentScript({
       if (!raw || typeof raw !== 'object' || !('type' in raw)) return undefined;
       if (raw.type === 'MEDIA_PLAYER' && 'command' in raw)
         return players(raw.command).catch(() => ({ error: 'operation_failed' }));
-      if (raw.type === 'MEDIA_RESCAN') observer?.rescan();
+      // Every handled message answers: a silent listener reads as "no receiver" in Firefox.
+      if (raw.type === 'MEDIA_RESCAN') {
+        observer?.rescan();
+        return Promise.resolve(true);
+      }
       if (raw.type === 'MEDIA_CONTROL' && 'mode' in raw) {
         sessionId = 'sessionId' in raw ? raw.sessionId : undefined;
         window.postMessage({ ...raw, channel: 'rayburst-control' }, location.origin);
+        return Promise.resolve(true);
       }
       return undefined;
     });

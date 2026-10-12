@@ -184,6 +184,7 @@ const pending = computed(() =>
 );
 let disposed = false;
 let refreshing = false;
+let refreshFailed = false;
 async function refresh() {
   if (disposed || props.active === false || tabId.value === undefined || refreshing) return true;
   refreshing = true;
@@ -200,9 +201,13 @@ async function refresh() {
     });
     const ids = new Set(state.value.items.map((item) => item.id));
     checked.value = new Set([...checked.value].filter((id) => ids.has(id)));
+    // A failed refresh is over once one succeeds; its notice must not outlive it.
+    if (refreshFailed) error.value = '';
+    refreshFailed = false;
     return true;
   } catch (cause) {
     error.value = mediaFailureKey(cause instanceof Error ? cause.message : 'operation_failed');
+    refreshFailed = true;
     return false;
   } finally {
     refreshing = false;
@@ -679,7 +684,7 @@ onUnmounted(() => {
                         >
                           <template #icon
                             ><NIcon
-                              ><Transition name="icon-swap" mode="out-in"
+                              ><Transition name="icon-swap"
                                 ><CheckmarkOutline
                                   v-if="row.collection && sent(row.collection)" /><DownloadOutline
                                   v-else /></Transition></NIcon
@@ -757,7 +762,7 @@ onUnmounted(() => {
                         >
                           <template #icon
                             ><NIcon
-                              ><Transition name="icon-swap" mode="out-in"
+                              ><Transition name="icon-swap"
                                 ><component
                                   :is="rowAction.icon"
                                   :key="rowAction.key" /></Transition></NIcon

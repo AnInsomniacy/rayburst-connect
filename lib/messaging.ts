@@ -1,4 +1,4 @@
-import type { Browser } from 'wxt/browser';
+import { browser, type Browser } from 'wxt/browser';
 
 /** Handles one runtime message; `undefined` leaves it for another listener. */
 export type MessageHandler = (
@@ -26,4 +26,23 @@ export function respondWith(handler: MessageHandler) {
     );
     return true;
   };
+}
+
+/**
+ * Messages a tab's content script. Tabs opened before the extension started or
+ * reloaded have none, so it is injected once and the message sent again.
+ */
+export async function sendToTab(tabId: number, message: unknown, frameId?: number) {
+  const options = frameId === undefined ? undefined : { frameId };
+  try {
+    return (await browser.tabs.sendMessage(tabId, message, options)) as unknown;
+  } catch (error) {
+    if (!(error instanceof Error) || !error.message.includes('Receiving end does not exist'))
+      throw error;
+    await browser.scripting.executeScript({
+      target: frameId === undefined ? { tabId, allFrames: true } : { tabId, frameIds: [frameId] },
+      files: ['/content-scripts/content.js'],
+    });
+    return (await browser.tabs.sendMessage(tabId, message, options)) as unknown;
+  }
 }

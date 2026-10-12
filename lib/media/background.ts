@@ -1,4 +1,4 @@
-import { respondWith } from '../messaging';
+import { respondWith, sendToTab } from '../messaging';
 import { mediaSiteAllowed, selectMedia } from './rules';
 import type { DuplicateDownloadGuard } from '../download/duplicate-guard';
 import { startMediaTools } from './tools';
@@ -202,7 +202,8 @@ export function startMediaBackground(options: {
             break;
           }
           case 'MEDIA_RESCAN':
-            await browser.tabs.sendMessage(message.tabId, { type: 'MEDIA_RESCAN' });
+            // A nudge, not an operation: a page that cannot be scanned still lists what it has.
+            await sendToTab(message.tabId, { type: 'MEDIA_RESCAN' }).catch(report);
             break;
           case 'MEDIA_CLEAR':
             await catalog.remove(message.tabId, message.candidateId);

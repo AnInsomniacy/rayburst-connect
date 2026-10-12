@@ -1,4 +1,4 @@
-import { respondWith } from '../messaging';
+import { respondWith, sendToTab } from '../messaging';
 import { CaptureChunkSchema } from './capture';
 import { createThemeVars, resolveScheme } from '@/shared/theme-colors';
 import { loadUiPrefs } from '../storage';
@@ -139,7 +139,7 @@ export function startMediaTools(options: {
     labels.recording = i18n.t('media_live');
     const seedHex = resolveScheme(prefs.colorScheme).seed;
     const session = (await sessions())[String(tabId)];
-    await browser.tabs.sendMessage(
+    await sendToTab(
       tabId,
       {
         type: 'MEDIA_CONTROL',
@@ -150,7 +150,7 @@ export function startMediaTools(options: {
         light: createThemeVars({ seedHex, isDark: false }),
         dark: createThemeVars({ seedHex, isDark: true }),
       },
-      { frameId },
+      frameId,
     );
   }
   async function candidate(
@@ -542,10 +542,10 @@ export function startMediaTools(options: {
             const players = await Promise.allSettled(
               (frames ?? []).map(async (frame) => ({
                 frameId: frame.frameId,
-                players: await browser.tabs.sendMessage(
+                players: await sendToTab(
                   command.tabId,
                   { type: 'MEDIA_PLAYER', command: command.command },
-                  { frameId: frame.frameId },
+                  frame.frameId,
                 ),
               })),
             );
@@ -553,10 +553,10 @@ export function startMediaTools(options: {
               result.status === 'fulfilled' ? [result.value] : [],
             );
           }
-          const result: unknown = await browser.tabs.sendMessage(
+          const result = await sendToTab(
             command.tabId,
             { type: 'MEDIA_PLAYER', command: command.command },
-            { frameId: command.frameId ?? 0 },
+            command.frameId ?? 0,
           );
           if (command.command.action === 'screenshot' && typeof result === 'string') {
             const id = crypto.randomUUID();
