@@ -416,27 +416,41 @@ body .n-popover-shared.popover-transition-leave-to {
   }
 }
 
-/* ── icon-swap: a control's icon turning into the next one ──────── */
-.icon-swap-enter-active {
+/* ── icon-swap: a control's icon crossfading in place ──────────── */
+/* Both icons share the spot: the old one leaves the flow and fades out
+   while the new one fades in, so there is no gap and nothing travels. */
+.n-icon:has(> .icon-swap-leave-active) {
+  position: relative;
+}
+
+.icon-swap-enter-active,
+.icon-swap-leave-active {
   transition:
-    opacity 0.16s var(--m3-ease-emphasized-decel),
-    transform 0.16s var(--m3-ease-emphasized-decel);
+    opacity 0.18s ease,
+    transform 0.18s var(--m3-ease-emphasized-decel);
 }
 
 .icon-swap-leave-active {
-  transition:
-    opacity 0.1s var(--m3-ease-emphasized-accel),
-    transform 0.1s var(--m3-ease-emphasized-accel);
+  position: absolute;
+  inset: 0;
 }
 
-.icon-swap-enter-from {
-  opacity: 0;
-  transform: scale(0.4) rotate(-90deg);
-}
-
+.icon-swap-enter-from,
 .icon-swap-leave-to {
   opacity: 0;
-  transform: scale(0.4) rotate(90deg);
+  transform: scale(0.85);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-swap-enter-active,
+  .icon-swap-leave-active {
+    transition: opacity 0.12s linear;
+  }
+
+  .icon-swap-enter-from,
+  .icon-swap-leave-to {
+    transform: none;
+  }
 }
 
 /* ── phase-switch: vertical content swap for state transitions ───── */

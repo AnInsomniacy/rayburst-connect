@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 /**
  * The throughput band: speed in large figures, the task counts beside it, and
- * the last twenty seconds of traffic as a full-bleed floor that flattens into
- * a hairline when nothing moves.
+ * the last twenty seconds of traffic drawn behind them, full bleed, down to the
+ * hairline that divides the band from the list.
  */
 import { computed, onUnmounted, ref, watch } from 'vue';
 import { NIcon } from 'naive-ui';
@@ -15,60 +15,105 @@ const { t: i18n } = useI18n();
 
 const props = defineProps<{ stat: StatResponse; disabled: boolean }>();
 
-/** Samples at the popup's poll rate: forty make twenty seconds. */
-const SAMPLES = 40;
-const STEP = 100 / (SAMPLES - 1);
+/** Twenty seconds of traffic span the band. */
+const SPAN = 20_000;
+/** The scene's viewBox: the trace rises from the floor to at most PEAK units. */
+const HEIGHT = 40;
+const FLOOR = HEIGHT - 0.5;
+const PEAK = 20;
+/** Columns the scene is drawn in, one per viewBox unit. */
+const COLUMNS = 100;
 const count = (value: string) => parseInt(value, 10) || 0;
-/** One sample more than fits: the newest waits past the right edge and slides in. */
-let samples: number[] = Array(SAMPLES + 1).fill(0);
-let sampledAt = globalThis.performance.now();
-let period = 500;
-/** The scale on screen, eased toward the samples' peak so rescaling never jumps. */
-let shown = 1;
-const reduced = globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const paths = ref({ line: '', area: '' });
 
-/** A smooth curve through the points (Catmull-Rom as cubic Béziers). */
-function curve(points: [number, number][]): string {
-  const at = (index: number) => points[Math.min(points.length - 1, Math.max(0, index))] ?? [0, 0];
-  let path = `M ${at(0)[0].toFixed(2)} ${at(0)[1].toFixed(2)}`;
-  for (let index = 0; index < points.length - 1; index++) {
-    const [before, from, to, after] = [at(index - 1), at(index), at(index + 1), at(index + 2)];
-    // Control points stay above the baseline, so the curve never dips under zero.
-    const c1 = Math.min(31.5, from[1] + (to[1] - before[1]) / 6);
-    const c2 = Math.min(31.5, to[1] - (after[1] - from[1]) / 6);
-    path += ` C ${(from[0] + STEP / 3).toFixed(2)} ${c1.toFixed(2)} ${(to[0] - STEP / 3).toFixed(2)} ${c2.toFixed(2)} ${to[0].toFixed(2)} ${to[1].toFixed(2)}`;
-  }
-  return path;
+interface Sample {
+  at: number;
+  down: number;
+  up: number;
+}
+let history: Sample[] = [];
+/**
+ * The trace runs this far behind the clock, a little longer than one poll, so
+ * every sample slides in from past the right edge and the scroll never stops.
+ */
+let lag = 1200;
+let shownLag = lag;
+/** The scale on screen, eased toward the peak so rescaling never jumps. */
+let shown = 1;
+/** 0 draws the idle swell, 1 the traffic; eased between so neither state cuts in. */
+let presence = 0;
+const reduced = globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const scene = ref({ down: '', up: '', line: '', presence: 0 });
+
+/** A reading at any moment, on a smooth curve through the samples (cubic Hermite). */
+function reading(at: number, key: 'down' | 'up'): number {
+  const next = history.findIndex((sample) => sample.at > at);
+  if (next <= 0) return (next === 0 ? history[0] : history.at(-1))?.[key] ?? 0;
+  const [before, from, to, after] = [next - 2, next - 1, next, next + 1].map(
+    (index) => history[Math.min(history.length - 1, Math.max(0, index))] as Sample,
+  ) as [Sample, Sample, Sample, Sample];
+  const span = to.at - from.at;
+  const slope = (a: Sample, b: Sample) => ((b[key] - a[key]) / (b.at - a.at || 1)) * span;
+  const s = (at - from.at) / span;
+  const value =
+    (2 * s ** 3 - 3 * s ** 2 + 1) * from[key] +
+    (s ** 3 - 2 * s ** 2 + s) * slope(before, to) +
+    (-2 * s ** 3 + 3 * s ** 2) * to[key] +
+    (s ** 3 - s ** 2) * slope(from, after);
+  return Math.max(0, value);
+}
+
+/** The idle swell: a slow wave drifting left, `period` units long and `height` tall. */
+function swell(x: number, now: number, period: number, height: number, pace: number): number {
+  return (height * (1 - Math.cos((2 * Math.PI * (x + (now / 1000) * pace)) / period))) / 2;
+}
+
+function outline(points: number[]): string {
+  return points
+    .map((y, column) => `${column ? 'L' : 'M'} ${(column * 100) / COLUMNS} ${y.toFixed(2)}`)
+    .join(' ');
 }
 
 let frame = 0;
 function draw(now: number) {
-  const target = Math.max(1, ...samples) * 1.15;
+  const time = (x: number) => now - shownLag - ((100 - x) / 100) * SPAN;
+  // Keep one sample past the left edge so the curve enters the band whole.
+  while (history.length > 2 && (history[1]?.at ?? now) < time(0)) history.shift();
+  const target = Math.max(1, ...history.map((sample) => sample.down)) * 1.15;
   // Rise quickly to fit a burst, settle slowly after it.
   shown += (target - shown) * (target > shown ? 0.2 : 0.05);
-  const progress = reduced ? 1 : Math.min(1, (now - sampledAt) / period);
-  const offset = -progress * STEP;
-  const points = samples.map((value, index): [number, number] => [
-    index * STEP + offset,
-    31.5 - (value / shown) * 27,
-  ]);
-  const line = curve(points);
-  const right = (points.at(-1)?.[0] ?? 100).toFixed(2);
-  paths.value = { line, area: `${line} L ${right} 32 L ${offset.toFixed(2)} 32 Z` };
-  const settled = Math.abs(target - shown) < target * 0.01;
-  const flat = samples.every((value) => value === 0);
-  frame = progress < 1 || !settled || !flat ? globalThis.requestAnimationFrame(draw) : 0;
+  shownLag += (lag - shownLag) * 0.05;
+  const busy = count(props.stat.downloadSpeed) > 0 || count(props.stat.numActive) > 0;
+  presence = reduced ? Number(busy) : presence + (Number(busy) - presence) * 0.05;
+  const lift = (value: number) => Math.min(1, value / shown) * PEAK;
+  const mix = (calm: number, value: number) => FLOOR - (calm + (value - calm) * presence);
+  const down: number[] = [];
+  const up: number[] = [];
+  for (let column = 0; column <= COLUMNS; column++) {
+    const x = (column * 100) / COLUMNS;
+    down.push(mix(swell(x, now, 60, 3, 1.2), lift(reading(time(x), 'down'))));
+    up.push(mix(swell(x, now, 40, 2, 0.8), lift(reading(time(x), 'up'))));
+  }
+  const line = outline(down);
+  const close = ` L 100 ${HEIGHT} L 0 ${HEIGHT} Z`;
+  scene.value = { down: line + close, up: outline(up) + close, line, presence };
+  frame = reduced ? 0 : globalThis.requestAnimationFrame(draw);
 }
 
 watch(
   () => props.stat,
   (stat) => {
     const now = globalThis.performance.now();
-    // The scroll lasts as long as the poll actually took, so it neither stalls nor skips.
-    period = Math.min(3000, Math.max(250, now - sampledAt));
-    sampledAt = now;
-    samples = [...samples.slice(1), count(stat.downloadSpeed)];
+    const sample = { at: now, down: count(stat.downloadSpeed), up: count(stat.uploadSpeed) };
+    const last = history.at(-1);
+    if (last) {
+      lag = Math.min(4000, Math.max(400, (now - last.at) * 1.3));
+      history.push(sample);
+    } else {
+      // The past is unknown on opening: the first reading spans the band at its true scale.
+      shown = Math.max(1, sample.down) * 1.15;
+      presence = Number(sample.down > 0 || count(stat.numActive) > 0);
+      history = [{ ...sample, at: now - lag }];
+    }
     if (!frame) frame = globalThis.requestAnimationFrame(draw);
   },
   { immediate: true },
@@ -118,34 +163,49 @@ const counts = computed(() => [
         <dd>{{ item.value }}</dd>
       </div>
     </dl>
-    <svg class="band__trace" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true">
+    <!-- Behind the figures: live traffic, easing into a slow swell while nothing moves. -->
+    <svg
+      class="band__scene"
+      :viewBox="`0 0 100 ${HEIGHT}`"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+    >
       <defs>
         <linearGradient id="band-fill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="var(--color-primary)" stop-opacity="0.18" />
-          <stop offset="1" stop-color="var(--color-primary)" stop-opacity="0" />
+          <stop offset="0" stop-color="var(--color-primary)" stop-opacity="0.2" />
+          <stop offset="1" stop-color="var(--color-primary)" stop-opacity="0.05" />
         </linearGradient>
       </defs>
-      <path class="band__area" :d="paths.area" />
-      <path class="band__line" :d="paths.line" />
+      <path class="band__up-area" :d="scene.up" />
+      <path class="band__down-area" :d="scene.down" />
+      <path class="band__line" :d="scene.line" :style="{ opacity: scene.presence }" />
     </svg>
   </section>
 </template>
 
 <style scoped>
-/* No container: the band is part of the page, divided from the list by its own trace. */
+/* No container: the band is part of the page, divided from the list by a hairline. */
 .band {
   position: relative;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
-  padding: 8px 24px 30px;
+  padding: 8px 24px 20px;
+  border-bottom: 1px solid var(--color-outline-variant);
+  overflow: clip;
   font-variant-numeric: tabular-nums;
   transition: opacity 0.3s var(--m3-ease-emphasized);
 }
 
 .band--disabled {
   opacity: 0.5;
+}
+
+.band__speed,
+.band__counts {
+  position: relative;
+  z-index: 1;
 }
 
 .band__speed {
@@ -229,37 +289,34 @@ const counts = computed(() => [
   color: var(--color-primary);
 }
 
-/* The floor: full bleed, the trace rising out of a hairline. */
-.band__trace {
+/* The scene fills the band and fades out toward the top, so figures stay clear. */
+.band__scene {
   position: absolute;
-  inset: auto 0 0;
+  inset: 0;
   width: 100%;
-  height: 22px;
-  overflow: visible;
+  height: 100%;
   pointer-events: none;
+  mask-image: linear-gradient(to top, #000 30%, transparent 90%);
 }
 
-.band__area {
+.band__down-area {
   fill: url('#band-fill');
+}
+
+.band__up-area {
+  fill: color-mix(in srgb, var(--color-primary) 9%, transparent);
 }
 
 .band__line {
   fill: none;
-  stroke: color-mix(in srgb, var(--color-outline-variant) 90%, transparent);
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
-  transition: stroke 0.4s var(--m3-ease-emphasized);
-}
-
-.band--live .band__line {
   stroke: color-mix(in srgb, var(--color-primary) 70%, transparent);
   stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .band,
-  .band__figure,
-  .band__line {
+  .band__figure {
     transition: none;
   }
 }

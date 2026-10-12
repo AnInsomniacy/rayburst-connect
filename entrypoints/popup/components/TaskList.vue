@@ -107,7 +107,7 @@ function detail(task: DesktopTask): string {
       >
         <template #icon>
           <NIcon>
-            <Transition name="icon-swap" mode="out-in">
+            <Transition name="icon-swap">
               <component :is="row.action.icon" :key="row.action.event" />
             </Transition>
           </NIcon>

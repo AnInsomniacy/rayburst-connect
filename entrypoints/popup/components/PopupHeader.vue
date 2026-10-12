@@ -28,7 +28,6 @@ const { t: i18n } = useI18n();
       <span
         class="popup-header__badge"
         :class="{
-          'popup-header__badge--ok': status === 'connected',
           'popup-header__badge--pending': status === 'launching' || status === 'checking',
           'popup-header__badge--err': status === 'disconnected',
         }"
@@ -117,39 +116,22 @@ const { t: i18n } = useI18n();
 .popup-header__badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
   color: var(--color-on-surface-variant);
   font-size: 12px;
   font-weight: 500;
-}
-
-.popup-header__badge::before {
-  content: '';
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--badge-dot, var(--color-outline));
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--badge-dot, transparent) 18%, transparent);
-  transition:
-    background-color 0.3s var(--m3-ease-emphasized),
-    box-shadow 0.3s var(--m3-ease-emphasized);
 }
 
 .popup-header__badge-text {
   display: inline-block;
 }
 
-.popup-header__badge--ok {
-  --badge-dot: var(--color-success);
-}
-
+/* The words carry the state; only trouble and waiting take a colour. */
 .popup-header__badge--err {
-  --badge-dot: var(--color-error);
   color: var(--color-error);
 }
 
 .popup-header__badge--pending {
-  --badge-dot: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .popup-header__version {
