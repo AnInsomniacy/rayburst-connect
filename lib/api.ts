@@ -82,8 +82,9 @@ export class ApiCompatibilityError extends ApiError {
   constructor(
     public readonly version: string | null = null,
     legacy = false,
+    cause?: unknown,
   ) {
-    super('Install the latest Rayburst to connect');
+    super('Install the latest Rayburst to connect', cause);
     this.name = legacy ? 'MotrixNextUnsupportedError' : 'ApiCompatibilityError';
   }
 }
@@ -217,7 +218,7 @@ export class DesktopApiClient {
         (error instanceof z.ZodError ||
           (error instanceof HTTPError && [404, 405].includes(error.response.status)))
       )
-        throw new ApiCompatibilityError();
+        throw new ApiCompatibilityError(null, false, error);
       if (path.startsWith(MEDIA_API_PATH)) {
         if (error instanceof z.ZodError) throw new MediaApiError('invalid_response');
         if (error instanceof HTTPError && error.response.status !== 401) {

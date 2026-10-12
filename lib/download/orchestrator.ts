@@ -347,7 +347,7 @@ export class DownloadOrchestrator {
         : { ok: false, reason: 'desktop-activation-timeout' };
     } catch (e) {
       if (e instanceof ApiCompatibilityError) {
-        return { ok: false, reason: 'api-incompatible', error: e.message };
+        return { ok: false, reason: 'api-incompatible', error: compatibilityError(e) };
       }
       return { ok: false, reason: 'desktop-activation-failed', error: errorMessage(e) };
     }
@@ -383,7 +383,7 @@ export class DownloadOrchestrator {
       return await this.submitToDesktopApi(job);
     } catch (e) {
       if (e instanceof ApiCompatibilityError) {
-        return { ok: false, reason: 'api-incompatible', error: e.message };
+        return { ok: false, reason: 'api-incompatible', error: compatibilityError(e) };
       }
       if (e instanceof ApiAuthError) {
         return { ok: false, reason: 'api-auth-failed', error: e.message };
@@ -568,6 +568,11 @@ export class DownloadOrchestrator {
   ): void {
     this.deps.diagnosticLog.append({ level, code, message, context });
   }
+}
+
+/** Keeps what the desktop actually answered, which the user-facing message hides. */
+function compatibilityError(e: ApiCompatibilityError): string {
+  return e.cause ? `${e.message}: ${errorMessage(e.cause)}` : e.message;
 }
 
 function errorMessage(e: unknown): string {
