@@ -119,17 +119,15 @@ function detail(task: DesktopTask): string {
     </li>
   </TransitionGroup>
   <div v-else class="task-list-empty">
-    <NIcon :size="28"><CloudDownloadOutline /></NIcon>
+    <NIcon :size="24"><CloudDownloadOutline /></NIcon>
     <p>{{ i18n('popup_tasks_empty', 'No downloads yet') }}</p>
   </div>
 </template>
 
 <style scoped>
-/* Fills the popup between the dashboard and the actions, then scrolls. */
 .task-list {
   position: relative;
-  flex: 1;
-  min-height: 0;
+  max-height: 220px;
   margin: 0 12px;
   padding: 0;
   overflow-y: auto;
@@ -228,15 +226,14 @@ function detail(task: DesktopTask): string {
 
 .task-list-empty {
   display: flex;
-  flex: 1;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
+  gap: 6px;
   margin: 0 12px;
+  padding: 16px 0 4px;
   border-top: 1px solid var(--color-outline-variant);
   color: var(--color-on-surface-variant);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .task-list-empty .n-icon {

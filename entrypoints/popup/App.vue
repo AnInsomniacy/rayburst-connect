@@ -17,6 +17,7 @@ import {
   type DesktopTask,
   type StatResponse,
 } from '@/lib/api';
+import AutoHeight from '@/shared/components/AutoHeight.vue';
 import UnsupportedDesktop from '@/shared/components/UnsupportedDesktop.vue';
 import { loadSnapshot, updateSettings } from '@/lib/storage';
 import {
@@ -337,9 +338,9 @@ onUnmounted(() => {
             </NTab>
           </NTabs>
 
-          <div class="popup-body">
+          <AutoHeight>
             <Transition :name="tabTransition">
-              <div v-show="view === 'downloads'" class="popup-pane">
+              <div v-show="view === 'downloads'">
                 <Transition name="phase-switch" mode="out-in">
                   <section
                     v-if="phase === 'initializing'"
@@ -533,11 +534,11 @@ onUnmounted(() => {
               </div>
             </Transition>
             <Transition :name="tabTransition">
-              <div v-if="mediaVisited" v-show="view === 'media'" class="popup-pane">
+              <div v-if="mediaVisited" v-show="view === 'media'">
                 <MediaPanel :active="view === 'media'" />
               </div>
             </Transition>
-          </div>
+          </AutoHeight>
         </template>
       </div>
     </div>
@@ -555,13 +556,11 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
-/* The popup keeps one height so switching tabs or states never resizes the
- * window; Chrome resizes it in steps, which reads as a flash. */
 .popup-root {
   --tab-shift: 24px;
   width: 100%;
-  height: 100%;
   display: flex;
+  max-height: 600px;
   overflow: hidden;
   background: var(--color-surface);
   color: var(--color-on-surface);
@@ -573,32 +572,18 @@ onUnmounted(() => {
 }
 
 .popup-content {
-  display: flex;
-  flex-direction: column;
   min-width: 0;
   width: 100%;
-}
-
-.popup-content > .popup-skeleton {
-  flex: 1;
-}
-
-.popup-body {
-  position: relative;
-  display: grid;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-/* Both panes share one cell so they cross over while switching. */
-.popup-pane {
-  grid-area: 1 / 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow-y: auto;
+  overflow: auto;
   overscroll-behavior: contain;
+}
+
+/* The leaving pane floats over the entering one, so the height animates
+ * straight to the new pane while both slide. */
+.tab-forward-leave-active,
+.tab-back-leave-active {
+  position: absolute;
+  inset: 0 0 auto;
 }
 
 .tab-forward-enter-active,
@@ -657,10 +642,7 @@ onUnmounted(() => {
 }
 
 .popup-page {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-height: 0;
+  min-height: 160px;
 }
 
 .popup-launching {

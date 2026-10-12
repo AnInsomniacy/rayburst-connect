@@ -621,35 +621,18 @@ onUnmounted(() => {
   padding: 4px 16px 12px;
   min-width: 0;
 }
-/* In the popup the panel fills its fixed height and only the list scrolls. */
-.resources:not(.expanded) {
-  flex: 1;
-  min-height: 0;
-}
-.resources:not(.expanded) .resource-stage {
-  flex: 1;
-  min-height: 0;
-}
-.resources:not(.expanded) .resource-catalog {
-  height: 100%;
-}
+/* In the popup the list scrolls on its own, keeping the window within its limit. */
 .resources:not(.expanded) .resource-list {
-  flex: 1;
-  min-height: 0;
+  max-height: 264px;
   overflow-y: auto;
   overscroll-behavior: contain;
-}
-.resources:not(.expanded) .resource-stage > .media-selection {
-  height: 100%;
-  align-content: start;
-  overflow-y: auto;
 }
 .resources:not(.expanded) .resource-tools {
   max-height: 240px;
   overflow-y: auto;
 }
 .resource-state {
-  margin: auto;
+  margin: 24px auto;
 }
 .resource-tools {
   padding-top: 12px;
