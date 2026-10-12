@@ -1,8 +1,10 @@
 <script lang="ts" setup>
 /** Popup task list: progress of each download with pause, resume and show-in-folder. */
+import { computed, type Component } from 'vue';
 import { NButton, NIcon } from 'naive-ui';
 import {
   AlertCircleOutline,
+  CloudDownloadOutline,
   FolderOpenOutline,
   PauseOutline,
   PlayOutline,
@@ -11,9 +13,44 @@ import type { DesktopTask } from '@/lib/api';
 import { formatBytes, formatSpeed } from '@/lib/format';
 import { useI18n } from '@/shared/i18n/engine';
 
-defineProps<{ tasks: DesktopTask[]; busy: string | null }>();
+type TaskEvent = 'pause' | 'resume' | 'reveal';
+
+const props = defineProps<{ tasks: DesktopTask[] }>();
 const emit = defineEmits<{ pause: [gid: string]; resume: [gid: string]; reveal: [gid: string] }>();
 const { t: i18n } = useI18n();
+
+const rows = computed(() =>
+  props.tasks.map((task) => ({
+    task,
+    detail: detail(task),
+    percent: percent(task),
+    action: action(task),
+  })),
+);
+
+function action(task: DesktopTask): { event: TaskEvent; icon: Component; label: string } | null {
+  switch (task.status) {
+    case 'active':
+    case 'waiting':
+      return { event: 'pause', icon: PauseOutline, label: i18n('popup_task_pause', 'Pause') };
+    case 'paused':
+      return { event: 'resume', icon: PlayOutline, label: i18n('popup_task_resume', 'Resume') };
+    case 'complete':
+      return {
+        event: 'reveal',
+        icon: FolderOpenOutline,
+        label: i18n('popup_task_reveal', 'Show in folder'),
+      };
+    default:
+      return null;
+  }
+}
+
+function run(event: TaskEvent, gid: string): void {
+  if (event === 'pause') emit('pause', gid);
+  else if (event === 'resume') emit('resume', gid);
+  else emit('reveal', gid);
+}
 
 function percent(task: DesktopTask): number {
   const total = parseInt(task.totalLength, 10);
@@ -46,73 +83,77 @@ function detail(task: DesktopTask): string {
 </script>
 
 <template>
-  <ul v-if="tasks.length > 0" class="task-list">
-    <li v-for="task in tasks" :key="task.gid" :class="['task-row', `task-row--${task.status}`]">
+  <TransitionGroup v-if="rows.length > 0" tag="ul" name="task" class="task-list">
+    <li
+      v-for="row in rows"
+      :key="row.task.gid"
+      :class="['task-row', `task-row--${row.task.status}`]"
+    >
       <div class="task-row__text">
-        <span class="task-row__name" :title="task.name">{{ task.name }}</span>
-        <span class="task-row__detail" :title="detail(task)">{{ detail(task) }}</span>
+        <span class="task-row__name" :title="row.task.name">{{ row.task.name }}</span>
+        <span class="task-row__detail" :title="row.detail">{{ row.detail }}</span>
         <span class="task-row__bar" aria-hidden="true">
-          <span class="task-row__fill" :style="{ width: `${percent(task)}%` }" />
+          <span class="task-row__fill" :style="{ width: `${row.percent}%` }" />
         </span>
       </div>
       <NButton
-        v-if="task.status === 'active' || task.status === 'waiting'"
+        v-if="row.action"
         quaternary
         circle
         size="tiny"
-        :loading="busy === task.gid"
-        :title="i18n('popup_task_pause', 'Pause')"
-        :aria-label="i18n('popup_task_pause', 'Pause')"
-        @click="emit('pause', task.gid)"
+        :title="row.action.label"
+        :aria-label="row.action.label"
+        @click="run(row.action.event, row.task.gid)"
       >
         <template #icon>
-          <NIcon><PauseOutline /></NIcon>
+          <NIcon>
+            <Transition name="icon-swap" mode="out-in">
+              <component :is="row.action.icon" :key="row.action.event" />
+            </Transition>
+          </NIcon>
         </template>
       </NButton>
-      <NButton
-        v-else-if="task.status === 'paused'"
-        quaternary
-        circle
-        size="tiny"
-        :loading="busy === task.gid"
-        :title="i18n('popup_task_resume', 'Resume')"
-        :aria-label="i18n('popup_task_resume', 'Resume')"
-        @click="emit('resume', task.gid)"
-      >
-        <template #icon>
-          <NIcon><PlayOutline /></NIcon>
-        </template>
-      </NButton>
-      <NButton
-        v-else-if="task.status === 'complete'"
-        quaternary
-        circle
-        size="tiny"
-        :loading="busy === task.gid"
-        :title="i18n('popup_task_reveal', 'Show in folder')"
-        :aria-label="i18n('popup_task_reveal', 'Show in folder')"
-        @click="emit('reveal', task.gid)"
-      >
-        <template #icon>
-          <NIcon><FolderOpenOutline /></NIcon>
-        </template>
-      </NButton>
-      <NIcon v-else :size="16" class="task-row__error" :title="detail(task)">
+      <NIcon v-else :size="16" class="task-row__error" :title="row.detail">
         <AlertCircleOutline />
       </NIcon>
     </li>
-  </ul>
-  <p v-else class="task-list-empty">{{ i18n('popup_tasks_empty', 'No downloads yet') }}</p>
+  </TransitionGroup>
+  <div v-else class="task-list-empty">
+    <NIcon :size="28"><CloudDownloadOutline /></NIcon>
+    <p>{{ i18n('popup_tasks_empty', 'No downloads yet') }}</p>
+  </div>
 </template>
 
 <style scoped>
+/* Fills the popup between the dashboard and the actions, then scrolls. */
 .task-list {
-  max-height: 220px;
+  position: relative;
+  flex: 1;
+  min-height: 0;
   margin: 0 12px;
   padding: 0;
   overflow-y: auto;
   list-style: none;
   border-top: 1px solid var(--color-outline-variant);
+}
+
+.task-move,
+.task-enter-active,
+.task-leave-active {
+  transition:
+    transform 240ms var(--m3-ease-emphasized),
+    opacity 180ms ease;
+}
+
+.task-enter-from,
+.task-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.task-leave-active {
+  position: absolute;
+  inset-inline: 0;
 }
 
 .task-row {
@@ -161,7 +202,9 @@ function detail(task: DesktopTask): string {
   height: 100%;
   border-radius: inherit;
   background: var(--color-primary);
-  transition: width 0.3s ease-out;
+  transition:
+    width 0.3s ease-out,
+    background-color 0.2s ease;
 }
 
 .task-row--complete .task-row__fill {
@@ -184,14 +227,27 @@ function detail(task: DesktopTask): string {
 }
 
 .task-list-empty {
-  margin: 4px 16px 0;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 12px;
+  border-top: 1px solid var(--color-outline-variant);
   color: var(--color-on-surface-variant);
-  font-size: 11px;
-  text-align: center;
+  font-size: 12px;
+}
+
+.task-list-empty .n-icon {
+  opacity: 0.5;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .task-row__fill {
+  .task-row__fill,
+  .task-move,
+  .task-enter-active,
+  .task-leave-active {
     transition: none;
   }
 }

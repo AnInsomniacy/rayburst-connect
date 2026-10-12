@@ -177,7 +177,10 @@ export function buildThemeOverrides(seedHex: string, isDark: boolean): GlobalThe
     },
     Select: {
       peers: {
+        // Filled like Input, so a filter box and its selects read as one row.
         InternalSelection: {
+          color: surface('--color-surface-container'),
+          colorActive: surface('--color-surface-container'),
           border: `1px solid ${outline}`,
           borderHover: `1px solid ${outlineFull}`,
           borderFocus: `1px solid ${primary}`,

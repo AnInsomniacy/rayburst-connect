@@ -6,9 +6,9 @@
  * exponential backoff. Theme, locale, and settings sync live through
  * browser.storage.onChanged.
  */
-import { onMounted, onUnmounted, provide, ref } from 'vue';
+import { computed, onMounted, onUnmounted, provide, ref, watch } from 'vue';
 import { browser } from 'wxt/browser';
-import { NButton, NConfigProvider, NIcon, NSkeleton, NSpin, NTabs, NTabPane } from 'naive-ui';
+import { NButton, NConfigProvider, NIcon, NSkeleton, NSpin, NTab, NTabs } from 'naive-ui';
 import { AlertCircleOutline, PauseOutline, PlayOutline, RocketOutline } from '@vicons/ionicons5';
 import {
   DesktopApiClient,
@@ -59,12 +59,21 @@ const errorType = ref<string | null>(null);
 const connectionPort = ref(DEFAULT_CONNECTION_CONFIG.port);
 const globalStat = ref<StatResponse | null>(null);
 const tasks = ref<DesktopTask[]>([]);
-const taskBusy = ref<string | null>(null);
 const enabled = ref(true);
 const opening = ref(false);
 const checking = ref(false);
 const { view, count: resourceCount, ready: navigationReady } = usePopupNavigation();
 const settingsReady = ref(false);
+/** The media tab mounts on first visit and then stays alive. */
+const mediaVisited = ref(false);
+watch(
+  view,
+  (value) => {
+    if (value === 'media') mediaVisited.value = true;
+  },
+  { immediate: true },
+);
+const tabTransition = computed(() => (view.value === 'media' ? 'tab-forward' : 'tab-back'));
 const apiClient = new DesktopApiClient({ ...DEFAULT_CONNECTION_CONFIG });
 let stopPolling: (() => void) | null = null;
 let stopStorageListener: (() => void) | null = null;
@@ -91,10 +100,32 @@ async function fetchData(): Promise<boolean> {
   }
 }
 
+/** How long a clicked pause or resume shows before the desktop confirms it. */
+const PENDING_STATUS_MS = 3000;
+
+/**
+ * Statuses shown from a click until the desktop reports a change, so the
+ * icon swaps at once and polls in between cannot flip it back.
+ */
+const pendingStatus = new Map<string, { from: string; to: string; until: number }>();
+const controlling = new Set<string>();
+
+function applyPending(list: DesktopTask[]): DesktopTask[] {
+  return list.map((task) => {
+    const pending = pendingStatus.get(task.gid);
+    if (!pending) return task;
+    if (task.status !== pending.from || Date.now() > pending.until) {
+      pendingStatus.delete(task.gid);
+      return task;
+    }
+    return { ...task, status: pending.to };
+  });
+}
+
 /** Keeps the last list when the desktop is briefly busy. */
 async function refreshTasks(): Promise<void> {
   try {
-    tasks.value = (await apiClient.getTasks()).tasks;
+    tasks.value = applyPending((await apiClient.getTasks()).tasks);
   } catch {
     // The next poll retries.
   }
@@ -103,16 +134,24 @@ async function refreshTasks(): Promise<void> {
 // ─── Actions ────────────────────────────────────────────
 
 async function controlTask(gid: string, action: 'pause' | 'resume' | 'reveal'): Promise<void> {
-  if (taskBusy.value) return;
-  taskBusy.value = gid;
+  if (controlling.has(gid)) return;
+  controlling.add(gid);
+  const task = tasks.value.find((candidate) => candidate.gid === gid);
+  if (task && action !== 'reveal') {
+    // A resumed task queues first; the desktop reports when it starts.
+    const to = action === 'pause' ? 'paused' : 'waiting';
+    pendingStatus.set(gid, { from: task.status, to, until: Date.now() + PENDING_STATUS_MS });
+    tasks.value = applyPending(tasks.value);
+  }
   try {
     if (action === 'pause') await apiClient.pauseTask(gid);
     else if (action === 'resume') await apiClient.resumeTask(gid);
     else await apiClient.revealTask(gid);
   } catch {
     // The list shows the state the desktop reports next.
+    pendingStatus.delete(gid);
   } finally {
-    taskBusy.value = null;
+    controlling.delete(gid);
   }
   await refreshTasks();
 }
@@ -285,16 +324,22 @@ onUnmounted(() => {
             @toggle-enabled="toggleEnabled"
           />
 
-          <NTabs
-            v-model:value="view"
-            type="line"
-            animated
-            pane-wrapper-style="transition: none"
-            :tabs-padding="16"
-            size="small"
-          >
-            <NTabPane name="downloads" :tab="i18n('media_downloads')" display-directive="show:lazy">
-              <div class="popup-viewport">
+          <NTabs v-model:value="view" type="line" :tabs-padding="16" size="small">
+            <NTab name="downloads" :tab="i18n('media_downloads')" />
+            <NTab name="media">
+              <span class="sniffer-tab">
+                <span>{{ i18n('sniffer_tab') }}</span>
+                <ResourceCount
+                  :count="resourceCount"
+                  :label="i18nSub('sniffer_page_count', [String(resourceCount)])"
+                />
+              </span>
+            </NTab>
+          </NTabs>
+
+          <div class="popup-body">
+            <Transition :name="tabTransition">
+              <div v-show="view === 'downloads'" class="popup-pane">
                 <Transition name="phase-switch" mode="out-in">
                   <section
                     v-if="phase === 'initializing'"
@@ -347,7 +392,6 @@ onUnmounted(() => {
                     <StatDashboard :stat="globalStat" :disabled="!enabled" />
                     <TaskList
                       :tasks="tasks"
-                      :busy="taskBusy"
                       @pause="(gid) => controlTask(gid, 'pause')"
                       @resume="(gid) => controlTask(gid, 'resume')"
                       @reveal="(gid) => controlTask(gid, 'reveal')"
@@ -487,20 +531,13 @@ onUnmounted(() => {
                   </section>
                 </Transition>
               </div>
-            </NTabPane>
-            <NTabPane name="media" display-directive="show:lazy">
-              <template #tab>
-                <span class="sniffer-tab">
-                  <span>{{ i18n('sniffer_tab') }}</span>
-                  <ResourceCount
-                    :count="resourceCount"
-                    :label="i18nSub('sniffer_page_count', [String(resourceCount)])"
-                  />
-                </span>
-              </template>
-              <MediaPanel :active="view === 'media'" />
-            </NTabPane>
-          </NTabs>
+            </Transition>
+            <Transition :name="tabTransition">
+              <div v-if="mediaVisited" v-show="view === 'media'" class="popup-pane">
+                <MediaPanel :active="view === 'media'" />
+              </div>
+            </Transition>
+          </div>
         </template>
       </div>
     </div>
@@ -518,21 +555,71 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
+/* The popup keeps one height so switching tabs or states never resizes the
+ * window; Chrome resizes it in steps, which reads as a flash. */
 .popup-root {
+  --tab-shift: 24px;
   width: 100%;
+  height: 100%;
   display: flex;
-  max-height: 600px;
   overflow: hidden;
   background: var(--color-surface);
   color: var(--color-on-surface);
   font-family: var(--font-sans);
 }
 
+.popup-root[dir='rtl'] {
+  --tab-shift: -24px;
+}
+
 .popup-content {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   width: 100%;
-  overflow: auto;
+}
+
+.popup-content > .popup-skeleton {
+  flex: 1;
+}
+
+.popup-body {
+  position: relative;
+  display: grid;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Both panes share one cell so they cross over while switching. */
+.popup-pane {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
   overscroll-behavior: contain;
+}
+
+.tab-forward-enter-active,
+.tab-forward-leave-active,
+.tab-back-enter-active,
+.tab-back-leave-active {
+  transition:
+    transform 240ms var(--m3-ease-emphasized),
+    opacity 180ms ease;
+}
+
+.tab-forward-enter-from,
+.tab-back-leave-to {
+  opacity: 0;
+  transform: translateX(var(--tab-shift));
+}
+
+.tab-forward-leave-to,
+.tab-back-enter-from {
+  opacity: 0;
+  transform: translateX(calc(-1 * var(--tab-shift)));
 }
 
 /* ── Skeleton ─────────────────────────────────────────────────── */
@@ -569,13 +656,11 @@ onUnmounted(() => {
   justify-content: flex-end;
 }
 
-.popup-viewport {
-  min-height: 160px;
-  overflow: hidden;
-}
-
 .popup-page {
-  min-height: 160px;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .popup-launching {

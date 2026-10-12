@@ -41,6 +41,7 @@ import {
   RefreshOutline,
   OpenOutline,
   AlbumsOutline,
+  CheckmarkOutline,
 } from '@vicons/ionicons5';
 
 const props = withDefaults(defineProps<{ active?: boolean; expanded?: boolean }>(), {
@@ -63,6 +64,8 @@ const preferences = ref(parseMediaSettings({}));
 const loading = ref(true);
 const toolsOpen = ref(false);
 const preview = ref<MediaItem>();
+/** Turns of the rescan icon; each click spins it once. */
+const scanTurns = ref(0);
 const selected = computed(() => state.value?.items.find((item) => item.id === selectedId.value));
 const resourceCount = computed(() => countMediaResources(state.value?.items ?? []));
 const hasFilter = computed(() => Boolean(query.value.trim()) || kind.value !== 'all');
@@ -221,12 +224,28 @@ function rowActions(item: MediaItem) {
         ]
       : []),
     {
-      key: 'download',
-      icon: DownloadOutline,
+      key: sent(item) ? 'downloaded' : 'download',
+      icon: sent(item) ? CheckmarkOutline : DownloadOutline,
       label: t('media_download'),
       run: () => download(item),
     },
   ];
+}
+const footerTools = computed(() => [
+  { key: 'scan', icon: RefreshOutline, label: t('media_scan'), run: rescan },
+  ...(props.expanded
+    ? []
+    : [
+        { key: 'sidebar', icon: AlbumsOutline, label: t('resources_sidebar'), run: openSidebar },
+        { key: 'page', icon: OpenOutline, label: t('resources_expand'), run: openPage },
+      ]),
+]);
+function sent(item: MediaItem) {
+  return item.sentToDesktop || item.operation?.state === 'submitted';
+}
+function rescan() {
+  scanTurns.value += 1;
+  if (tabId.value !== undefined) void command({ type: 'MEDIA_RESCAN', tabId: tabId.value });
 }
 function toggle(id: string, value: boolean) {
   const item = state.value?.items.find((candidate) => candidate.id === id);
@@ -357,49 +376,57 @@ onUnmounted(() => {
 </script>
 <template>
   <section class="resources" :class="{ expanded }" :aria-busy="busy || loading">
-    <NSpin v-if="loading" size="small" />
-    <NEmpty v-else-if="tabId === undefined" :description="t('media_open_page')" />
+    <NSpin v-if="loading" class="resource-state" size="small" />
+    <NEmpty
+      v-else-if="tabId === undefined"
+      class="resource-state"
+      :description="t('media_open_page')"
+    />
     <template v-else>
-      <header class="resource-toolbar">
-        <NSelect
-          :value="allTabs ? 'all' : 'current'"
-          size="small"
-          :consistent-menu-width="false"
-          :options="[
-            { value: 'current', label: t('resources_current') },
-            { value: 'all', label: t('resources_other') },
-          ]"
-          :aria-label="t('media_sources')"
-          @update:value="allTabs = $event === 'all'"
-        />
-        <span class="toolbar-space" />
-        <NSwitch
-          size="small"
-          :value="state?.enabled"
-          :aria-label="t('media_discover')"
-          @update:value="command({ type: 'MEDIA_ENABLE', tabId, enabled: $event })"
-        />
-        <NTooltip
-          ><template #trigger
-            ><NButton
-              size="small"
-              quaternary
-              circle
-              :aria-label="t('resources_tools')"
-              :aria-expanded="toolsOpen"
-              @click="toolsOpen = !toolsOpen"
-              ><template #icon
-                ><NIcon><OptionsOutline /></NIcon></template></NButton></template
-          >{{ t('resources_tools') }}</NTooltip
-        >
-      </header>
+      <div class="resource-head">
+        <header class="resource-toolbar">
+          <NSelect
+            :value="allTabs ? 'all' : 'current'"
+            size="small"
+            :consistent-menu-width="false"
+            :options="[
+              { value: 'current', label: t('resources_current') },
+              { value: 'all', label: t('resources_other') },
+            ]"
+            :aria-label="t('media_sources')"
+            @update:value="allTabs = $event === 'all'"
+          />
+          <span class="toolbar-space" />
+          <NSwitch
+            size="small"
+            :value="state?.enabled"
+            :aria-label="t('media_discover')"
+            @update:value="command({ type: 'MEDIA_ENABLE', tabId, enabled: $event })"
+          />
+          <NTooltip
+            ><template #trigger
+              ><NButton
+                size="small"
+                quaternary
+                circle
+                :aria-label="t('resources_tools')"
+                :aria-expanded="toolsOpen"
+                @click="toolsOpen = !toolsOpen"
+                ><template #icon
+                  ><NIcon><OptionsOutline /></NIcon></template></NButton></template
+            >{{ t('resources_tools') }}</NTooltip
+          >
+        </header>
+        <CollapsePanel :open="toolsOpen"
+          ><div class="resource-tools">
+            <MediaTools
+              :tab-id="selected?.tabId ?? tabId"
+              :source="selected"
+              @created="refresh().then(() => (selectedId = $event))"
+            /></div
+        ></CollapsePanel>
+      </div>
       <NAlert v-if="error" type="error" closable @close="error = ''">{{ t(error) }}</NAlert>
-      <CollapsePanel :open="toolsOpen"
-        ><MediaTools
-          :tab-id="selected?.tabId ?? tabId"
-          :source="selected"
-          @created="refresh().then(() => (selectedId = $event))"
-      /></CollapsePanel>
       <div class="resource-stage">
         <Transition :name="selected ? 'media-forward' : 'media-back'">
           <MediaSelection
@@ -508,15 +535,22 @@ onUnmounted(() => {
                           size="small"
                           quaternary
                           circle
-                          :type="rowAction.key === 'download' ? 'primary' : 'default'"
+                          :type="
+                            rowAction.key === 'download' || rowAction.key === 'downloaded'
+                              ? 'primary'
+                              : 'default'
+                          "
                           :aria-label="rowAction.label"
-                          :title="rowAction.label"
                           :loading="rowAction.key === 'download' && rowBusy.has(item.id)"
                           :disabled="rowAction.key === 'download' && item.method !== 'GET'"
                           @click="rowAction.run()"
                         >
                           <template #icon
-                            ><NIcon><component :is="rowAction.icon" /></NIcon
+                            ><NIcon
+                              ><Transition name="icon-swap" mode="out-in"
+                                ><component
+                                  :is="rowAction.icon"
+                                  :key="rowAction.key" /></Transition></NIcon
                           ></template>
                         </NButton>
                       </template>
@@ -538,35 +572,25 @@ onUnmounted(() => {
                   ><template #icon
                     ><NIcon><EllipsisHorizontalOutline /></NIcon></template></NButton
               ></NDropdown>
-              <NButton
-                size="small"
-                quaternary
-                circle
-                :aria-label="t('media_scan')"
-                @click="command({ type: 'MEDIA_RESCAN', tabId })"
-                ><template #icon
-                  ><NIcon><RefreshOutline /></NIcon></template
-              ></NButton>
-              <NButton
-                v-if="!expanded"
-                size="small"
-                quaternary
-                circle
-                :aria-label="t('resources_sidebar')"
-                @click="openSidebar"
-                ><template #icon
-                  ><NIcon><AlbumsOutline /></NIcon></template
-              ></NButton>
-              <NButton
-                v-if="!expanded"
-                size="small"
-                quaternary
-                circle
-                :aria-label="t('resources_expand')"
-                @click="openPage"
-                ><template #icon
-                  ><NIcon><OpenOutline /></NIcon></template
-              ></NButton>
+              <NTooltip v-for="tool in footerTools" :key="tool.key" trigger="hover"
+                ><template #trigger
+                  ><NButton
+                    size="small"
+                    quaternary
+                    circle
+                    :aria-label="tool.label"
+                    @click="tool.run()"
+                    ><template #icon
+                      ><NIcon
+                        :class="{ 'resource-scan': tool.key === 'scan' }"
+                        :style="
+                          tool.key === 'scan'
+                            ? { transform: `rotate(${scanTurns}turn)` }
+                            : undefined
+                        "
+                        ><component :is="tool.icon" /></NIcon></template></NButton></template
+                >{{ tool.label }}</NTooltip
+              >
               <span class="toolbar-space" />
               <NButton
                 size="small"
@@ -586,16 +610,52 @@ onUnmounted(() => {
 </template>
 <style scoped>
 .resource-summary {
-  margin-top: 8px;
   color: var(--color-on-surface-variant);
   font-size: 12px;
 }
 
 .resources {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
   padding: 4px 16px 12px;
   min-width: 0;
+}
+/* In the popup the panel fills its fixed height and only the list scrolls. */
+.resources:not(.expanded) {
+  flex: 1;
+  min-height: 0;
+}
+.resources:not(.expanded) .resource-stage {
+  flex: 1;
+  min-height: 0;
+}
+.resources:not(.expanded) .resource-catalog {
+  height: 100%;
+}
+.resources:not(.expanded) .resource-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.resources:not(.expanded) .resource-stage > .media-selection {
+  height: 100%;
+  align-content: start;
+  overflow-y: auto;
+}
+.resources:not(.expanded) .resource-tools {
+  max-height: 240px;
+  overflow-y: auto;
+}
+.resource-state {
+  margin: auto;
+}
+.resource-tools {
+  padding-top: 12px;
+}
+.resource-scan {
+  transition: transform 0.5s var(--m3-ease-emphasized);
 }
 .resources.expanded {
   max-height: none;
@@ -620,7 +680,8 @@ onUnmounted(() => {
   min-height: 160px;
 }
 .resource-catalog {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 .resource-filters {
@@ -630,6 +691,7 @@ onUnmounted(() => {
 }
 .resource-list {
   display: grid;
+  align-content: start;
   gap: 2px;
 }
 .resource-row {

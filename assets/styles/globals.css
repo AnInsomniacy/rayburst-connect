@@ -317,6 +317,29 @@ body {
   transform: translateY(6px);
 }
 
+/* ── icon-swap: a control's icon turning into the next one ──────── */
+.icon-swap-enter-active {
+  transition:
+    opacity 0.16s var(--m3-ease-emphasized-decel),
+    transform 0.16s var(--m3-ease-emphasized-decel);
+}
+
+.icon-swap-leave-active {
+  transition:
+    opacity 0.1s var(--m3-ease-emphasized-accel),
+    transform 0.1s var(--m3-ease-emphasized-accel);
+}
+
+.icon-swap-enter-from {
+  opacity: 0;
+  transform: scale(0.4) rotate(-90deg);
+}
+
+.icon-swap-leave-to {
+  opacity: 0;
+  transform: scale(0.4) rotate(90deg);
+}
+
 /* ── phase-switch: vertical content swap for state transitions ───── */
 .phase-switch-enter-active {
   transition:
