@@ -33,11 +33,11 @@ export function startMediaBackground(options: {
   activate: () => Promise<boolean>;
   sendFile: (candidate: MediaCandidate) => Promise<boolean>;
   requestHeaders: RequestHeaderContextStore;
-  onError?: () => void;
+  onError?: (error: unknown) => void;
   onDownloadError?: (candidateId: string, error: string) => void;
 }) {
   const catalog = createMediaCatalog();
-  const report = () => options.onError?.();
+  const report = (error: unknown) => options.onError?.(error);
   const safely = (work: Promise<unknown>) => {
     void work.catch(report);
   };
@@ -226,7 +226,12 @@ export function startMediaBackground(options: {
         }
         const data = await list(message.tabId);
         return { ok: true, data };
-      })().catch((error: unknown) => ({ ok: false, error: mediaErrorCode(error) }));
+      })().catch((error: unknown) => {
+        const code = mediaErrorCode(error);
+        // Known failures speak for themselves; an unclassified one is kept for diagnosis.
+        if (code === 'operation_failed') report(error);
+        return { ok: false, error: code };
+      });
     }),
   );
 

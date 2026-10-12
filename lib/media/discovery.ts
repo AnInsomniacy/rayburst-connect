@@ -36,7 +36,7 @@ export function startMediaDiscovery(options: {
   settings: () => DownloadSettings;
   requestHeaders: RequestHeaderContextStore;
   allowed: (pageUrl: string, url: string) => boolean;
-  report: () => void;
+  report: (error: unknown) => void;
 }) {
   const { catalog, allowed } = options;
   const pending = new Map<string, { context: MediaCapturedContext; generation: string }>();

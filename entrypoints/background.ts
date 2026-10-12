@@ -307,8 +307,10 @@ export default defineBackground(() => {
       if (result === 'duplicate-blocked') throw new MediaApiError('duplicate_blocked');
       return true;
     },
-    onError: () =>
-      logWarn('media_discovery_failed', 'Media discovery could not update its session'),
+    onError: (error) =>
+      logWarn('media_discovery_failed', 'Media discovery could not update its session', {
+        error: errorMessage(error),
+      }),
     onDownloadError: (candidateId, error) =>
       logWarn('download_delivery_failed', 'Media download could not be submitted', {
         candidateId,
