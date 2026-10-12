@@ -1,4 +1,4 @@
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { browser } from 'wxt/browser';
 import { z } from '@/lib/validation';
 import { MEDIA_SESSION_KEY, MediaCandidateSchema } from '@/lib/schema';
@@ -28,6 +28,11 @@ export function usePopupNavigation() {
   let tabId: number | undefined;
   let disposed = false;
   let updated = false;
+  // A tab the user picks while discovery is still loading is never overridden.
+  let chosen = false;
+  const stopChoosing = watch(view, () => {
+    chosen = true;
+  });
 
   const changed: Parameters<typeof browser.storage.onChanged.addListener>[0] = (changes, area) => {
     if (area !== 'session' || !changes[MEDIA_SESSION_KEY] || tabId === undefined) return;
@@ -50,7 +55,8 @@ export function usePopupNavigation() {
       // Download controls remain available if discovery cannot be read.
     } finally {
       if (!disposed) {
-        view.value = count.value > 0 ? 'media' : 'downloads';
+        stopChoosing();
+        if (!chosen) view.value = count.value > 0 ? 'media' : 'downloads';
         ready.value = true;
       }
     }
@@ -58,6 +64,7 @@ export function usePopupNavigation() {
 
   onUnmounted(() => {
     disposed = true;
+    stopChoosing();
     browser.storage.onChanged.removeListener(changed);
   });
 

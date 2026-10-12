@@ -69,6 +69,19 @@ describe('popup navigation', () => {
     expect(navigation.count.value).toBe(2);
   });
 
+  it('keeps a tab the user picks before discovery answers', async () => {
+    let answer: (value: unknown) => void = () => undefined;
+    vi.spyOn(browser.runtime, 'sendMessage').mockImplementation(
+      () => new Promise((resolve) => (answer = resolve)),
+    );
+    const navigation = mount();
+    await vi.waitFor(() => expect(browser.runtime.sendMessage).toHaveBeenCalled());
+    navigation.view.value = 'media';
+    answer(response());
+    await vi.waitFor(() => expect(navigation.ready.value).toBe(true));
+    expect(navigation.view.value).toBe('media');
+  });
+
   it.each(['empty', 'player', 'other page'])('opens downloads for %s discoveries', async (kind) => {
     const items =
       kind === 'empty'
