@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { detectMedia, mediaIdentity, mediaUrl } from '@/lib/media/detection';
+import { detectMedia, mediaFileName, mediaIdentity, mediaUrl } from '@/lib/media/detection';
 import { MediaPresentationSchema, selectionError } from '@/lib/media/contracts';
 import { captureMediaContext } from '@/lib/media/request-context';
 import { mediaPresentation, mediaSelection } from '../fixtures/media';
@@ -142,5 +142,31 @@ describe('media boundary validation', () => {
     expect(
       selectionError(muxed, { ...mediaSelection, videoId: null, audioId: 'video-1080' }),
     ).toBeNull();
+  });
+});
+
+describe('sniffed file names', () => {
+  it('names a file without one after its page, with the extension its type implies', () => {
+    expect(mediaFileName({ filename: '', title: '深夜偷吃火鸡面 | 抖音', mime: 'video/mp4' })).toBe(
+      '深夜偷吃火鸡面 _ 抖音.mp4',
+    );
+    expect(mediaFileName({ filename: '', title: 'AC/DC live', mime: 'audio/mpeg' })).toBe(
+      'AC DC live.mp3',
+    );
+    expect(mediaFileName({ filename: 'v0d00fg10000', title: 'x', mime: 'video/mp4' })).toBe(
+      'v0d00fg10000.mp4',
+    );
+    expect(mediaFileName({ filename: '', title: 'Release v1.2', mime: 'video/webm' })).toBe(
+      'Release v1.2.webm',
+    );
+  });
+
+  it('keeps names that already carry an extension or whose type is unknown', () => {
+    expect(mediaFileName({ filename: 'clip.webm', title: 'x', mime: 'video/mp4' })).toBe(
+      'clip.webm',
+    );
+    expect(mediaFileName({ filename: 'data', title: 'x', mime: 'application/octet-stream' })).toBe(
+      'data',
+    );
   });
 });

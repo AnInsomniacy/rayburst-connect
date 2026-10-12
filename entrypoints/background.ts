@@ -12,6 +12,7 @@ import { parseFirefoxDownloadResponse } from '@/lib/download/firefox-response';
 import { ApiAuthError, ApiCompatibilityError, ApiEngineError, DesktopApiClient } from '@/lib/api';
 import { startMediaBackground } from '@/lib/media/background';
 import { fileRequestContext } from '@/lib/media/request-context';
+import { mediaFileName } from '@/lib/media/detection';
 import {
   DesktopActivationError,
   activateDesktop,
@@ -301,7 +302,7 @@ export default defineBackground(() => {
       const result = await orchestrator.sendUrl(candidate.url, context.referer ?? '', {
         source: 'media',
         headerContext: context,
-        filename: candidate.filename,
+        filename: mediaFileName(candidate),
       });
       if (result === 'duplicate-blocked') throw new MediaApiError('duplicate_blocked');
       return true;

@@ -6,7 +6,7 @@ import {
 } from '../download/url';
 import type { MediaCandidate } from '../schema';
 
-import { MEDIA_FORMATS, MEDIA_MIMES, matchesMime } from './formats';
+import { MEDIA_FORMATS, MEDIA_MIMES, MIME_EXTENSIONS, matchesMime } from './formats';
 
 const DOCUMENT_MIMES = new Set(['text/html', 'application/xhtml+xml']);
 
@@ -89,6 +89,21 @@ export function detectMedia(
     evidence: input.evidence,
     ...(input.status === 206 || total ? { ranged: true } : {}),
   };
+}
+
+/**
+ * The name a sniffed file is saved under: its own, else the page title, with
+ * the extension its type implies when the name carries no known one.
+ */
+export function mediaFileName(item: Pick<MediaCandidate, 'filename' | 'title' | 'mime'>): string {
+  // A title is one name; its slashes are not folders.
+  const name = normalizeFilename(item.filename || item.title.replace(/[/\\]+/g, ' '));
+  const extension = MIME_EXTENSIONS[item.mime];
+  const current = /\.([^.]+)$/.exec(name)?.[1]?.toLowerCase() ?? '';
+  const known =
+    MEDIA_FORMATS.some((format) => format.extension === current) ||
+    Object.values(MIME_EXTENSIONS).includes(current);
+  return name && extension && !known ? `${name}.${extension}` : name;
 }
 
 export function mediaIdentity(

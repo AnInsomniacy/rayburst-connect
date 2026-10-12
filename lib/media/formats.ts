@@ -79,6 +79,34 @@ export const MEDIA_MIMES: { mime: string; kind: ResourceKind; enabled: boolean }
   { mime: 'video/*', kind: 'file', enabled: true },
 ];
 
+/** The extension a sniffed file of this type is saved with when its name has none. */
+export const MIME_EXTENSIONS: Record<string, string> = {
+  'video/mp4': 'mp4',
+  'video/webm': 'webm',
+  'video/x-matroska': 'mkv',
+  'video/quicktime': 'mov',
+  'video/x-flv': 'flv',
+  'video/mp2t': 'ts',
+  'video/ogg': 'ogv',
+  'video/iso.segment': 'm4s',
+  'audio/mpeg': 'mp3',
+  'audio/mp4': 'm4a',
+  'audio/x-m4a': 'm4a',
+  'audio/aac': 'aac',
+  'audio/ogg': 'ogg',
+  'audio/opus': 'opus',
+  'audio/flac': 'flac',
+  'audio/wav': 'wav',
+  'audio/webm': 'weba',
+  'audio/iso.segment': 'm4s',
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+  'text/vtt': 'vtt',
+  'application/json': 'json',
+};
+
 export function matchesMime(pattern: string, mime: string): boolean {
   return pattern === mime || (pattern.endsWith('/*') && mime.startsWith(pattern.slice(0, -1)));
 }
