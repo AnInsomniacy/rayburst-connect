@@ -50,15 +50,15 @@ const isIdle = computed(() => numActive.value === 0);
 
     <!-- ── Task Counts ─────────────────────────────────────── -->
     <div :class="['stat-dash__counts', { 'stat-dash__counts--disabled': props.disabled }]">
-      <div class="stat-dash__count stat-dash__count--active">
-        <NIcon :size="13"><FlashOutline /></NIcon>
-        <span class="stat-dash__count-label">{{ i18n('popup_stat_active', 'Active') }}</span>
-        <span class="stat-dash__count-value">{{ numActive }}</span>
-      </div>
       <div class="stat-dash__count stat-dash__count--waiting">
         <NIcon :size="13"><TimeOutline /></NIcon>
         <span class="stat-dash__count-label">{{ i18n('popup_stat_waiting', 'Waiting') }}</span>
         <span class="stat-dash__count-value">{{ numWaiting }}</span>
+      </div>
+      <div class="stat-dash__count stat-dash__count--active">
+        <NIcon :size="13"><FlashOutline /></NIcon>
+        <span class="stat-dash__count-label">{{ i18n('popup_stat_active', 'Active') }}</span>
+        <span class="stat-dash__count-value">{{ numActive }}</span>
       </div>
       <div class="stat-dash__count stat-dash__count--stopped">
         <NIcon :size="13"><CheckmarkDoneOutline /></NIcon>
