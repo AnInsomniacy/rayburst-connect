@@ -91,6 +91,10 @@ file-extension-rule → minimum-file-size
 
 ---
 
+### Libraries and Tools
+
+Fixes and optimizations first look for a mature npm package or tool (WXT, vitest) before writing code. Existing hand-written code may be replaced when a library does the job better. Write it yourself only when nothing suitable exists or the integration would cost more than it saves; never adopt a tool for its own sake.
+
 ## B. Version Management
 
 **`package.json` is the single source of truth.** WXT reads `version` from here for the manifest.
