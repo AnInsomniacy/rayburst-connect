@@ -311,6 +311,7 @@ onUnmounted(() => {
                     class="popup-page popup-unsupported"
                   >
                     <UnsupportedDesktop
+                      layout="page"
                       :error="errorType"
                       :version="version"
                       :checking="checking"
@@ -509,8 +510,6 @@ onUnmounted(() => {
 <style scoped>
 .popup-unsupported {
   display: flex;
-  align-items: center;
-  padding: 16px;
 }
 .sniffer-tab {
   display: inline-flex;
