@@ -159,7 +159,7 @@ function detail(task: DesktopTask): string {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 6px 8px 14px;
+  padding: 8px 6px 8px 12px;
   border-radius: 12px;
   transition: background-color 0.2s var(--m3-ease-emphasized);
 }
@@ -212,7 +212,7 @@ function detail(task: DesktopTask): string {
 }
 
 .task-row--complete .task-row__fill {
-  background: var(--color-tertiary);
+  background: color-mix(in srgb, var(--color-success) 75%, transparent);
 }
 
 .task-row--paused .task-row__fill,

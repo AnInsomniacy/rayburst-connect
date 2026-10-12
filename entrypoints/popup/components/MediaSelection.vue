@@ -6,11 +6,12 @@ import {
   NButton,
   NForm,
   NFormItem,
+  NIcon,
   NInputNumber,
   NSelect,
-  NSpace,
   NSpin,
 } from 'naive-ui';
+import { ChevronBackOutline } from '@vicons/ionicons5';
 import type { MediaItem } from '@/lib/media/messages';
 import { selectionError, type MediaSelection, type MediaTrack } from '@/lib/media/contracts';
 import {
@@ -22,7 +23,7 @@ import {
 import { useI18n } from '@/shared/i18n/engine';
 const { t: i18n, effectiveLocale } = useI18n();
 
-const props = defineProps<{ item: MediaItem; busy: boolean; frame?: boolean }>();
+const props = defineProps<{ item: MediaItem; busy: boolean }>();
 const emit = defineEmits<{
   inspect: [];
   downloadFile: [];
@@ -127,6 +128,12 @@ const canInspect = computed(
     (!operation.value || ['failed', 'cancelled'].includes(operation.value.state)),
 );
 const unsupported = computed(() => props.item.kind === 'embedded' || props.item.method !== 'GET');
+const fileKind = computed(() =>
+  ['file', 'fragment', 'subtitle', 'image', 'json'].includes(props.item.kind),
+);
+const ready = computed(() =>
+  Boolean(presentation.value && form.value && operation.value?.state === 'ready'),
+);
 function submit() {
   if (form.value && !invalid.value) emit('submit', { ...form.value });
 }
@@ -134,23 +141,21 @@ function submit() {
 
 <template>
   <section class="media-selection" :aria-label="i18n('media_options')" :aria-busy="busy">
-    <NButton size="small" :quaternary="frame" @click="emit('back')">{{
-      i18n('media_back')
-    }}</NButton>
-    <NButton
-      v-if="['hls', 'dash'].includes(item.kind)"
-      size="small"
-      quaternary
-      @click="emit('advanced')"
-      >{{ i18n('resources_key') }} / {{ i18n('resources_manifest') }}</NButton
-    >
-    <h3 id="media-options-heading" tabindex="-1">
-      {{ item.filename || item.title || i18n('media_source') }}
-    </h3>
-    <p class="media-meta">
-      {{ item.kind === 'embedded' ? i18n('media_waiting') : item.kind.toUpperCase() }} ·
-      {{ mediaSize(item.size, effectiveLocale, i18n('media_size_unknown')) }}
-    </p>
+    <header class="media-heading">
+      <h3 id="media-options-heading" tabindex="-1">
+        {{ item.filename || item.title || i18n('media_source') }}
+      </h3>
+      <p class="media-meta">
+        {{
+          item.kind === 'embedded'
+            ? i18n('media_waiting')
+            : ['hls', 'dash'].includes(item.kind)
+              ? item.kind.toUpperCase()
+              : i18n(`resources_kind_${item.kind}`)
+        }}
+        · {{ mediaSize(item.size, effectiveLocale, i18n('media_size_unknown')) }}
+      </p>
+    </header>
     <NAlert v-if="unsupported" type="info" :show-icon="false">
       {{ item.kind === 'embedded' ? i18n('media_waiting') : i18n('media_unsupported') }}
     </NAlert>
@@ -180,7 +185,7 @@ function submit() {
     }}</NAlert>
 
     <NForm
-      v-if="presentation && form && operation?.state === 'ready'"
+      v-if="presentation && form && ready"
       label-placement="top"
       :disabled="busy"
       @submit.prevent="submit"
@@ -273,47 +278,69 @@ function submit() {
       <NAlert v-if="invalid" type="warning" :show-icon="false" role="alert">{{
         i18n('media_invalid')
       }}</NAlert>
-      <NSpace justify="end">
-        <NButton :disabled="busy" @click="emit('cancel')">{{ i18n('media_cancel') }}</NButton>
-        <NButton
-          attr-type="submit"
-          type="primary"
-          :disabled="busy || Boolean(invalid)"
-          :loading="busy"
-          >{{ presentation.live ? i18n('media_record') : i18n('media_download') }}</NButton
-        >
-      </NSpace>
     </NForm>
-    <NButton
-      v-else-if="
-        ['file', 'fragment', 'subtitle', 'image', 'json'].includes(item.kind) && !unsupported
-      "
-      type="primary"
-      :loading="busy"
-      @click="emit('downloadFile')"
-      >{{ i18n('media_download') }} · {{ i18n('media_original') }}</NButton
-    >
-    <NSpace
-      v-else-if="
-        !['file', 'fragment', 'subtitle', 'image', 'json'].includes(item.kind) &&
-        !unsupported &&
-        operation?.state !== 'submitted'
-      "
-      justify="end"
-    >
-      <NButton v-if="pending" :disabled="busy" @click="emit('cancel')">{{
-        i18n('media_cancel')
-      }}</NButton>
-      <NButton v-if="pending && operation?.error" :loading="busy" @click="emit('refresh')">{{
-        i18n('media_retry')
-      }}</NButton>
-      <NButton v-if="canInspect" type="primary" :loading="busy" @click="emit('inspect')">{{
-        i18n('media_inspect')
-      }}</NButton>
-    </NSpace>
     <p v-if="canInspect && !unsupported" class="media-meta">
       {{ i18n('media_inspect_hint') }}
     </p>
+    <!-- Leaving sits at the start, the next step at the end, in every state. -->
+    <footer class="media-actions">
+      <NButton size="small" quaternary class="media-back" @click="emit('back')">
+        <template #icon>
+          <NIcon><ChevronBackOutline /></NIcon>
+        </template>
+        {{ i18n('media_back') }}
+      </NButton>
+      <NButton
+        v-if="['hls', 'dash'].includes(item.kind)"
+        size="small"
+        quaternary
+        class="media-back"
+        @click="emit('advanced')"
+        >{{ i18n('resources_key') }} / {{ i18n('resources_manifest') }}</NButton
+      >
+      <span class="media-actions__space" />
+      <template v-if="ready && presentation">
+        <NButton size="small" :disabled="busy" @click="emit('cancel')">{{
+          i18n('media_cancel')
+        }}</NButton>
+        <NButton
+          size="small"
+          type="primary"
+          :disabled="busy || Boolean(invalid)"
+          :loading="busy"
+          @click="submit"
+          >{{ presentation.live ? i18n('media_record') : i18n('media_download') }}</NButton
+        >
+      </template>
+      <NButton
+        v-else-if="fileKind && !unsupported"
+        size="small"
+        type="primary"
+        :loading="busy"
+        @click="emit('downloadFile')"
+        >{{ i18n('media_download') }} · {{ i18n('media_original') }}</NButton
+      >
+      <template v-else-if="!fileKind && !unsupported && operation?.state !== 'submitted'">
+        <NButton v-if="pending" size="small" :disabled="busy" @click="emit('cancel')">{{
+          i18n('media_cancel')
+        }}</NButton>
+        <NButton
+          v-if="pending && operation?.error"
+          size="small"
+          :loading="busy"
+          @click="emit('refresh')"
+          >{{ i18n('media_retry') }}</NButton
+        >
+        <NButton
+          v-if="canInspect"
+          size="small"
+          type="primary"
+          :loading="busy"
+          @click="emit('inspect')"
+          >{{ i18n('media_inspect') }}</NButton
+        >
+      </template>
+    </footer>
   </section>
 </template>
 
@@ -331,12 +358,33 @@ h3 {
   color: var(--color-on-surface-variant);
   font-size: 12px;
 }
+.media-heading {
+  display: grid;
+  gap: 4px;
+}
+.media-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+}
+.media-actions__space {
+  flex: 1;
+}
+/* The way out reads as a quiet link, aligned with the text above it. */
+.media-back {
+  margin-inline-start: -8px;
+  color: var(--color-on-surface-variant);
+}
+.media-back + .media-back {
+  margin-inline-start: 0;
+}
 .media-progress {
   display: flex;
   align-items: center;
   gap: 12px;
   font-size: 13px;
-  min-height: 48px;
+  min-height: 32px;
 }
 .n-form {
   display: grid;

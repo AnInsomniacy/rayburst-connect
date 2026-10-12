@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 /**
- * The throughput strip: speeds over a faint trace of the last twenty seconds
- * on one half, the task counts on the other.
+ * The throughput band: speed in large figures, the task counts beside it, and
+ * the last twenty seconds of traffic as a full-bleed floor that flattens into
+ * a hairline when nothing moves.
  */
-import { computed, ref, watch } from 'vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
 import { NIcon } from 'naive-ui';
-import { ArrowDownOutline, ArrowUpOutline } from '@vicons/ionicons5';
+import { ArrowUpOutline } from '@vicons/ionicons5';
 import type { StatResponse } from '@/lib/api';
 import { formatSpeed } from '@/lib/format';
 import { useI18n } from '@/shared/i18n/engine';
@@ -16,28 +17,70 @@ const props = defineProps<{ stat: StatResponse; disabled: boolean }>();
 
 /** Samples at the popup's poll rate: forty make twenty seconds. */
 const SAMPLES = 40;
+const STEP = 100 / (SAMPLES - 1);
 const count = (value: string) => parseInt(value, 10) || 0;
-const down = ref<number[]>(Array(SAMPLES).fill(0));
+/** One sample more than fits: the newest waits past the right edge and slides in. */
+let samples: number[] = Array(SAMPLES + 1).fill(0);
+let sampledAt = globalThis.performance.now();
+let period = 500;
+/** The scale on screen, eased toward the samples' peak so rescaling never jumps. */
+let shown = 1;
+const reduced = globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const paths = ref({ line: '', area: '' });
+
+/** A smooth curve through the points (Catmull-Rom as cubic Béziers). */
+function curve(points: [number, number][]): string {
+  const at = (index: number) => points[Math.min(points.length - 1, Math.max(0, index))] ?? [0, 0];
+  let path = `M ${at(0)[0].toFixed(2)} ${at(0)[1].toFixed(2)}`;
+  for (let index = 0; index < points.length - 1; index++) {
+    const [before, from, to, after] = [at(index - 1), at(index), at(index + 1), at(index + 2)];
+    // Control points stay above the baseline, so the curve never dips under zero.
+    const c1 = Math.min(31.5, from[1] + (to[1] - before[1]) / 6);
+    const c2 = Math.min(31.5, to[1] - (after[1] - from[1]) / 6);
+    path += ` C ${(from[0] + STEP / 3).toFixed(2)} ${c1.toFixed(2)} ${(to[0] - STEP / 3).toFixed(2)} ${c2.toFixed(2)} ${to[0].toFixed(2)} ${to[1].toFixed(2)}`;
+  }
+  return path;
+}
+
+let frame = 0;
+function draw(now: number) {
+  const target = Math.max(1, ...samples) * 1.15;
+  // Rise quickly to fit a burst, settle slowly after it.
+  shown += (target - shown) * (target > shown ? 0.2 : 0.05);
+  const progress = reduced ? 1 : Math.min(1, (now - sampledAt) / period);
+  const offset = -progress * STEP;
+  const points = samples.map((value, index): [number, number] => [
+    index * STEP + offset,
+    31.5 - (value / shown) * 27,
+  ]);
+  const line = curve(points);
+  const right = (points.at(-1)?.[0] ?? 100).toFixed(2);
+  paths.value = { line, area: `${line} L ${right} 32 L ${offset.toFixed(2)} 32 Z` };
+  const settled = Math.abs(target - shown) < target * 0.01;
+  const flat = samples.every((value) => value === 0);
+  frame = progress < 1 || !settled || !flat ? globalThis.requestAnimationFrame(draw) : 0;
+}
+
 watch(
   () => props.stat,
   (stat) => {
-    down.value = [...down.value.slice(1), count(stat.downloadSpeed)];
+    const now = globalThis.performance.now();
+    // The scroll lasts as long as the poll actually took, so it neither stalls nor skips.
+    period = Math.min(3000, Math.max(250, now - sampledAt));
+    sampledAt = now;
+    samples = [...samples.slice(1), count(stat.downloadSpeed)];
+    if (!frame) frame = globalThis.requestAnimationFrame(draw);
   },
   { immediate: true },
 );
+onUnmounted(() => globalThis.cancelAnimationFrame(frame));
 
-const traced = computed(() => down.value.some(Boolean));
-function trace(closed: boolean): string {
-  const peak = Math.max(1, ...down.value);
-  const points = down.value.map(
-    (value, index) =>
-      `${((index / (SAMPLES - 1)) * 100).toFixed(2)} ${(40 - (value / peak) * 34).toFixed(2)}`,
-  );
-  return `M ${points.join(' L ')}${closed ? ' L 100 40 L 0 40 Z' : ''}`;
-}
-/** The attribute draws the trace; the CSS property lets supporting browsers morph it. */
-const shape = (path: string) => ({ d: path, style: { d: `path('${path}')` } });
-
+/** Figures and unit set apart, so the number carries the weight. */
+const speed = computed(() => {
+  const [figure = '0', unit = ''] = formatSpeed(props.stat.downloadSpeed).split(' ');
+  return { figure, unit };
+});
+const live = computed(() => count(props.stat.downloadSpeed) > 0);
 const counts = computed(() => [
   { key: 'active', label: i18n('popup_stat_active', 'Active'), value: count(props.stat.numActive) },
   {
@@ -51,181 +94,172 @@ const counts = computed(() => [
     value: count(props.stat.numStopped),
   },
 ]);
-const downloading = computed(() => count(props.stat.downloadSpeed) > 0);
 </script>
 
 <template>
-  <section :class="['meter', { 'meter--live': downloading, 'meter--disabled': disabled }]">
-    <div class="meter__speeds">
-      <svg
-        :class="['meter__trace', { 'meter__trace--shown': traced }]"
-        viewBox="0 0 100 40"
-        preserveAspectRatio="none"
-        aria-hidden="true"
-      >
-        <path class="meter__area" v-bind="shape(trace(true))" />
-        <path class="meter__line" v-bind="shape(trace(false))" />
-      </svg>
-      <span class="meter__down">
-        <NIcon :size="15"><ArrowDownOutline /></NIcon>
-        {{ formatSpeed(stat.downloadSpeed) }}
-      </span>
-      <span class="meter__up">
-        <NIcon :size="11"><ArrowUpOutline /></NIcon>
+  <section :class="['band', { 'band--live': live, 'band--disabled': disabled }]">
+    <div class="band__speed">
+      <p class="band__figure">
+        <span>{{ speed.figure }}</span>
+        <small>{{ speed.unit }}</small>
+      </p>
+      <p class="band__up">
+        <NIcon :size="10"><ArrowUpOutline /></NIcon>
         {{ formatSpeed(stat.uploadSpeed) }}
-      </span>
+      </p>
     </div>
-    <ul class="meter__counts">
-      <li
+    <dl class="band__counts">
+      <div
         v-for="item in counts"
         :key="item.key"
-        :class="['meter__count', `meter__count--${item.key}`, { 'meter__count--some': item.value }]"
+        :class="['band__count', `band__count--${item.key}`, { 'band__count--some': item.value }]"
       >
-        <strong>{{ item.value }}</strong>
-        <span>{{ item.label }}</span>
-      </li>
-    </ul>
+        <dt>{{ item.label }}</dt>
+        <dd>{{ item.value }}</dd>
+      </div>
+    </dl>
+    <svg class="band__trace" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="band-fill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="var(--color-primary)" stop-opacity="0.18" />
+          <stop offset="1" stop-color="var(--color-primary)" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+      <path class="band__area" :d="paths.area" />
+      <path class="band__line" :d="paths.line" />
+    </svg>
   </section>
 </template>
 
 <style scoped>
-/* Two equal halves: how fast, and how many. */
-.meter {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  margin: 0 12px;
-  overflow: hidden;
-  border-radius: 14px;
-  background: var(--color-surface-well);
+/* No container: the band is part of the page, divided from the list by its own trace. */
+.band {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 24px 30px;
   font-variant-numeric: tabular-nums;
   transition: opacity 0.3s var(--m3-ease-emphasized);
 }
 
-.meter--disabled {
+.band--disabled {
   opacity: 0.5;
 }
 
-.meter__speeds {
-  position: relative;
+.band__speed {
   display: grid;
-  align-content: center;
-  gap: 2px;
+  gap: 4px;
   min-width: 0;
-  padding: 11px 14px;
 }
 
-.meter__trace {
-  position: absolute;
-  inset: auto 0 0;
-  width: 100%;
-  height: 70%;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.6s var(--m3-ease-emphasized);
-}
-
-.meter__trace--shown {
-  opacity: 1;
-}
-
-.meter__area,
-.meter__line {
-  transition: d 0.5s linear;
-}
-
-.meter__area {
-  fill: color-mix(in srgb, var(--color-primary) 9%, transparent);
-}
-
-.meter__line {
-  fill: none;
-  stroke: color-mix(in srgb, var(--color-primary) 40%, transparent);
-  stroke-width: 1.25;
-  vector-effect: non-scaling-stroke;
-}
-
-.meter__down,
-.meter__up {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  overflow: hidden;
+.band__figure {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  color: color-mix(in srgb, var(--color-on-surface) 38%, transparent);
+  line-height: 1;
   white-space: nowrap;
+  transition: color 0.4s var(--m3-ease-emphasized);
 }
 
-.meter__down {
-  gap: 5px;
-  color: var(--color-on-surface-variant);
-  font-size: 18px;
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  line-height: 1.25;
-  transition: color 0.3s var(--m3-ease-emphasized);
+.band__figure span {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
 }
 
-.meter--live .meter__down {
-  color: var(--color-primary);
+.band__figure small {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
 }
 
-.meter__up {
-  gap: 5px;
-  padding-inline-start: 2px;
-  color: var(--color-on-surface-variant);
-  font-size: 11px;
-}
-
-.meter__counts {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  align-items: center;
-  margin: 0;
-  padding: 0 6px;
-  list-style: none;
-}
-
-/* A short rule between the halves, inset from the strip's edges. */
-.meter__counts::before {
-  content: '';
-  position: absolute;
-  inset-block: 16px;
-  inset-inline-start: 0;
-  width: 1px;
-  background: color-mix(in srgb, var(--color-outline-variant) 80%, transparent);
-}
-
-.meter__count {
-  display: grid;
-  justify-items: center;
-  gap: 1px;
-  color: var(--color-on-surface-variant);
-}
-
-.meter__count strong {
-  color: color-mix(in srgb, var(--color-on-surface-variant) 55%, transparent);
-  font-size: 17px;
-  font-weight: 650;
-  line-height: 1.3;
-  transition: color 0.3s var(--m3-ease-emphasized);
-}
-
-.meter__count span {
-  font-size: 11px;
-}
-
-.meter__count--some strong {
+.band--live .band__figure {
   color: var(--color-on-surface);
 }
 
-.meter__count--active.meter__count--some strong {
+.band--live .band__figure small {
   color: var(--color-primary);
 }
 
+.band__up {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-on-surface-variant);
+  font-size: 11px;
+}
+
+/* Counts read as a quiet legend: label above, figure below, right-aligned. */
+.band__counts {
+  display: flex;
+  gap: 18px;
+  margin: 0;
+  padding-bottom: 1px;
+}
+
+.band__count {
+  display: grid;
+  justify-items: end;
+  gap: 5px;
+}
+
+.band__count dt {
+  color: var(--color-on-surface-variant);
+  font-size: 11px;
+  line-height: 1;
+}
+
+.band__count dd {
+  margin: 0;
+  color: color-mix(in srgb, var(--color-on-surface) 30%, transparent);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1;
+  transition: color 0.3s var(--m3-ease-emphasized);
+}
+
+.band__count--some dd {
+  color: var(--color-on-surface);
+}
+
+.band__count--active.band__count--some dd {
+  color: var(--color-primary);
+}
+
+/* The floor: full bleed, the trace rising out of a hairline. */
+.band__trace {
+  position: absolute;
+  inset: auto 0 0;
+  width: 100%;
+  height: 22px;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.band__area {
+  fill: url('#band-fill');
+}
+
+.band__line {
+  fill: none;
+  stroke: color-mix(in srgb, var(--color-outline-variant) 90%, transparent);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  transition: stroke 0.4s var(--m3-ease-emphasized);
+}
+
+.band--live .band__line {
+  stroke: color-mix(in srgb, var(--color-primary) 70%, transparent);
+  stroke-width: 1.5;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .meter,
-  .meter__trace,
-  .meter__area,
-  .meter__line {
+  .band,
+  .band__figure,
+  .band__line {
     transition: none;
   }
 }

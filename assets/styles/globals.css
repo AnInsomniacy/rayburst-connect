@@ -336,6 +336,39 @@ body {
   transform: scale(0.7);
 }
 
+/* ── Popovers: menus, selects and tooltips grow out of their anchor ─
+   Naive scales from the anchor-side origin it sets; this gives that
+   motion a decelerating entrance, a short drop and a quicker exit. */
+body .n-popover-shared.popover-transition-enter-active {
+  transition:
+    opacity 0.16s var(--m3-ease-emphasized-decel),
+    transform 0.26s var(--m3-ease-emphasized-decel);
+}
+
+body .n-popover-shared.popover-transition-leave-active {
+  transition:
+    opacity 0.12s var(--m3-ease-emphasized-accel),
+    transform 0.12s var(--m3-ease-emphasized-accel);
+}
+
+body .n-popover-shared.popover-transition-enter-from,
+body .n-popover-shared.popover-transition-leave-to {
+  opacity: 0;
+  transform: translateY(-4px) scale(0.9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body .n-popover-shared.popover-transition-enter-active,
+  body .n-popover-shared.popover-transition-leave-active {
+    transition: opacity 0.12s linear;
+  }
+
+  body .n-popover-shared.popover-transition-enter-from,
+  body .n-popover-shared.popover-transition-leave-to {
+    transform: none;
+  }
+}
+
 /* ── scroll-fade: a capped list fades at the edge that has more ─── */
 @property --scroll-fade-top {
   syntax: '<length>';
