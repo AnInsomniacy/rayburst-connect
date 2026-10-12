@@ -9,7 +9,7 @@
 import { computed, onMounted, onUnmounted, provide, ref, watch } from 'vue';
 import { browser } from 'wxt/browser';
 import { NButton, NConfigProvider, NIcon, NSkeleton, NSpin, NTab, NTabs } from 'naive-ui';
-import { AlertCircleOutline, PauseOutline, PlayOutline, RocketOutline } from '@vicons/ionicons5';
+import { AlertCircleOutline, RocketOutline } from '@vicons/ionicons5';
 import {
   DesktopApiClient,
   checkConnection,
@@ -329,7 +329,7 @@ onUnmounted(() => {
             @toggle-enabled="toggleEnabled"
           />
 
-          <NTabs v-model:value="view" type="line" justify-content="space-evenly" size="small">
+          <NTabs v-model:value="view" type="segment" size="small" class="popup-tabs">
             <NTab name="downloads" :tab="i18n('media_downloads')" />
             <NTab name="media">
               <span class="sniffer-tab">
@@ -394,38 +394,28 @@ onUnmounted(() => {
                     key="connected"
                     class="popup-page"
                   >
-                    <StatDashboard :stat="globalStat" :disabled="!enabled" />
+                    <StatDashboard
+                      :stat="globalStat"
+                      :disabled="!enabled"
+                      :bulk="canPauseAll ? 'pause' : canResumeAll ? 'resume' : null"
+                      @pause-all="pauseAll"
+                      @resume-all="resumeAll"
+                    />
                     <TaskList
                       :tasks="tasks"
                       @pause="(gid) => controlTask(gid, 'pause')"
                       @resume="(gid) => controlTask(gid, 'resume')"
                       @reveal="(gid) => controlTask(gid, 'reveal')"
                     />
-                    <div class="popup-actions">
-                      <!-- Three equal actions keep the footer balanced in every state. -->
+                    <div class="popup-actions popup-actions--open">
                       <NButton
                         size="small"
                         secondary
-                        :disabled="!enabled || !canPauseAll"
-                        @click="pauseAll"
+                        type="primary"
+                        block
+                        :loading="opening"
+                        @click="openApp"
                       >
-                        <template #icon>
-                          <NIcon><PauseOutline /></NIcon>
-                        </template>
-                        {{ i18n('popup_action_pause_all', 'Pause All') }}
-                      </NButton>
-                      <NButton
-                        size="small"
-                        secondary
-                        :disabled="!enabled || !canResumeAll"
-                        @click="resumeAll"
-                      >
-                        <template #icon>
-                          <NIcon><PlayOutline /></NIcon>
-                        </template>
-                        {{ i18n('popup_action_resume_all', 'Resume All') }}
-                      </NButton>
-                      <NButton size="small" type="primary" :loading="opening" @click="openApp">
                         <template #icon>
                           <NIcon><RocketOutline /></NIcon>
                         </template>
@@ -522,18 +512,19 @@ onUnmounted(() => {
                           errorType === 'ApiEngineStartingError' ||
                           errorType === 'ApiEngineUnavailableError'
                         "
-                        size="tiny"
+                        size="small"
+                        secondary
                         :loading="opening"
                         @click="openApp"
                         >{{ i18n('popup_action_open', 'Open Rayburst') }}</NButton
                       >
                       <NButton
-                        size="tiny"
+                        size="small"
                         type="primary"
                         @click="errorType?.startsWith('ApiEngine') ? checkAgain() : launchApp()"
                       >
                         <template #icon>
-                          <NIcon :size="12"><RocketOutline /></NIcon>
+                          <NIcon><RocketOutline /></NIcon>
                         </template>
                         {{
                           phase === 'failed' || errorType?.startsWith('ApiEngine')
@@ -626,7 +617,6 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 12px;
   padding: 12px;
-  min-height: 216px;
 }
 
 .popup-skeleton__header {
@@ -654,19 +644,9 @@ onUnmounted(() => {
   justify-content: flex-end;
 }
 
-.popup-page {
-  min-height: 160px;
-}
-
 .popup-launching {
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) 48px;
-  padding: 0 20px;
+  padding: 28px 20px;
   text-align: center;
-}
-
-.popup-launching::after {
-  content: '';
 }
 
 .popup-launching__content {
@@ -695,8 +675,8 @@ onUnmounted(() => {
 
 .popup-unavailable > .popup-banner {
   align-self: center;
-  width: calc(100% - 32px);
-  margin: 0 16px;
+  width: calc(100% - 24px);
+  margin: 0 12px;
 }
 
 /* ── Disconnected Banner ─────────────────────────────────────── */
@@ -741,17 +721,18 @@ onUnmounted(() => {
   padding: 8px 12px 12px;
 }
 
-.popup-page:not(.popup-unavailable) > .popup-actions {
+/* One spacing rhythm: 12px gutters, 8px between blocks, 12px at both ends. */
+.popup-tabs {
+  padding: 0 12px 8px;
+}
+
+.popup-page {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
 }
 
-.popup-actions :deep(.n-button__content) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.popup-actions--unavailable {
-  justify-content: flex-end;
+/* Recovery fills the footer like the connected page's open button. */
+.popup-actions--unavailable > .n-button {
+  flex: 1;
 }
 </style>

@@ -113,16 +113,26 @@ const { t: i18n } = useI18n();
   flex-shrink: 0;
 }
 
+/* Status reads as a coloured dot beside quiet text, not a coloured pill. */
 .popup-header__badge {
-  font-size: 10px;
-  padding: 2px 8px;
-  border-radius: 9999px;
-  font-weight: 600;
-  line-height: 1.4;
-  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-on-surface-variant);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.popup-header__badge::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--badge-dot, var(--color-outline));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--badge-dot, transparent) 18%, transparent);
   transition:
-    color 0.2s var(--m3-ease-emphasized),
-    background-color 0.2s var(--m3-ease-emphasized);
+    background-color 0.3s var(--m3-ease-emphasized),
+    box-shadow 0.3s var(--m3-ease-emphasized);
 }
 
 .popup-header__badge-text {
@@ -130,18 +140,16 @@ const { t: i18n } = useI18n();
 }
 
 .popup-header__badge--ok {
-  background: color-mix(in srgb, var(--color-success) 12%, transparent);
-  color: var(--color-success);
+  --badge-dot: var(--color-success);
 }
 
 .popup-header__badge--err {
-  background: color-mix(in srgb, var(--color-error) 12%, transparent);
+  --badge-dot: var(--color-error);
   color: var(--color-error);
 }
 
 .popup-header__badge--pending {
-  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
-  color: var(--color-primary);
+  --badge-dot: var(--color-primary);
 }
 
 .popup-header__version {
@@ -176,9 +184,8 @@ const { t: i18n } = useI18n();
 
 .popup-header__toggle-crossfade > .popup-header__toggle-label {
   grid-area: 1 / 1;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
+  font-size: 12px;
+  font-weight: 500;
   white-space: nowrap;
   user-select: none;
   transition:
@@ -206,7 +213,7 @@ const { t: i18n } = useI18n();
 }
 
 .popup-header__toggle-label--on {
-  color: var(--color-success);
+  color: var(--color-on-surface);
 }
 
 .popup-header__toggle-label--off {

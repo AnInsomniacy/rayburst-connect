@@ -1,8 +1,11 @@
 <script lang="ts" setup>
-/** Global speed and task counts for the popup: two speed halves over three count thirds. */
-import { computed } from 'vue';
-import { NIcon } from 'naive-ui';
-import { ArrowDownOutline, ArrowUpOutline } from '@vicons/ionicons5';
+/**
+ * The throughput meter: current speeds over a live trace of the last
+ * twenty seconds, and the task counts with the one bulk action that applies.
+ */
+import { computed, ref, watch } from 'vue';
+import { NButton, NIcon } from 'naive-ui';
+import { ArrowDownOutline, ArrowUpOutline, PauseOutline, PlayOutline } from '@vicons/ionicons5';
 import type { StatResponse } from '@/lib/api';
 import { formatSpeed } from '@/lib/format';
 import { useI18n } from '@/shared/i18n/engine';
@@ -12,9 +15,36 @@ const { t: i18n } = useI18n();
 const props = defineProps<{
   stat: StatResponse;
   disabled: boolean;
+  bulk: 'pause' | 'resume' | null;
 }>();
+const emit = defineEmits<{ pauseAll: []; resumeAll: [] }>();
 
+/** Samples at the popup's poll rate: forty make twenty seconds. */
+const SAMPLES = 40;
 const count = (value: string) => parseInt(value, 10) || 0;
+const down = ref<number[]>(Array(SAMPLES).fill(0));
+const up = ref<number[]>(Array(SAMPLES).fill(0));
+watch(
+  () => props.stat,
+  (stat) => {
+    down.value = [...down.value.slice(1), count(stat.downloadSpeed)];
+    up.value = [...up.value.slice(1), count(stat.uploadSpeed)];
+  },
+  { immediate: true },
+);
+
+// Both traces share one scale, so upload reads as the smaller stream it is.
+const peak = computed(() => Math.max(1, ...down.value, ...up.value));
+function trace(samples: number[], closed: boolean): string {
+  const points = samples.map(
+    (value, index) =>
+      `${((index / (SAMPLES - 1)) * 100).toFixed(2)} ${(40 - (value / peak.value) * 36).toFixed(2)}`,
+  );
+  return `M ${points.join(' L ')}${closed ? ' L 100 40 L 0 40 Z' : ''}`;
+}
+/** The attribute draws the trace; the CSS property lets supporting browsers morph it. */
+const shape = (path: string) => ({ d: path, style: { d: `path('${path}')` } });
+
 const counts = computed(() => [
   { key: 'active', label: i18n('popup_stat_active', 'Active'), value: count(props.stat.numActive) },
   {
@@ -29,121 +59,186 @@ const counts = computed(() => [
   },
 ]);
 const downloading = computed(() => count(props.stat.downloadSpeed) > 0);
-const uploading = computed(() => count(props.stat.uploadSpeed) > 0);
+/** The trace opens with the first traffic and folds away once its history is quiet. */
+const traced = computed(() => down.value.some(Boolean) || up.value.some(Boolean));
 </script>
 
 <template>
-  <section :class="['stat-card', { 'stat-card--disabled': disabled }]">
-    <div class="stat-card__speeds">
-      <span :class="['stat-card__speed', { 'stat-card__speed--live': downloading }]">
+  <section
+    :class="[
+      'meter',
+      { 'meter--live': downloading, 'meter--traced': traced, 'meter--disabled': disabled },
+    ]"
+  >
+    <div class="meter__speeds">
+      <span class="meter__down">
         <NIcon :size="16"><ArrowDownOutline /></NIcon>
         {{ formatSpeed(stat.downloadSpeed) }}
       </span>
-      <span
-        :class="[
-          'stat-card__speed',
-          'stat-card__speed--up',
-          { 'stat-card__speed--live': uploading },
-        ]"
-      >
-        <NIcon :size="16"><ArrowUpOutline /></NIcon>
+      <span class="meter__up">
+        <NIcon :size="12"><ArrowUpOutline /></NIcon>
         {{ formatSpeed(stat.uploadSpeed) }}
       </span>
     </div>
-    <div class="stat-card__counts">
-      <span
-        v-for="item in counts"
-        :key="item.key"
-        :class="[
-          'stat-card__count',
-          `stat-card__count--${item.key}`,
-          { 'stat-card__count--live': item.value > 0 },
-        ]"
-      >
-        <strong>{{ item.value }}</strong>
-        {{ item.label }}
+    <div class="meter__footer">
+      <span class="meter__counts">
+        <span
+          v-for="item in counts"
+          :key="item.key"
+          :class="['meter__count', { 'meter__count--live': item.value > 0 }]"
+        >
+          {{ item.label }} <strong>{{ item.value }}</strong>
+        </span>
       </span>
+      <Transition name="pop" mode="out-in">
+        <NButton
+          v-if="bulk"
+          :key="bulk"
+          size="tiny"
+          quaternary
+          class="meter__bulk"
+          :disabled="disabled"
+          @click="bulk === 'pause' ? emit('pauseAll') : emit('resumeAll')"
+        >
+          <template #icon>
+            <NIcon><PauseOutline v-if="bulk === 'pause'" /><PlayOutline v-else /></NIcon>
+          </template>
+          {{
+            bulk === 'pause'
+              ? i18n('popup_action_pause_all', 'Pause All')
+              : i18n('popup_action_resume_all', 'Resume All')
+          }}
+        </NButton>
+      </Transition>
     </div>
+    <svg class="meter__trace" viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true">
+      <template v-if="down.some(Boolean)">
+        <path class="meter__area" v-bind="shape(trace(down, true))" />
+        <path class="meter__line" v-bind="shape(trace(down, false))" />
+      </template>
+      <path
+        v-if="up.some(Boolean)"
+        class="meter__line meter__line--up"
+        v-bind="shape(trace(up, false))"
+      />
+    </svg>
   </section>
 </template>
 
 <style scoped>
-.stat-card {
-  margin: 4px 12px 8px;
+.meter {
+  display: grid;
+  gap: 8px;
+  margin: 0 12px;
+  padding: 14px 14px 10px;
   overflow: hidden;
-  border-radius: 14px;
-  background: var(--color-surface-container-low);
+  border-radius: 16px;
+  background: var(--color-surface-well);
   font-variant-numeric: tabular-nums;
 }
 
-/* Two halves, split by a hairline. */
-.stat-card__speeds {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+/* The trace is the meter's floor: full bleed, below the figures, never under them. */
+.meter__trace {
+  display: block;
+  width: calc(100% + 28px);
+  height: 0;
+  margin: -8px -14px 0;
+  transition:
+    height 0.4s var(--m3-ease-emphasized),
+    margin 0.4s var(--m3-ease-emphasized);
 }
 
-.stat-card__speed {
+.meter--traced .meter__trace {
+  height: 36px;
+  margin: 0 -14px -10px;
+}
+
+.meter__area,
+.meter__line {
+  transition: d 0.5s linear;
+}
+
+.meter__area {
+  fill: color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+.meter__line {
+  fill: none;
+  stroke: color-mix(in srgb, var(--color-primary) 55%, transparent);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.meter__line--up {
+  stroke: color-mix(in srgb, var(--color-on-surface) 22%, transparent);
+  stroke-dasharray: 3 3;
+}
+
+.meter__speeds,
+.meter__footer {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+}
+
+.meter__down {
+  display: inline-flex;
+  align-items: center;
   gap: 6px;
-  padding: 16px 8px 14px;
   color: var(--color-on-surface-variant);
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
   transition: color 0.3s var(--m3-ease-emphasized);
 }
 
-.stat-card__speed--up {
-  border-inline-start: 1px solid var(--color-outline-variant);
-}
-
-.stat-card__speed--live {
+.meter--live .meter__down {
   color: var(--color-primary);
 }
 
-.stat-card__speed--up.stat-card__speed--live {
-  color: var(--color-tertiary);
+.meter__up {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-on-surface-variant);
+  font-size: 12px;
 }
 
-/* Three thirds on a slightly deeper tone. */
-.stat-card__counts {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  padding: 10px 8px 12px;
-  background: color-mix(in srgb, var(--color-on-surface) 3%, transparent);
+.meter__footer {
+  min-height: 24px;
+}
+
+.meter__counts {
+  display: flex;
+  gap: 14px;
+  color: var(--color-on-surface-variant);
+  font-size: 12px;
   transition: opacity 0.3s var(--m3-ease-emphasized);
 }
 
-.stat-card__count {
-  display: grid;
-  justify-items: center;
-  gap: 2px;
-  color: var(--color-on-surface-variant);
-  font-size: 11px;
-}
-
-.stat-card__count strong {
-  color: var(--color-on-surface-variant);
-  font-size: 15px;
+.meter__count strong {
   font-weight: 600;
   opacity: 0.6;
-  transition:
-    color 0.3s var(--m3-ease-emphasized),
-    opacity 0.3s var(--m3-ease-emphasized);
 }
 
-.stat-card__count--live strong {
+.meter__count--live strong {
   color: var(--color-on-surface);
   opacity: 1;
 }
 
-.stat-card__count--active.stat-card__count--live strong {
-  color: var(--color-primary);
+.meter--disabled .meter__counts {
+  opacity: 0.45;
 }
 
-.stat-card--disabled .stat-card__counts {
-  opacity: 0.45;
+.meter__bulk {
+  color: var(--color-on-surface-variant);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .meter__trace,
+  .meter__area,
+  .meter__line {
+    transition: none;
+  }
 }
 </style>

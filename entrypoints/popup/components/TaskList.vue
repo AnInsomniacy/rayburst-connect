@@ -83,7 +83,7 @@ function detail(task: DesktopTask): string {
 </script>
 
 <template>
-  <TransitionGroup v-if="rows.length > 0" tag="ul" name="task" class="task-list">
+  <TransitionGroup v-if="rows.length > 0" tag="ul" name="task" class="task-list scroll-fade">
     <li
       v-for="row in rows"
       :key="row.task.gid"
@@ -130,7 +130,7 @@ function detail(task: DesktopTask): string {
   display: grid;
   gap: 2px;
   max-height: 220px;
-  margin: 0 8px;
+  margin: 0 12px;
   padding: 0;
   overflow-y: auto;
   list-style: none;
@@ -159,13 +159,13 @@ function detail(task: DesktopTask): string {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 6px 8px 10px;
-  border-radius: 10px;
+  padding: 8px 6px 8px 14px;
+  border-radius: 12px;
   transition: background-color 0.2s var(--m3-ease-emphasized);
 }
 
 .task-row:hover {
-  background: var(--color-surface-container-low);
+  background: var(--color-surface-well);
 }
 
 .task-row__text {
@@ -236,7 +236,7 @@ function detail(task: DesktopTask): string {
   justify-content: center;
   gap: 8px;
   margin: 0 12px;
-  padding: 14px 0 6px;
+  padding: 10px 0 2px;
   color: var(--color-on-surface-variant);
   font-size: 12px;
 }

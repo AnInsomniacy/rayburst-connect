@@ -281,11 +281,26 @@ function sourceName(item: MediaItem) {
       }
     : { prefix: value, suffix: '', full: value };
 }
+/** Secondary actions surface with the row's hover or focus; download always shows. */
 function rowActions(item: MediaItem) {
   return [
-    { key: 'copy', icon: CopyOutline, label: t('resources_copy'), run: () => copy(item.url) },
+    {
+      key: 'copy',
+      icon: CopyOutline,
+      label: t('resources_copy'),
+      secondary: true,
+      run: () => copy(item.url),
+    },
     ...(['hls', 'dash', 'collection'].includes(item.kind)
-      ? [{ key: 'inspect', icon: ListOutline, label: t('media_inspect'), run: () => select(item) }]
+      ? [
+          {
+            key: 'inspect',
+            icon: ListOutline,
+            label: t('media_inspect'),
+            secondary: true,
+            run: () => select(item),
+          },
+        ]
       : []),
     ...(!['json', 'subtitle', 'embedded', 'collection'].includes(item.kind)
       ? [
@@ -293,6 +308,8 @@ function rowActions(item: MediaItem) {
             key: 'preview',
             icon: PlayCircleOutline,
             label: t('resources_preview'),
+            // An open preview keeps its control in reach.
+            secondary: preview.value?.id !== item.id,
             run: () => {
               preview.value = preview.value?.id === item.id ? undefined : item;
             },
@@ -303,6 +320,7 @@ function rowActions(item: MediaItem) {
       key: sent(item) ? 'downloaded' : 'download',
       icon: sent(item) ? CheckmarkOutline : DownloadOutline,
       label: t('media_download'),
+      secondary: false,
       run: () => download(item),
     },
   ];
@@ -559,6 +577,7 @@ onUnmounted(() => {
               <div class="resource-filters">
                 <NInput
                   v-model:value="query"
+                  class="resource-search"
                   size="small"
                   clearable
                   :placeholder="t('media_filter')"
@@ -601,7 +620,7 @@ onUnmounted(() => {
             <p v-if="expanded || allTabs || hasFilter" class="resource-summary">
               {{ tSub('sniffer_results', [String(filtered.length), String(resourceCount)]) }}
             </p>
-            <div class="resource-list">
+            <div :class="['resource-list', { 'scroll-fade': !expanded }]">
               <template v-for="row in rows" :key="row.key">
                 <article v-if="row.group" class="resource-row resource-row--tracks">
                   <span class="resource-tracks-icon" aria-hidden="true"
@@ -730,6 +749,7 @@ onUnmounted(() => {
                               ? 'primary'
                               : 'default'
                           "
+                          :class="{ 'row-action--secondary': rowAction.secondary }"
                           :aria-label="rowAction.label"
                           :loading="rowAction.key === 'download' && rowBusy.has(row.item.id)"
                           :disabled="rowAction.key === 'download' && row.item.method !== 'GET'"
@@ -872,7 +892,6 @@ onUnmounted(() => {
 }
 .resource-stage {
   position: relative;
-  min-height: 160px;
 }
 .resource-catalog {
   display: flex;
@@ -887,6 +906,14 @@ onUnmounted(() => {
 .resource-filters > .n-input {
   flex: 1;
   min-width: 0;
+}
+/* A quiet well rather than a boxed field; the focus ring still marks entry. */
+.resource-search {
+  border-radius: 10px;
+  background-color: var(--color-surface-well);
+}
+.resource-search :deep(.n-input__border) {
+  border-color: transparent;
 }
 /* Text pickers read as labels until hovered. */
 .resource-picker {
@@ -914,7 +941,7 @@ onUnmounted(() => {
   transition: background-color 0.2s var(--m3-ease-emphasized);
 }
 .resource-row:hover {
-  background: var(--color-surface-container-low);
+  background: var(--color-surface-well);
 }
 .resource-title {
   min-width: 0;
@@ -930,12 +957,32 @@ onUnmounted(() => {
 }
 .row-actions {
   display: flex;
-  gap: 2px;
   flex-shrink: 0;
 }
 .row-actions .n-button {
   width: 32px;
   height: 32px;
+}
+/* In the popup a row shows only its download until it is hovered or focused. */
+.resources:not(.expanded) .row-actions .row-action--secondary {
+  width: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    width 0.2s var(--m3-ease-emphasized),
+    opacity 0.15s var(--m3-ease-emphasized);
+}
+.resources:not(.expanded) .resource-row:is(:hover, :focus-within) .row-action--secondary {
+  width: 32px;
+  opacity: 1;
+  pointer-events: auto;
+}
+@media (hover: none) {
+  .resources:not(.expanded) .row-actions .row-action--secondary {
+    width: 32px;
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 .resource-title strong {
   display: flex;
@@ -962,6 +1009,9 @@ onUnmounted(() => {
 }
 .resource-row--tracks:hover {
   background: color-mix(in srgb, var(--color-primary-container) 40%, transparent);
+}
+.resource-row--tracks .resource-title strong {
+  display: block;
 }
 .resource-tracks-icon {
   display: flex;

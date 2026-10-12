@@ -189,6 +189,15 @@ export function buildThemeOverrides(seedHex: string, isDark: boolean): GlobalThe
       },
     },
     Form: { labelTextColor: onSurfaceVariant },
+    // The segmented control sits in the same well as the popup's meter (see --color-surface-well).
+    Tabs: {
+      colorSegment: surface(
+        isDark ? '--color-surface-container-high' : '--color-surface-container-low',
+      ),
+      tabColorSegment: surface(
+        isDark ? '--color-surface-container-highest' : '--color-surface-container-lowest',
+      ),
+    },
   };
 }
 
