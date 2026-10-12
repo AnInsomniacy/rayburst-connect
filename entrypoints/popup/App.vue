@@ -9,7 +9,7 @@
 import { computed, onMounted, onUnmounted, provide, ref, watch } from 'vue';
 import { browser } from 'wxt/browser';
 import { NButton, NConfigProvider, NIcon, NSkeleton, NSpin, NTab, NTabs } from 'naive-ui';
-import { AlertCircleOutline, RocketOutline } from '@vicons/ionicons5';
+import { AlertCircleOutline, PauseOutline, PlayOutline, RocketOutline } from '@vicons/ionicons5';
 import {
   DesktopApiClient,
   checkConnection,
@@ -394,25 +394,37 @@ onUnmounted(() => {
                     key="connected"
                     class="popup-page"
                   >
-                    <StatDashboard
-                      :stat="globalStat"
-                      :disabled="!enabled"
-                      :bulk="canPauseAll ? 'pause' : canResumeAll ? 'resume' : null"
-                      @pause-all="pauseAll"
-                      @resume-all="resumeAll"
-                    />
+                    <StatDashboard :stat="globalStat" :disabled="!enabled" />
                     <TaskList
                       :tasks="tasks"
                       @pause="(gid) => controlTask(gid, 'pause')"
                       @resume="(gid) => controlTask(gid, 'resume')"
                       @reveal="(gid) => controlTask(gid, 'reveal')"
                     />
-                    <div class="popup-actions popup-actions--open">
+                    <!-- The bulk action that applies shares the footer with opening the app. -->
+                    <TransitionGroup tag="div" name="pop" class="popup-actions popup-actions--open">
                       <NButton
+                        v-if="canPauseAll || canResumeAll"
+                        :key="canPauseAll ? 'pause' : 'resume'"
+                        size="small"
+                        secondary
+                        :disabled="!enabled"
+                        @click="canPauseAll ? pauseAll() : resumeAll()"
+                      >
+                        <template #icon>
+                          <NIcon><PauseOutline v-if="canPauseAll" /><PlayOutline v-else /></NIcon>
+                        </template>
+                        {{
+                          canPauseAll
+                            ? i18n('popup_action_pause_all', 'Pause All')
+                            : i18n('popup_action_resume_all', 'Resume All')
+                        }}
+                      </NButton>
+                      <NButton
+                        key="open"
                         size="small"
                         secondary
                         type="primary"
-                        block
                         :loading="opening"
                         @click="openApp"
                       >
@@ -421,7 +433,7 @@ onUnmounted(() => {
                         </template>
                         {{ i18n('popup_action_open', 'Open Rayburst') }}
                       </NButton>
-                    </div>
+                    </TransitionGroup>
                   </section>
 
                   <section v-else :key="phase" class="popup-page popup-unavailable">
@@ -717,6 +729,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  position: relative;
   gap: 8px;
   padding: 8px 12px 12px;
 }
@@ -731,8 +744,13 @@ onUnmounted(() => {
   gap: 8px;
 }
 
-/* Recovery fills the footer like the connected page's open button. */
-.popup-actions--unavailable > .n-button {
+/* Footer buttons share its width evenly, connected or not. */
+.popup-actions > .n-button {
   flex: 1;
+}
+
+/* A leaving button steps out of the row so the other can widen. */
+.popup-actions > .pop-leave-active {
+  position: absolute;
 }
 </style>
