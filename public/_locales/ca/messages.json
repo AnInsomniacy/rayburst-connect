@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "Recarrega les pàgines. Pot afectar la reproducció."
   },
+  "media_settings_name_from": {
+    "message": "Anomena els fitxers detectats segons"
+  },
+  "media_settings_name_from_file": {
+    "message": "Nom del fitxer"
+  },
+  "media_settings_name_from_title": {
+    "message": "Títol de la pàgina"
+  },
   "media_settings_include": {
     "message": "Només els llocs indicats"
   },

@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "Επαναφορτώστε τις σελίδες. Μπορεί να επηρεάσει την αναπαραγωγή."
   },
+  "media_settings_name_from": {
+    "message": "Ονομασία εντοπισμένων αρχείων με βάση"
+  },
+  "media_settings_name_from_file": {
+    "message": "Όνομα αρχείου"
+  },
+  "media_settings_name_from_title": {
+    "message": "Τίτλο σελίδας"
+  },
   "media_settings_include": {
     "message": "Μόνο οι αναφερόμενοι ιστότοποι"
   },

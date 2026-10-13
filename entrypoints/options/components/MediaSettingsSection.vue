@@ -66,6 +66,17 @@ const { t } = useI18n();
             @update:value="emit('change', { alwaysDeepSearch: $event })"
         /></NFormItem>
         <p class="settings-hint">{{ t('media_settings_deep_hint') }}</p>
+        <NFormItem :label="t('media_settings_name_from')"
+          ><NSelect
+            :value="value.nameFrom"
+            :options="
+              ['file', 'title'].map((source) => ({
+                value: source,
+                label: t(`media_settings_name_from_${source}`),
+              }))
+            "
+            @update:value="emit('change', { nameFrom: $event })"
+        /></NFormItem>
         <NFormItem :label="t('options_site_rules_label')"
           ><NSelect
             :value="value.siteMode"

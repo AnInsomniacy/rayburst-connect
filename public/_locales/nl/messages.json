@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "Herlaad de pagina. Dit kan het afspelen beïnvloeden."
   },
+  "media_settings_name_from": {
+    "message": "Gevonden bestanden benoemen naar"
+  },
+  "media_settings_name_from_file": {
+    "message": "Bestandsnaam"
+  },
+  "media_settings_name_from_title": {
+    "message": "Paginatitel"
+  },
   "media_settings_include": {
     "message": "Alleen vermelde websites"
   },

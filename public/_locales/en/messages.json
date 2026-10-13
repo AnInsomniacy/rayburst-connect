@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "Reload pages to apply. May affect playback."
   },
+  "media_settings_name_from": {
+    "message": "Name sniffed files after"
+  },
+  "media_settings_name_from_file": {
+    "message": "File name"
+  },
+  "media_settings_name_from_title": {
+    "message": "Page title"
+  },
   "media_settings_include": {
     "message": "Only listed sites"
   },

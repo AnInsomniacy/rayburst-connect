@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "Reîncarcă paginile. Poate afecta redarea."
   },
+  "media_settings_name_from": {
+    "message": "Denumește fișierele detectate după"
+  },
+  "media_settings_name_from_file": {
+    "message": "Numele fișierului"
+  },
+  "media_settings_name_from_title": {
+    "message": "Titlul paginii"
+  },
   "media_settings_include": {
     "message": "Doar site-urile enumerate"
   },

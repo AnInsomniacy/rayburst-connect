@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "Last sidene på nytt. Kan påvirke avspilling."
   },
+  "media_settings_name_from": {
+    "message": "Gi oppdagede filer navn etter"
+  },
+  "media_settings_name_from_file": {
+    "message": "Filnavn"
+  },
+  "media_settings_name_from_title": {
+    "message": "Sidetittel"
+  },
   "media_settings_include": {
     "message": "Bare oppførte nettsteder"
   },

@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "Seiten neu laden. Die Wiedergabe kann beeinträchtigt werden."
   },
+  "media_settings_name_from": {
+    "message": "Erkannte Dateien benennen nach"
+  },
+  "media_settings_name_from_file": {
+    "message": "Dateiname"
+  },
+  "media_settings_name_from_title": {
+    "message": "Seitentitel"
+  },
   "media_settings_include": {
     "message": "Nur aufgeführte Websites"
   },

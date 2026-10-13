@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "再読み込みで反映します。再生に影響する場合があります。"
   },
+  "media_settings_name_from": {
+    "message": "検出したファイルの名前"
+  },
+  "media_settings_name_from_file": {
+    "message": "ファイル名"
+  },
+  "media_settings_name_from_title": {
+    "message": "ページタイトル"
+  },
   "media_settings_include": {
     "message": "指定サイトのみ"
   },

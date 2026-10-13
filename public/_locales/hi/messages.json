@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "लागू करने के लिए पृष्ठ फिर लोड करें। प्लेबैक प्रभावित हो सकता है।"
   },
+  "media_settings_name_from": {
+    "message": "पकड़ी गई फ़ाइलों का नाम"
+  },
+  "media_settings_name_from_file": {
+    "message": "फ़ाइल का नाम"
+  },
+  "media_settings_name_from_title": {
+    "message": "पेज का शीर्षक"
+  },
   "media_settings_include": {
     "message": "केवल सूचीबद्ध साइटें"
   },

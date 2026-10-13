@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "Tải lại trang để áp dụng. Có thể ảnh hưởng phát lại."
   },
+  "media_settings_name_from": {
+    "message": "Đặt tên tệp phát hiện được theo"
+  },
+  "media_settings_name_from_file": {
+    "message": "Tên tệp"
+  },
+  "media_settings_name_from_title": {
+    "message": "Tiêu đề trang"
+  },
   "media_settings_include": {
     "message": "Chỉ các trang trong danh sách"
   },

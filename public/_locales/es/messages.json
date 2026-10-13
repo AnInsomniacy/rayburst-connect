@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "Recarga las páginas. Puede afectar a la reproducción."
   },
+  "media_settings_name_from": {
+    "message": "Nombrar archivos detectados según"
+  },
+  "media_settings_name_from_file": {
+    "message": "Nombre del archivo"
+  },
+  "media_settings_name_from_title": {
+    "message": "Título de la página"
+  },
   "media_settings_include": {
     "message": "Solo los sitios indicados"
   },

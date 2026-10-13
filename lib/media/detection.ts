@@ -4,7 +4,7 @@ import {
   extractFilenameFromUrl,
   normalizeFilename,
 } from '../download/url';
-import type { MediaCandidate } from '../schema';
+import type { MediaCandidate, MediaSettings } from '../schema';
 
 import { MEDIA_FORMATS, MEDIA_MIMES, MIME_EXTENSIONS, matchesMime } from './formats';
 
@@ -91,19 +91,29 @@ export function detectMedia(
   };
 }
 
-/**
- * The name a sniffed file is saved under: its own, else the page title, with
- * the extension its type implies when the name carries no known one.
- */
-export function mediaFileName(item: Pick<MediaCandidate, 'filename' | 'title' | 'mime'>): string {
-  // A title is one name; its slashes are not folders.
-  const name = normalizeFilename(item.filename || item.title.replace(/[/\\]+/g, ' '));
-  const extension = MIME_EXTENSIONS[item.mime];
+function knownExtension(name: string): string {
   const current = /\.([^.]+)$/.exec(name)?.[1]?.toLowerCase() ?? '';
   const known =
     MEDIA_FORMATS.some((format) => format.extension === current) ||
     Object.values(MIME_EXTENSIONS).includes(current);
-  return name && extension && !known ? `${name}.${extension}` : name;
+  return known ? current : '';
+}
+
+/**
+ * The name a sniffed file is saved under: its own or the page title, as
+ * chosen, falling back to the other. A name without a known extension gets the
+ * file's own, else the one its type implies.
+ */
+export function mediaFileName(
+  item: Pick<MediaCandidate, 'filename' | 'title' | 'mime'>,
+  nameFrom: MediaSettings['nameFrom'] = 'file',
+): string {
+  const own = normalizeFilename(item.filename);
+  // A title is one name; its slashes are not folders.
+  const title = normalizeFilename(item.title.replace(/[/\\]+/g, ' '));
+  const name = nameFrom === 'title' ? title || own : own || title;
+  const extension = knownExtension(own) || MIME_EXTENSIONS[item.mime];
+  return name && extension && !knownExtension(name) ? `${name}.${extension}` : name;
 }
 
 export function mediaIdentity(

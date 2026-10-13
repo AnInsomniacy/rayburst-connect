@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "Ricarica le pagine. Può influire sulla riproduzione."
   },
+  "media_settings_name_from": {
+    "message": "Assegna ai file rilevati il nome"
+  },
+  "media_settings_name_from_file": {
+    "message": "Del file"
+  },
+  "media_settings_name_from_title": {
+    "message": "Del titolo della pagina"
+  },
   "media_settings_include": {
     "message": "Solo i siti elencati"
   },

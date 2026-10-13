@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "Odśwież strony. Może to wpłynąć na odtwarzanie."
   },
+  "media_settings_name_from": {
+    "message": "Nazwy wykrytych plików według"
+  },
+  "media_settings_name_from_file": {
+    "message": "Nazwy pliku"
+  },
+  "media_settings_name_from_title": {
+    "message": "Tytułu strony"
+  },
   "media_settings_include": {
     "message": "Tylko wymienione witryny"
   },

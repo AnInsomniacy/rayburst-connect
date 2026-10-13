@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "Muat ulang halaman. Dapat memengaruhi pemutaran."
   },
+  "media_settings_name_from": {
+    "message": "Beri nama berkas yang terdeteksi dengan"
+  },
+  "media_settings_name_from_file": {
+    "message": "Nama berkas"
+  },
+  "media_settings_name_from_title": {
+    "message": "Judul halaman"
+  },
   "media_settings_include": {
     "message": "Hanya situs terdaftar"
   },

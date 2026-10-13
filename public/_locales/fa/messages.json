@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "صفحات را دوباره بارگیری کنید. ممکن است بر پخش اثر بگذارد."
   },
+  "media_settings_name_from": {
+    "message": "نام‌گذاری فایل‌های شناسایی‌شده بر اساس"
+  },
+  "media_settings_name_from_file": {
+    "message": "نام فایل"
+  },
+  "media_settings_name_from_title": {
+    "message": "عنوان صفحه"
+  },
   "media_settings_include": {
     "message": "فقط سایت‌های فهرست‌شده"
   },

@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "Rechargez les pages. La lecture peut être affectée."
   },
+  "media_settings_name_from": {
+    "message": "Nommer les fichiers détectés d’après"
+  },
+  "media_settings_name_from_file": {
+    "message": "Nom du fichier"
+  },
+  "media_settings_name_from_title": {
+    "message": "Titre de la page"
+  },
   "media_settings_include": {
     "message": "Uniquement les sites listés"
   },

@@ -302,7 +302,7 @@ export default defineBackground(() => {
       const result = await orchestrator.sendUrl(candidate.url, context.referer ?? '', {
         source: 'media',
         headerContext: context,
-        filename: mediaFileName(candidate),
+        filename: mediaFileName(candidate, settings.mediaDiscovery.nameFrom),
       });
       if (result === 'duplicate-blocked') throw new MediaApiError('duplicate_blocked');
       return true;

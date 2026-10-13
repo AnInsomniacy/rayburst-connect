@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { detectMedia, mediaFileName, mediaIdentity, mediaUrl } from '@/lib/media/detection';
 import { MediaPresentationSchema, selectionError } from '@/lib/media/contracts';
 import { captureMediaContext } from '@/lib/media/request-context';
+import { parseMediaSettings } from '@/lib/schema';
 import { mediaPresentation, mediaSelection } from '../fixtures/media';
 
 describe('passive media classification', () => {
@@ -168,5 +169,14 @@ describe('sniffed file names', () => {
     expect(mediaFileName({ filename: 'data', title: 'x', mime: 'application/octet-stream' })).toBe(
       'data',
     );
+  });
+
+  it('can name files after their page, keeping the file extension', () => {
+    const file = { filename: '407814-1080p.mp4', title: 'Trip: Day 1 | Site', mime: 'video/mp4' };
+    expect(mediaFileName(file, 'title')).toBe('Trip_ Day 1 _ Site.mp4');
+    expect(mediaFileName({ ...file, mime: '' }, 'title')).toBe('Trip_ Day 1 _ Site.mp4');
+    expect(mediaFileName({ ...file, title: '' }, 'title')).toBe('407814-1080p.mp4');
+    expect(mediaFileName(file)).toBe('407814-1080p.mp4');
+    expect(parseMediaSettings({ nameFrom: 'url' }).nameFrom).toBe('file');
   });
 });

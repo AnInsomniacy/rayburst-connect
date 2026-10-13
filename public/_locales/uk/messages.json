@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "Перезавантажте сторінки. Може вплинути на відтворення."
   },
+  "media_settings_name_from": {
+    "message": "Називати знайдені файли за"
+  },
+  "media_settings_name_from_file": {
+    "message": "Назвою файлу"
+  },
+  "media_settings_name_from_title": {
+    "message": "Заголовком сторінки"
+  },
   "media_settings_include": {
     "message": "Лише вказані сайти"
   },

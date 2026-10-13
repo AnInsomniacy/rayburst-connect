@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "Töltse újra az oldalakat. Befolyásolhatja a lejátszást."
   },
+  "media_settings_name_from": {
+    "message": "Észlelt fájlok elnevezése"
+  },
+  "media_settings_name_from_file": {
+    "message": "Fájlnév alapján"
+  },
+  "media_settings_name_from_title": {
+    "message": "Oldalcím alapján"
+  },
   "media_settings_include": {
     "message": "Csak a felsorolt webhelyek"
   },

@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "刷新页面后生效，可能影响播放。"
   },
+  "media_settings_name_from": {
+    "message": "嗅探文件命名"
+  },
+  "media_settings_name_from_file": {
+    "message": "文件名"
+  },
+  "media_settings_name_from_title": {
+    "message": "网页标题"
+  },
   "media_settings_include": {
     "message": "仅启用所列网站"
   },

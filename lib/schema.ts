@@ -160,6 +160,8 @@ export const MediaSettingsSchema = lenient(
     alwaysDeepSearch: z.boolean().catch(false),
     quickDownload: z.boolean().catch(true),
     newestFirst: z.boolean().catch(false),
+    // Files keep their own name, or take the title of the page they play on.
+    nameFrom: z.enum(['file', 'title']).catch('file'),
   }),
 );
 export type MediaSettings = z.output<typeof MediaSettingsSchema>;

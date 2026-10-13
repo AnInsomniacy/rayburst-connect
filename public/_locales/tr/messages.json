@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "Sayfaları yeniden yükleyin. Oynatmayı etkileyebilir."
   },
+  "media_settings_name_from": {
+    "message": "Yakalanan dosyaları adlandır"
+  },
+  "media_settings_name_from_file": {
+    "message": "Dosya adıyla"
+  },
+  "media_settings_name_from_title": {
+    "message": "Sayfa başlığıyla"
+  },
   "media_settings_include": {
     "message": "Yalnızca listedeki siteler"
   },

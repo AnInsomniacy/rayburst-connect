@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "أعد تحميل الصفحات للتطبيق. قد يؤثر في التشغيل."
   },
+  "media_settings_name_from": {
+    "message": "تسمية الملفات المرصودة حسب"
+  },
+  "media_settings_name_from_file": {
+    "message": "اسم الملف"
+  },
+  "media_settings_name_from_title": {
+    "message": "عنوان الصفحة"
+  },
   "media_settings_include": {
     "message": "المواقع المدرجة فقط"
   },

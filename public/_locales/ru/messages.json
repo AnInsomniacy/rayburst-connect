@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "Перезагрузите страницы. Может повлиять на воспроизведение."
   },
+  "media_settings_name_from": {
+    "message": "Называть найденные файлы по"
+  },
+  "media_settings_name_from_file": {
+    "message": "Имени файла"
+  },
+  "media_settings_name_from_title": {
+    "message": "Заголовку страницы"
+  },
   "media_settings_include": {
     "message": "Только указанные сайты"
   },

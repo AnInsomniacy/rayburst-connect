@@ -1036,6 +1036,15 @@
   "media_settings_deep_hint": {
     "message": "โหลดหน้าใหม่เพื่อใช้งาน อาจมีผลต่อการเล่น"
   },
+  "media_settings_name_from": {
+    "message": "ตั้งชื่อไฟล์ที่ตรวจพบตาม"
+  },
+  "media_settings_name_from_file": {
+    "message": "ชื่อไฟล์"
+  },
+  "media_settings_name_from_title": {
+    "message": "ชื่อหน้าเว็บ"
+  },
   "media_settings_include": {
     "message": "เฉพาะเว็บไซต์ในรายการ"
   },
