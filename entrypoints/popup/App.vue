@@ -83,6 +83,8 @@ const opening = ref(false);
 const checking = ref(false);
 const { view, count: resourceCount, ready: navigationReady } = usePopupNavigation();
 const settingsReady = ref(false);
+/** The popup opens once the first check settles, so it does not reshape right away. */
+const firstCheckDone = ref(false);
 /** The media tab mounts on first visit and then stays alive. */
 const mediaVisited = ref(false);
 watch(
@@ -333,8 +335,10 @@ onMounted(async () => {
   bindStorageChanges();
   settingsReady.value = true;
 
+  // A desktop that is slow to answer shows the checking state after a second.
+  setTimeout(() => (firstCheckDone.value = true), 1000);
   const poller = usePolling({
-    fn: fetchData,
+    fn: () => fetchData().finally(() => (firstCheckDone.value = true)),
     baseIntervalMs: 500,
     maxIntervalMs: 5000,
   });
@@ -358,7 +362,11 @@ onUnmounted(() => {
   >
     <div class="popup-root" :dir="['ar', 'fa'].includes(effectiveLocale) ? 'rtl' : 'ltr'">
       <div class="popup-content">
-        <div v-if="!settingsReady || !navigationReady" class="popup-skeleton" aria-busy="true">
+        <div
+          v-if="!settingsReady || !navigationReady || !firstCheckDone"
+          class="popup-skeleton"
+          aria-busy="true"
+        >
           <div class="popup-skeleton__header">
             <NSkeleton width="64px" height="24px" />
             <NSkeleton width="84px" height="18px" round />
@@ -414,8 +422,10 @@ onUnmounted(() => {
                     class="popup-page popup-skeleton"
                     aria-busy="true"
                   >
-                    <NSkeleton height="108px" :sharp="false" />
-                    <NSkeleton height="108px" :sharp="false" />
+                    <div class="popup-skeleton__body">
+                      <NSkeleton height="108px" :sharp="false" />
+                      <NSkeleton height="108px" :sharp="false" />
+                    </div>
                   </section>
                   <section
                     v-else-if="errorType === 'ApiCompatibilityError'"
