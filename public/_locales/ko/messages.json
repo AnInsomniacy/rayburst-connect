@@ -106,6 +106,10 @@
     "message": "연결됨 · Rayburst",
     "description": "Prefix for successful connection status"
   },
+  "options_connection_success_motrix": {
+    "message": "연결됨 · Motrix Next",
+    "description": "Connection status when Motrix Next answered"
+  },
   "options_rules_empty": {
     "message": "설정된 규칙이 없습니다.",
     "description": "Placeholder when no site rules exist"
@@ -271,6 +275,10 @@
     "message": "시작 시간 제한",
     "description": "Desktop startup timeout label"
   },
+  "options_desktop_open_link_label": {
+    "message": "필요하면 링크로 Rayburst 실행",
+    "description": "Setting: open the desktop link in a tab when Native Messaging cannot start it"
+  },
   "options_seconds_suffix": {
     "message": "초",
     "description": "Seconds unit suffix"
@@ -390,6 +398,10 @@
   "notification_duplicate_guard_body": {
     "message": "중복 요청을 건너뜀",
     "description": "Notification body shown when a duplicate download is blocked."
+  },
+  "notification_desktop_link_body": {
+    "message": "브라우저 링크로 Rayburst를 실행하도록 설정하려면 클릭하세요.",
+    "description": "Notification body after an unattended start failed; clicking opens the settings"
   },
   "options_privacy_section_label": {
     "message": "개인정보",
@@ -523,9 +535,17 @@
     "message": "Rayburst가 설치되어 있고 API 설정이 올바른지 확인하세요.",
     "description": "Popup launch failure guidance"
   },
+  "popup_launch_link_hint": {
+    "message": "대신 브라우저가 링크로 Rayburst를 실행할 수 있습니다.",
+    "description": "Popup launch failure guidance when the desktop could not be started at all"
+  },
   "popup_action_retry": {
     "message": "다시 시도",
     "description": "Popup action to retry desktop launch"
+  },
+  "popup_action_launch_link": {
+    "message": "링크로 실행",
+    "description": "Popup button: allow starting the desktop through its link and retry"
   },
   "options_diagnostics_column_time": {
     "message": "시간",
@@ -746,7 +766,7 @@
     "description": "Media discovery: invalid"
   },
   "media_unavailable": {
-    "message": "Rayburst가 아직 미디어 인터페이스를 지원하지 않습니다.",
+    "message": "이 데스크톱 버전은 스트림을 다운로드할 수 없습니다. 최신 Rayburst를 설치하세요.",
     "description": "Media discovery: unavailable"
   },
   "media_expired": {
@@ -1075,14 +1095,29 @@
     "message": "확인 중",
     "description": "Connection status while the desktop check is pending"
   },
-  "connection_legacy_title": {
-    "message": "Motrix Next 지원이 종료되었습니다"
-  },
   "connection_unsupported_title": {
     "message": "지원되지 않는 데스크톱 버전"
   },
   "connection_upgrade_hint": {
     "message": "최신 Rayburst를 설치한 후 다시 연결하세요."
+  },
+  "connection_legacy_title": {
+    "message": "최신 Rayburst로 업데이트하세요",
+    "description": "Title of the update notice shown while connected to an older desktop"
+  },
+  "connection_legacy_hint": {
+    "message": "$1은(는) 이전 버전이라 일부 기능을 사용할 수 없습니다.",
+    "description": "Shown while connected to an older desktop, $1 = its name and version",
+    "placeholders": {
+      "1": {
+        "content": "$1",
+        "example": "Motrix Next 3.9.9"
+      }
+    }
+  },
+  "connection_legacy_dismiss": {
+    "message": "닫기",
+    "description": "Accessible label of the button that closes the popup update notice"
   },
   "connection_get_rayburst": {
     "message": "Rayburst 다운로드"

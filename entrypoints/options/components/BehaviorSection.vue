@@ -194,6 +194,18 @@ const unavailableActionOptions = computed(() => [
           </NFormItem>
         </div>
       </CollapsePanel>
+
+      <!-- The popup can start the desktop in either mode. -->
+      <NFormItem
+        class="settings-row"
+        :show-feedback="false"
+        :label="i18n('options_desktop_open_link_label', 'Start Rayburst Through a Link If Needed')"
+      >
+        <NSwitch
+          :value="desktopUnavailable.openLink"
+          @update:value="(value: boolean) => emit('update:desktopUnavailable', { openLink: value })"
+        />
+      </NFormItem>
     </section>
   </div>
 </template>

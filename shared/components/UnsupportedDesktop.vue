@@ -9,7 +9,6 @@ import { useI18n } from '@/shared/i18n/engine';
 
 withDefaults(
   defineProps<{
-    error: string;
     version: string | null;
     checking?: boolean;
     layout?: 'page' | 'card';
@@ -31,15 +30,7 @@ const { t } = useI18n();
         <NIcon :size="layout === 'page' ? 24 : 18"><ArrowUpCircleOutline /></NIcon>
       </span>
       <div class="unsupported-desktop__copy">
-        <p class="unsupported-desktop__title">
-          {{
-            t(
-              error === 'MotrixNextUnsupportedError'
-                ? 'connection_legacy_title'
-                : 'connection_unsupported_title',
-            )
-          }}
-        </p>
+        <p class="unsupported-desktop__title">{{ t('connection_unsupported_title') }}</p>
         <p class="unsupported-desktop__hint">{{ t('connection_upgrade_hint') }}</p>
         <span v-if="version" class="unsupported-desktop__version">v{{ version }}</span>
       </div>

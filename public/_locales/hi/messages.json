@@ -106,6 +106,10 @@
     "message": "कनेक्टेड · Rayburst",
     "description": "Prefix for successful connection status"
   },
+  "options_connection_success_motrix": {
+    "message": "कनेक्टेड · Motrix Next",
+    "description": "Connection status when Motrix Next answered"
+  },
   "options_rules_empty": {
     "message": "कोई नियम कॉन्फ़िगर नहीं है।",
     "description": "Placeholder when no site rules exist"
@@ -271,6 +275,10 @@
     "message": "स्टार्टअप समय-सीमा",
     "description": "Desktop startup timeout label"
   },
+  "options_desktop_open_link_label": {
+    "message": "ज़रूरत पड़ने पर लिंक से Rayburst शुरू करें",
+    "description": "Setting: open the desktop link in a tab when Native Messaging cannot start it"
+  },
   "options_seconds_suffix": {
     "message": "सेकंड",
     "description": "Seconds unit suffix"
@@ -390,6 +398,10 @@
   "notification_duplicate_guard_body": {
     "message": "डुप्लिकेट अनुरोध छोड़ा गया",
     "description": "Notification body shown when a duplicate download is blocked."
+  },
+  "notification_desktop_link_body": {
+    "message": "ब्राउज़र लिंक से Rayburst शुरू करना चालू करने के लिए क्लिक करें।",
+    "description": "Notification body after an unattended start failed; clicking opens the settings"
   },
   "options_privacy_section_label": {
     "message": "गोपनीयता",
@@ -523,9 +535,17 @@
     "message": "जाँचें कि Rayburst इंस्टॉल है और उसकी API सेटिंग सही हैं।",
     "description": "Popup launch failure guidance"
   },
+  "popup_launch_link_hint": {
+    "message": "ब्राउज़र इसके बजाय लिंक से Rayburst शुरू कर सकता है।",
+    "description": "Popup launch failure guidance when the desktop could not be started at all"
+  },
   "popup_action_retry": {
     "message": "फिर कोशिश करें",
     "description": "Popup action to retry desktop launch"
+  },
+  "popup_action_launch_link": {
+    "message": "लिंक से शुरू करें",
+    "description": "Popup button: allow starting the desktop through its link and retry"
   },
   "options_diagnostics_column_time": {
     "message": "समय",
@@ -746,7 +766,7 @@
     "description": "Media discovery: invalid"
   },
   "media_unavailable": {
-    "message": "Rayburst अभी मीडिया इंटरफ़ेस का समर्थन नहीं करता।",
+    "message": "डेस्कटॉप ऐप का यह संस्करण स्ट्रीम डाउनलोड नहीं कर सकता। Rayburst का नवीनतम संस्करण इंस्टॉल करें।",
     "description": "Media discovery: unavailable"
   },
   "media_expired": {
@@ -1075,14 +1095,29 @@
     "message": "जाँच जारी है",
     "description": "Connection status while the desktop check is pending"
   },
-  "connection_legacy_title": {
-    "message": "Motrix Next अब समर्थित नहीं है"
-  },
   "connection_unsupported_title": {
     "message": "डेस्कटॉप संस्करण समर्थित नहीं है"
   },
   "connection_upgrade_hint": {
     "message": "Rayburst का नवीनतम संस्करण इंस्टॉल करें, फिर दोबारा कनेक्ट करें।"
+  },
+  "connection_legacy_title": {
+    "message": "Rayburst का नवीनतम संस्करण इंस्टॉल करें",
+    "description": "Title of the update notice shown while connected to an older desktop"
+  },
+  "connection_legacy_hint": {
+    "message": "$1 पुराना संस्करण है, इसलिए कुछ सुविधाएँ उपलब्ध नहीं हैं।",
+    "description": "Shown while connected to an older desktop, $1 = its name and version",
+    "placeholders": {
+      "1": {
+        "content": "$1",
+        "example": "Motrix Next 3.9.9"
+      }
+    }
+  },
+  "connection_legacy_dismiss": {
+    "message": "बंद करें",
+    "description": "Accessible label of the button that closes the popup update notice"
   },
   "connection_get_rayburst": {
     "message": "Rayburst डाउनलोड करें"

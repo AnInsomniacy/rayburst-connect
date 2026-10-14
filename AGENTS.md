@@ -32,7 +32,8 @@ lib/
 ├── schema.ts                    # Zod schemas — single source of persisted types + defaults
 ├── storage.ts                   # Schema-validated load/save over browser.storage.local
 ├── api.ts                       # DesktopApiClient (ky) + error taxonomy + checkConnection
-├── desktop.ts                   # Native Messaging activation + API readiness
+├── desktop.ts                   # Native Messaging / link activation + API readiness
+├── legacy.ts                    # Older desktops: Motrix Next 3.8+ and Rayburst 4.0
 ├── browser.ts                   # Permissions, context menu, notifications, webRequest types
 ├── backup.ts                    # Settings backup export/import
 ├── diagnostics.ts               # Sanitized, serialized diagnostic journal

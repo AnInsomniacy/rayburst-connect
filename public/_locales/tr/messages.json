@@ -106,6 +106,10 @@
     "message": "Bağlandı · Rayburst",
     "description": "Prefix for successful connection status"
   },
+  "options_connection_success_motrix": {
+    "message": "Bağlandı · Motrix Next",
+    "description": "Connection status when Motrix Next answered"
+  },
   "options_rules_empty": {
     "message": "Yapılandırılmış kural yok.",
     "description": "Placeholder when no site rules exist"
@@ -271,6 +275,10 @@
     "message": "Başlatma Zaman Aşımı",
     "description": "Desktop startup timeout label"
   },
+  "options_desktop_open_link_label": {
+    "message": "Gerektiğinde Rayburst’i bağlantıyla başlat",
+    "description": "Setting: open the desktop link in a tab when Native Messaging cannot start it"
+  },
   "options_seconds_suffix": {
     "message": "sn",
     "description": "Seconds unit suffix"
@@ -390,6 +398,10 @@
   "notification_duplicate_guard_body": {
     "message": "Yinelenen istek atlandı",
     "description": "Notification body shown when a duplicate download is blocked."
+  },
+  "notification_desktop_link_body": {
+    "message": "Rayburst’i tarayıcı bağlantısıyla başlatmayı açmak için tıklayın.",
+    "description": "Notification body after an unattended start failed; clicking opens the settings"
   },
   "options_privacy_section_label": {
     "message": "Gizlilik",
@@ -523,9 +535,17 @@
     "message": "Rayburst’in yüklü ve API ayarlarının doğru olduğunu kontrol edin.",
     "description": "Popup launch failure guidance"
   },
+  "popup_launch_link_hint": {
+    "message": "Tarayıcı bunun yerine Rayburst’i bir bağlantıyla başlatabilir.",
+    "description": "Popup launch failure guidance when the desktop could not be started at all"
+  },
   "popup_action_retry": {
     "message": "Tekrar Dene",
     "description": "Popup action to retry desktop launch"
+  },
+  "popup_action_launch_link": {
+    "message": "Bağlantıyla başlat",
+    "description": "Popup button: allow starting the desktop through its link and retry"
   },
   "options_diagnostics_column_time": {
     "message": "Zaman",
@@ -746,7 +766,7 @@
     "description": "Media discovery: invalid"
   },
   "media_unavailable": {
-    "message": "Rayburst henüz medya arayüzünü desteklemiyor.",
+    "message": "Bu masaüstü sürümü akışları indiremez. En yeni Rayburst sürümünü yükleyin.",
     "description": "Media discovery: unavailable"
   },
   "media_expired": {
@@ -1075,14 +1095,29 @@
     "message": "Kontrol ediliyor",
     "description": "Connection status while the desktop check is pending"
   },
-  "connection_legacy_title": {
-    "message": "Motrix Next artık desteklenmiyor"
-  },
   "connection_unsupported_title": {
     "message": "Masaüstü sürümü desteklenmiyor"
   },
   "connection_upgrade_hint": {
     "message": "En yeni Rayburst sürümünü yükleyip yeniden bağlanın."
+  },
+  "connection_legacy_title": {
+    "message": "En yeni Rayburst sürümüne güncelleyin",
+    "description": "Title of the update notice shown while connected to an older desktop"
+  },
+  "connection_legacy_hint": {
+    "message": "$1 eski bir sürüm olduğu için bazı özellikler kullanılamıyor.",
+    "description": "Shown while connected to an older desktop, $1 = its name and version",
+    "placeholders": {
+      "1": {
+        "content": "$1",
+        "example": "Motrix Next 3.9.9"
+      }
+    }
+  },
+  "connection_legacy_dismiss": {
+    "message": "Kapat",
+    "description": "Accessible label of the button that closes the popup update notice"
   },
   "connection_get_rayburst": {
     "message": "Rayburst indir"

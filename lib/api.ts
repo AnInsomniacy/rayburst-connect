@@ -6,6 +6,8 @@
  * Endpoints: GET /ping (no auth), GET /stat, POST /add, GET /tasks,
  * POST /tasks/{gid}/pause|resume, POST /pause-all, POST /resume-all and the
  * media API (Bearer auth when a secret is configured).
+ *
+ * Older desktops speak an earlier download protocol; `./legacy` adapts them.
  */
 import ky, {
   HTTPError,
@@ -16,7 +18,7 @@ import ky, {
 } from 'ky';
 import { z } from '@/lib/validation';
 import { browser } from 'wxt/browser';
-import type { ConnectionConfig } from './schema';
+import type { ConnectionConfig, DesktopIdentity, DesktopProduct, DesktopProtocol } from './schema';
 import {
   AddDownloadResponseSchema,
   type AddDownloadRequest,
@@ -34,6 +36,7 @@ import {
   type MediaProbeRequest,
   type MediaSubmitRequest,
 } from './media/contracts';
+import { isMotrixNext, legacyAddRequest, legacyAddResponse } from './legacy';
 
 z.config({ jitless: true });
 
@@ -81,16 +84,11 @@ export class ApiAuthError extends ApiError {
 export class ApiCompatibilityError extends ApiError {
   constructor(
     public readonly version: string | null = null,
-    legacy = false,
     cause?: unknown,
   ) {
     super('Install the latest Rayburst to connect', cause);
-    this.name = legacy ? 'MotrixNextUnsupportedError' : 'ApiCompatibilityError';
+    this.name = 'ApiCompatibilityError';
   }
-}
-
-export function isCompatibilityErrorName(name: string | null): boolean {
-  return name === 'MotrixNextUnsupportedError' || name === 'ApiCompatibilityError';
 }
 
 export class ApiTimeoutError extends ApiError {
@@ -119,12 +117,6 @@ export class MediaApiError extends ApiError {
 // ─── Response Schemas ───────────────────────────────────
 // Validate the fields consumed by the extension at the HTTP boundary.
 
-const PingResponseSchema = z.object({
-  product: z.literal('rayburst'),
-  status: z.literal('ok'),
-  version: z.string(),
-});
-
 const DiscoveryResponseSchema = z.object({
   product: z.string().optional(),
   status: z.literal('ok'),
@@ -133,7 +125,7 @@ const DiscoveryResponseSchema = z.object({
 
 const DownloadCapabilitiesSchema = z.object({
   product: z.literal('rayburst'),
-  protocolVersion: z.literal(3),
+  protocolVersion: z.union([z.literal(2), z.literal(3)]),
 });
 
 const StatResponseSchema = z.object({
@@ -162,7 +154,8 @@ const TasksResponseSchema = z.object({
   tasks: z.array(DesktopTaskSchema),
 });
 
-export type PingResponse = z.output<typeof PingResponseSchema>;
+export type { DesktopIdentity, DesktopProduct, DesktopProtocol };
+export type PingResponse = Omit<DesktopIdentity, 'protocol'>;
 export type StatResponse = z.output<typeof StatResponseSchema>;
 export type DesktopTask = z.output<typeof DesktopTaskSchema>;
 export type TasksResponse = z.output<typeof TasksResponseSchema>;
@@ -174,7 +167,11 @@ export class DesktopApiClient {
   private config: ConnectionConfig;
   private http: KyInstance;
 
-  constructor(config: ConnectionConfig) {
+  /** `onIdentify` hears every desktop that answered a readiness check or a handoff. */
+  constructor(
+    config: ConnectionConfig,
+    private readonly onIdentify?: (desktop: DesktopIdentity) => void,
+  ) {
     this.config = { ...config };
     this.http = this.createHttpClient();
   }
@@ -218,7 +215,7 @@ export class DesktopApiClient {
         (error instanceof z.ZodError ||
           (error instanceof HTTPError && [404, 405].includes(error.response.status)))
       )
-        throw new ApiCompatibilityError(null, false, error);
+        throw new ApiCompatibilityError(null, error);
       if (path.startsWith(MEDIA_API_PATH)) {
         if (error instanceof z.ZodError) throw new MediaApiError('invalid_response');
         if (error instanceof HTTPError && error.response.status !== 401) {
@@ -249,13 +246,10 @@ export class DesktopApiClient {
       { timeout: API_CONNECTIVITY_TIMEOUT_MS, retry: 0 },
       'Ping',
     );
-    if (discovery.product !== 'rayburst') {
-      throw new ApiCompatibilityError(
-        discovery.version,
-        discovery.product === undefined && /^[1-3]\.\d+\.\d+(?:[-+].*)?$/.test(discovery.version),
-      );
-    }
-    return PingResponseSchema.parse(discovery);
+    if (discovery.product === 'rayburst')
+      return { product: 'rayburst', version: discovery.version };
+    if (isMotrixNext(discovery)) return { product: 'motrix-next', version: discovery.version };
+    throw new ApiCompatibilityError(discovery.version);
   }
 
   async getStat(): Promise<StatResponse> {
@@ -267,24 +261,34 @@ export class DesktopApiClient {
     );
   }
 
-  async getDownloadCapabilities(): Promise<void> {
-    await this.request(
+  /** Motrix Next predates the capabilities endpoint. */
+  async downloadProtocol(product: DesktopProduct): Promise<DesktopProtocol> {
+    if (product === 'motrix-next') return 1;
+    const capabilities = await this.request(
       'downloads/capabilities',
       DownloadCapabilitiesSchema,
       { method: 'GET', headers: this.authHeaders(), retry: 0 },
       'Check download support',
     );
+    return capabilities.protocolVersion;
+  }
+
+  private async identify(): Promise<DesktopIdentity> {
+    const desktop = await this.ping();
+    const identity = { ...desktop, protocol: await this.downloadProtocol(desktop.product) };
+    this.onIdentify?.(identity);
+    return identity;
   }
 
   /** Hands a download to the desktop; the answer decides who downloads it. */
   addDownload(request: AddDownloadRequest): Promise<AddDownloadResponse> {
-    // Settings may change while capabilities are awaited. Bind the handoff to
-    // the connection it started on.
-    return new DesktopApiClient(this.config).submitDownload(request);
+    // Settings may change while the desktop is identified. Bind the handoff
+    // to the connection it started on.
+    return new DesktopApiClient(this.config, this.onIdentify).submitDownload(request);
   }
 
   private async submitDownload(request: AddDownloadRequest): Promise<AddDownloadResponse> {
-    await this.getDownloadCapabilities();
+    const { protocol } = await this.identify();
     // A held download keeps the worker busy without browser events.
     const awake = setInterval(() => {
       // Any extension API call resets the worker's idle timer.
@@ -295,11 +299,11 @@ export class DesktopApiClient {
     try {
       return await this.request(
         'add',
-        AddDownloadResponseSchema,
+        protocol === 3 ? AddDownloadResponseSchema : legacyAddResponse(protocol),
         {
           method: 'POST',
           headers: this.authHeaders(),
-          json: request,
+          json: protocol === 3 ? request : legacyAddRequest(request, protocol),
           retry: 0,
           timeout: API_HANDOFF_TIMEOUT_MS,
         },
@@ -476,7 +480,7 @@ export class DesktopApiClient {
 
   /** Throws permanent failures so activation never retries an incompatible desktop. */
   async checkReady(): Promise<boolean> {
-    await this.ping();
+    const desktop = await this.ping();
     await this.request(
       'stat',
       StatResponseSchema,
@@ -488,7 +492,7 @@ export class DesktopApiClient {
       },
       'Check readiness',
     );
-    await this.getDownloadCapabilities();
+    this.onIdentify?.({ ...desktop, protocol: await this.downloadProtocol(desktop.product) });
     return true;
   }
 
@@ -528,21 +532,22 @@ function normalizeApiError(error: unknown, label: string, timeoutMs: number): un
 export type ConnectionStatus = 'connected' | 'disconnected';
 
 type ConnectionResult =
-  | { status: 'connected'; version: string; stat: StatResponse }
+  | ({ status: 'connected'; stat: StatResponse } & DesktopIdentity)
   | { status: 'disconnected'; version: string | null; error: string };
 
 /**
  * Verify product identity, authentication and the supported download contract.
  */
 export async function checkConnection(
-  client: Pick<DesktopApiClient, 'ping' | 'getStat' | 'getDownloadCapabilities'>,
+  client: Pick<DesktopApiClient, 'ping' | 'getStat' | 'downloadProtocol'>,
 ): Promise<ConnectionResult> {
   let version: string | null = null;
   try {
-    version = (await client.ping()).version;
+    const desktop = await client.ping();
+    version = desktop.version;
     const stat = await client.getStat();
-    await client.getDownloadCapabilities();
-    return { status: 'connected', version, stat };
+    const protocol = await client.downloadProtocol(desktop.product);
+    return { status: 'connected', ...desktop, protocol, stat };
   } catch (error) {
     return {
       status: 'disconnected',

@@ -90,6 +90,30 @@ describe('request header context', () => {
     );
   });
 
+  it('starts a download where its request started, not at the page that began it', () => {
+    const store = new RequestHeaderContextStore(() => 1000);
+    const page = 'https://meeting.example/download/';
+    const file = 'https://cdn.example/app.exe';
+    store.remember({ url: page, createdAt: 1000, cookie: 'page=1', requestHeaders: [] }, 'nav');
+    store.remember({ url: file, createdAt: 1000, cookie: 'cdn=2', requestHeaders: [] }, 'file');
+    // Chromium reports the page as the URL after location.replace() (#711).
+    expect(store.download({ url: page, finalUrl: file })).toMatchObject({
+      originalUrl: file,
+      context: { cookie: 'cdn=2' },
+    });
+
+    store.remember({ url: 'https://origin.example/get', createdAt: 1000, requestHeaders: [] }, 'r');
+    store.remember({ url: 'https://cdn.example/moved', createdAt: 1000, requestHeaders: [] }, 'r');
+    expect(
+      store.download({ url: 'https://origin.example/get', finalUrl: 'https://cdn.example/moved' })
+        .originalUrl,
+    ).toBe('https://origin.example/get');
+    // Without a trace the browser's own URL stands.
+    expect(
+      store.download({ url: 'https://other.example/a', finalUrl: 'https://cdn.example/b' }),
+    ).toMatchObject({ originalUrl: 'https://other.example/a', matched: false });
+  });
+
   it('distinguishes expired and missing contexts without exposing values', () => {
     let now = 1000;
     const store = new RequestHeaderContextStore(() => now, 100, 16);

@@ -193,6 +193,25 @@ export class RequestHeaderContextStore {
     return this.findMatch(input, false);
   }
 
+  /**
+   * The request a browser download started with, and its headers. The
+   * browser's own URL wins over a possibly incomplete redirect trace, except
+   * that Chromium names the page itself when the page leaves with
+   * location.replace(): a final request that was never redirected started the
+   * download (#711).
+   */
+  download(item: { url: string; finalUrl?: string }): RequestHeaderMatchResult {
+    const fetched = this.peek({ url: item.finalUrl || item.url }).context;
+    let originalUrl = fetched?.originalUrl ?? item.url;
+    if (item.finalUrl && item.url !== item.finalUrl) {
+      const direct =
+        fetched?.originalUrl !== undefined &&
+        canonicalUrl(fetched.originalUrl) === canonicalUrl(fetched.url);
+      originalUrl = direct ? item.finalUrl : item.url;
+    }
+    return { ...this.peek({ url: originalUrl }), originalUrl };
+  }
+
   private findMatch(
     input: { url: string; finalUrl?: string },
     consume: boolean,

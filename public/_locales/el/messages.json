@@ -106,6 +106,10 @@
     "message": "Συνδεδεμένο · Rayburst",
     "description": "Prefix for successful connection status"
   },
+  "options_connection_success_motrix": {
+    "message": "Συνδεδεμένο · Motrix Next",
+    "description": "Connection status when Motrix Next answered"
+  },
   "options_rules_empty": {
     "message": "Δεν έχουν ρυθμιστεί κανόνες.",
     "description": "Placeholder when no site rules exist"
@@ -271,6 +275,10 @@
     "message": "Χρονικό όριο εκκίνησης",
     "description": "Desktop startup timeout label"
   },
+  "options_desktop_open_link_label": {
+    "message": "Εκκίνηση του Rayburst μέσω συνδέσμου όταν χρειάζεται",
+    "description": "Setting: open the desktop link in a tab when Native Messaging cannot start it"
+  },
   "options_seconds_suffix": {
     "message": "δευτ.",
     "description": "Seconds unit suffix"
@@ -390,6 +398,10 @@
   "notification_duplicate_guard_body": {
     "message": "Το διπλό αίτημα παραλείφθηκε",
     "description": "Notification body shown when a duplicate download is blocked."
+  },
+  "notification_desktop_link_body": {
+    "message": "Κάντε κλικ για να ενεργοποιήσετε την εκκίνηση του Rayburst μέσω συνδέσμου του προγράμματος περιήγησης.",
+    "description": "Notification body after an unattended start failed; clicking opens the settings"
   },
   "options_privacy_section_label": {
     "message": "Απόρρητο",
@@ -523,9 +535,17 @@
     "message": "Ελέγξτε ότι το Rayburst είναι εγκατεστημένο και οι ρυθμίσεις API είναι σωστές.",
     "description": "Popup launch failure guidance"
   },
+  "popup_launch_link_hint": {
+    "message": "Το πρόγραμμα περιήγησης μπορεί να εκκινήσει το Rayburst μέσω συνδέσμου.",
+    "description": "Popup launch failure guidance when the desktop could not be started at all"
+  },
   "popup_action_retry": {
     "message": "Δοκιμάστε ξανά",
     "description": "Popup action to retry desktop launch"
+  },
+  "popup_action_launch_link": {
+    "message": "Εκκίνηση μέσω συνδέσμου",
+    "description": "Popup button: allow starting the desktop through its link and retry"
   },
   "options_diagnostics_column_time": {
     "message": "Ώρα",
@@ -746,7 +766,7 @@
     "description": "Media discovery: invalid"
   },
   "media_unavailable": {
-    "message": "Το Rayburst δεν υποστηρίζει ακόμη τη διεπαφή πολυμέσων.",
+    "message": "Αυτή η έκδοση της εφαρμογής υπολογιστή δεν μπορεί να κατεβάσει ροές. Εγκαταστήστε το νεότερο Rayburst.",
     "description": "Media discovery: unavailable"
   },
   "media_expired": {
@@ -1075,14 +1095,29 @@
     "message": "Έλεγχος",
     "description": "Connection status while the desktop check is pending"
   },
-  "connection_legacy_title": {
-    "message": "Το Motrix Next δεν υποστηρίζεται πλέον"
-  },
   "connection_unsupported_title": {
     "message": "Μη υποστηριζόμενη έκδοση εφαρμογής"
   },
   "connection_upgrade_hint": {
     "message": "Εγκαταστήστε το νεότερο Rayburst και συνδεθείτε ξανά."
+  },
+  "connection_legacy_title": {
+    "message": "Ενημερώστε στο νεότερο Rayburst",
+    "description": "Title of the update notice shown while connected to an older desktop"
+  },
+  "connection_legacy_hint": {
+    "message": "Το $1 είναι παλαιότερη έκδοση, γι’ αυτό ορισμένες λειτουργίες δεν είναι διαθέσιμες.",
+    "description": "Shown while connected to an older desktop, $1 = its name and version",
+    "placeholders": {
+      "1": {
+        "content": "$1",
+        "example": "Motrix Next 3.9.9"
+      }
+    }
+  },
+  "connection_legacy_dismiss": {
+    "message": "Κλείσιμο",
+    "description": "Accessible label of the button that closes the popup update notice"
   },
   "connection_get_rayburst": {
     "message": "Λήψη Rayburst"

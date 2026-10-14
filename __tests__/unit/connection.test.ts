@@ -18,8 +18,8 @@ function mockClient(overrides: {
       overrides.ping ??
       vi
         .fn<() => Promise<PingResponse>>()
-        .mockResolvedValue({ product: 'rayburst', status: 'ok', version: '3.7.3' }),
-    getDownloadCapabilities: vi.fn().mockResolvedValue(undefined),
+        .mockResolvedValue({ product: 'rayburst', version: '4.1.0' }),
+    downloadProtocol: vi.fn().mockResolvedValue(3),
     getStat:
       overrides.getStat ??
       vi.fn<() => Promise<StatResponse>>().mockResolvedValue({
@@ -39,9 +39,23 @@ describe('checkConnection', () => {
     const result = await checkConnection(client);
 
     expect(result.status).toBe('connected');
-    expect(result.version).toBe('3.7.3');
+    expect(result.version).toBe('4.1.0');
     expect(result).toHaveProperty('stat.downloadSpeed', '0');
     expect(client.getStat).toHaveBeenCalledTimes(1);
+  });
+
+  it('reports which desktop answered and the protocol it speaks', async () => {
+    const client = mockClient({
+      ping: vi.fn().mockResolvedValue({ product: 'motrix-next', version: '3.9.9' }),
+    });
+    client.downloadProtocol.mockResolvedValue(1);
+    await expect(checkConnection(client)).resolves.toMatchObject({
+      status: 'connected',
+      product: 'motrix-next',
+      version: '3.9.9',
+      protocol: 1,
+    });
+    expect(client.downloadProtocol).toHaveBeenCalledWith('motrix-next');
   });
 
   it('returns auth error with ping version when getStat rejects with 401', async () => {
@@ -50,7 +64,7 @@ describe('checkConnection', () => {
     );
 
     expect(result.status).toBe('disconnected');
-    expect(result.version).toBe('3.7.3'); // version from ping survives auth failure
+    expect(result.version).toBe('4.1.0'); // version from ping survives auth failure
     expect(result).toHaveProperty('error', 'ApiAuthError');
   });
 
@@ -69,7 +83,7 @@ describe('checkConnection', () => {
     );
     expect(statFailure).toMatchObject({
       status: 'disconnected',
-      version: '3.7.3',
+      version: '4.1.0',
       error: 'ApiUnreachableError',
     });
   });

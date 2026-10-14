@@ -23,7 +23,9 @@ Media page titles use the separate [media API](MEDIA_API.md). URL suggestions al
 recognize `filename=` query parameters using native URL decoding and existing path
 sanitization. The original request URL remains the task source; redirect URLs are
 metadata. Native webRequest IDs preserve the original hop and its own credentials.
-Ambiguous contexts are not reused across tabs or origins.
+Chromium names the page itself as the download URL when the page leaves with
+`location.replace()`; when the final request was never redirected, it is the
+source. Ambiguous contexts are not reused across tabs or origins.
 
 An Alt-click on a link (or anywhere, for script-started downloads) leaves the
 download that begins within five seconds to the browser. The content script reports
@@ -65,9 +67,47 @@ continue to authenticate with the Extension API secret.
 
 Connection checks validate the product, credentials and download capabilities.
 An unsupported desktop is shown in both the popup and connection settings with
-an upgrade link. The old Motrix Next discovery response is recognized only to
-explain the failure; its API is not supported. Compatibility failures stop native
-activation retries and download submission before ownership transfers.
+an upgrade link. Compatibility failures stop native activation retries and
+download submission before ownership transfers.
+
+## Older desktops
+
+`lib/legacy.ts` keeps two older desktops working; deleting it and its references
+drops them:
+
+| Desktop          | Recognized by                          | Download protocol                                                     |
+| ---------------- | -------------------------------------- | --------------------------------------------------------------------- |
+| Motrix Next 3.8+ | `/ping` without `product`              | 1: `/add` without request ID; any answer means it queued the link     |
+| Rayburst 4.0     | capabilities with `protocolVersion: 2` | 2: `/add` with a request ID; submitted, cancelled, needs-confirmation |
+
+The adapter strips the fields they never read (`verify`, `mime`, `size`, and
+`filenameSource` for Motrix Next) and reads their answers as `added` or
+`cancelled`. Neither desktop verifies the file, so it never answers `fallback`,
+and a download the user then declines in its dialog is lost, as with the
+extensions written for them. Their popup shows counts without the task list;
+Motrix Next has no media API, so only direct media files reach it. Motrix Next
+before 3.8 has no HTTP API and is not supported.
+
+An older desktop gets an update notice with a download link: in the popup it
+can be closed and stays closed for that desktop and version; at the top of the
+connection settings it stays.
+
+Every context records the desktop that answered last (storage key `desktop`,
+not a setting). The settings read it for their notice without a connection
+test, and the worker tries that desktop's native host first: Rayburst's
+`dev.aninsomniacy.rayburst.browser` or Motrix Next's `com.motrix.next.browser`,
+which admits the Chromium store IDs only. A missing host moves on to the other,
+so an upgrade still starts. With no answer yet Rayburst comes first.
+
+## Starting through a link
 
 The `rayburst://` scheme activates the desktop only. It never creates a download or
 transports cookies. Downloads use the authenticated HTTP handoff and its receipts.
+
+Native Messaging starts the desktop. When no host is installed or the host fails,
+and "Start Rayburst Through a Link If Needed" is on, the worker opens
+`rayburst://` (`motrixnext://` for Motrix Next) in a focused tab so the browser
+can ask to open the desktop, then closes the tab once the wait for readiness
+ends. The setting is off by default. A failed start in the popup offers to turn
+it on and retry; the first unattended failure shows one notification whose click
+turns it on.

@@ -84,4 +84,20 @@ describe('createDesktopActivationCoordinator', () => {
     checkReady.mockResolvedValue(true);
     await expect(activateAndWait({ activate, checkReady, maxWaitMs: 100 })).resolves.toBe(true);
   });
+
+  it('cleans up after the activation once the wait ends either way', async () => {
+    for (const ready of [true, false]) {
+      const cleanup = vi.fn();
+      let checks = 0;
+      const pending = createDesktopActivationCoordinator()({
+        // Opening the desktop's link leaves a tab to close.
+        activate: vi.fn().mockResolvedValue(cleanup),
+        checkReady: vi.fn().mockImplementation(async () => ready && ++checks > 1),
+        maxWaitMs: 1000,
+      });
+      await vi.runAllTimersAsync();
+      expect(await pending).toBe(ready);
+      expect(cleanup).toHaveBeenCalledOnce();
+    }
+  });
 });

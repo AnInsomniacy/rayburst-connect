@@ -5,6 +5,7 @@ import {
   DEFAULT_DOWNLOAD_SETTINGS,
   DEFAULT_UI_PREFS,
   parseConnectionConfig,
+  parseDesktopMemory,
   parseDiagnosticSettings,
   parseDiagnosticEvents,
   parseDownloadSettings,
@@ -37,9 +38,25 @@ describe('persisted schema repair', () => {
     expect(repaired).toMatchObject({
       enabled: false,
       forwardCookies: true,
-      desktopUnavailable: { action: 'browser', startupTimeoutSeconds: 15 },
+      desktopUnavailable: { action: 'browser', startupTimeoutSeconds: 15, openLink: false },
       interceptionScope: { browserDownloads: true, magnet: false, ed2k: true, thunder: true },
     });
+  });
+
+  it('remembers only a desktop it can describe', () => {
+    const empty = { desktop: null, linkSuggested: false, noticeDismissed: null };
+    expect(parseDesktopMemory(undefined)).toEqual(empty);
+    const desktop = { product: 'motrix-next', version: '3.9.9', protocol: 1 };
+    expect(
+      parseDesktopMemory({ desktop, linkSuggested: true, noticeDismissed: 'Motrix Next 3.9.9' }),
+    ).toEqual({ desktop, linkSuggested: true, noticeDismissed: 'Motrix Next 3.9.9' });
+    expect(
+      parseDesktopMemory({
+        desktop: { ...desktop, protocol: 4 },
+        linkSuggested: 'yes',
+        noticeDismissed: 7,
+      }),
+    ).toEqual(empty);
   });
 
   it('normalizes persisted extension rules', () => {

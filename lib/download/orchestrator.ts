@@ -455,7 +455,7 @@ export class DownloadOrchestrator {
       filenameSource: job.filenameSource,
       action: response.action,
       activated: afterActivation,
-      ...(response.action === 'added' ? { gid: response.gid } : {}),
+      ...(response.action === 'added' && response.gid ? { gid: response.gid } : {}),
       hasCookie: job.cookie.value.length > 0,
       cookieSource: job.cookie.source,
       headerCount: job.headerContext?.requestHeaders.length ?? 0,

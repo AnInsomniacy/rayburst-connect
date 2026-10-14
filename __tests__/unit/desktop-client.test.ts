@@ -21,14 +21,40 @@ const stat = {
   numStoppedTotal: '0',
 };
 
+const RAYBURST = { product: 'rayburst', status: 'ok', version: '4.1.0' };
+const MOTRIX_NEXT = { status: 'ok', version: '3.9.9' };
+
 function requestAt(index = 0): Request {
   const input = vi.mocked(fetch).mock.calls[index]?.[0];
   expect(input).toBeInstanceOf(Request);
   return input as Request;
 }
 
+function requestTo(path: string): Request {
+  const request = vi
+    .mocked(fetch)
+    .mock.calls.map(([input]) => input as Request)
+    .find((candidate) => new URL(candidate.url).pathname === path);
+  expect(request).toBeDefined();
+  return request!;
+}
+
 async function jsonBody(request: Request): Promise<unknown> {
   return JSON.parse(await request.clone().text());
+}
+
+/** A desktop answering by path; `/ping` and capabilities default to Rayburst 4.1. */
+function desktop(routes: Record<string, () => Response | Promise<Response>>) {
+  const defaults: Record<string, () => Response> = {
+    '/ping': () => new Response(JSON.stringify(RAYBURST)),
+    '/downloads/capabilities': () =>
+      new Response(JSON.stringify({ product: 'rayburst', protocolVersion: 3 })),
+  };
+  return vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+    const path = new URL((input as Request).url).pathname;
+    const route = routes[path] ?? defaults[path];
+    return route ? route() : new Response('Not found', { status: 404 });
+  });
 }
 
 describe('DesktopApiClient', () => {
@@ -43,11 +69,11 @@ describe('DesktopApiClient', () => {
 
   it('preserves the desktop version when its engine is unavailable', async () => {
     const result = await checkConnection({
-      ping: async () => ({ product: 'rayburst', status: 'ok', version: '4.0.0' }),
+      ping: async () => ({ product: 'rayburst', version: '4.0.0' }),
       getStat: async () => {
         throw new ApiEngineError('engine_unavailable');
       },
-      getDownloadCapabilities: vi.fn(),
+      downloadProtocol: vi.fn(),
     });
     expect(result).toEqual({
       status: 'disconnected',
@@ -62,31 +88,45 @@ describe('DesktopApiClient', () => {
         }),
     );
     await expect(client.checkReady()).rejects.toThrow();
-    await expect(client.getDownloadCapabilities()).rejects.toMatchObject({
+    await expect(client.downloadProtocol('rayburst')).rejects.toMatchObject({
       name: 'ApiEngineStartingError',
     });
   });
 
-  it('identifies the unsupported legacy desktop without treating malformed responses as legacy', async () => {
+  it('identifies every supported desktop and rejects the rest', async () => {
     vi.spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce(new Response(JSON.stringify({ status: 'ok', version: '3.9.9' })))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ status: 'ok' })))
-      .mockResolvedValueOnce(new Response('Missing endpoint', { status: 404 }));
-    await expect(client.ping()).rejects.toMatchObject({
-      name: 'MotrixNextUnsupportedError',
-      version: '3.9.9',
-    });
+      .mockResolvedValueOnce(new Response(JSON.stringify(MOTRIX_NEXT)))
+      .mockResolvedValueOnce(new Response(JSON.stringify(RAYBURST)))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ ...RAYBURST, product: 'other' })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ status: 'ok' })));
+    await expect(client.ping()).resolves.toEqual({ product: 'motrix-next', version: '3.9.9' });
+    await expect(client.ping()).resolves.toEqual({ product: 'rayburst', version: '4.1.0' });
+    await expect(client.ping()).rejects.toBeInstanceOf(ApiCompatibilityError);
+    // A malformed answer is no evidence of any particular desktop.
     await expect(client.ping()).rejects.not.toBeInstanceOf(ApiCompatibilityError);
-    await expect(client.getDownloadCapabilities()).rejects.toBeInstanceOf(ApiCompatibilityError);
-    expect(vi.mocked(fetch).mock.calls.every((_, index) => requestAt(index).method === 'GET')).toBe(
-      true,
-    );
+  });
+
+  it('reads the download protocol, which Motrix Next predates', async () => {
+    vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ product: 'rayburst', protocolVersion: 2, filenameHints: true }),
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ product: 'rayburst', protocolVersion: 4 })),
+      )
+      .mockResolvedValueOnce(new Response('Missing endpoint', { status: 404 }));
+    await expect(client.downloadProtocol('motrix-next')).resolves.toBe(1);
+    expect(fetch).not.toHaveBeenCalled();
+    await expect(client.downloadProtocol('rayburst')).resolves.toBe(2);
+    await expect(client.downloadProtocol('rayburst')).rejects.toBeInstanceOf(ApiCompatibilityError);
+    await expect(client.downloadProtocol('rayburst')).rejects.toBeInstanceOf(ApiCompatibilityError);
   });
 
   it('uses the configured port and keeps ping unauthenticated', async () => {
     vi.spyOn(globalThis, 'fetch').mockImplementation(
-      async () =>
-        new Response(JSON.stringify({ product: 'rayburst', status: 'ok', version: '1.0.0' })),
+      async () => new Response(JSON.stringify(RAYBURST)),
     );
 
     await client.ping();
@@ -98,42 +138,81 @@ describe('DesktopApiClient', () => {
     expect(requestAt(1).url).toBe('http://127.0.0.1:12345/ping');
   });
 
+  const payload = {
+    url: 'https://example.com/file.zip',
+    finalUrl: 'https://cdn.example.com/file.zip',
+    referer: 'https://example.com/page',
+    cookie: 'sid=value',
+    filename: 'file.zip',
+    filenameSource: 'browser' as const,
+    userAgent: 'Browser/1.0',
+    requestHeaders: [{ name: 'Accept', value: 'application/octet-stream' }],
+    verify: true,
+    mime: 'application/zip',
+    size: 1000,
+  };
+  const { verify: _verify, mime: _mime, size: _size, ...legacyFields } = payload;
+
   it('submits the complete download contract with bearer authentication', async () => {
-    vi.spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ product: 'rayburst', protocolVersion: 3 })),
-      )
-      .mockResolvedValueOnce(new Response(JSON.stringify({ action: 'added', gid: 'gid' })));
-    const payload = {
-      url: 'https://example.com/file.zip',
-      finalUrl: 'https://cdn.example.com/file.zip',
-      referer: 'https://example.com/page',
-      cookie: 'sid=value',
-      filename: 'file.zip',
-      userAgent: 'Browser/1.0',
-      requestHeaders: [{ name: 'Accept', value: 'application/octet-stream' }],
-      verify: true,
-      mime: 'application/zip',
-      size: 1000,
-    };
+    const identified = vi.fn();
+    client = new DesktopApiClient({ port: 29110, secret: 'secret' }, identified);
+    desktop({ '/add': () => new Response(JSON.stringify({ action: 'added', gid: 'gid' })) });
 
     await expect(client.addDownload(payload)).resolves.toEqual({ action: 'added', gid: 'gid' });
-    expect(requestAt(1).url).toBe('http://127.0.0.1:29110/add');
-    expect(requestAt(1).method).toBe('POST');
-    expect(requestAt(1).headers.get('authorization')).toBe('Bearer secret');
-    await expect(jsonBody(requestAt(1))).resolves.toEqual(payload);
+    const add = requestTo('/add');
+    expect(add.url).toBe('http://127.0.0.1:29110/add');
+    expect(add.method).toBe('POST');
+    expect(add.headers.get('authorization')).toBe('Bearer secret');
+    await expect(jsonBody(add)).resolves.toEqual(payload);
+    expect(identified).toHaveBeenCalledWith({ product: 'rayburst', version: '4.1.0', protocol: 3 });
+  });
+
+  it('hands Rayburst 4.0 a request ID and reads its answers as the current ones', async () => {
+    const answers = [
+      { action: 'submitted', gid: 'owned' },
+      { action: 'needs-confirmation' },
+      { action: 'cancelled' },
+    ];
+    desktop({
+      '/ping': () => new Response(JSON.stringify({ ...RAYBURST, version: '4.0.1' })),
+      '/downloads/capabilities': () =>
+        new Response(
+          JSON.stringify({ product: 'rayburst', protocolVersion: 2, filenameHints: true }),
+        ),
+      '/add': () => new Response(JSON.stringify({ id: 'echo', ...answers.shift() })),
+    });
+
+    await expect(client.addDownload(payload)).resolves.toEqual({ action: 'added', gid: 'owned' });
+    // The desktop asks the user first; the browser download is released as before.
+    await expect(client.addDownload(payload)).resolves.toEqual({ action: 'added', gid: '' });
+    await expect(client.addDownload(payload)).resolves.toEqual({ action: 'cancelled' });
+    const body = await jsonBody(requestTo('/add'));
+    expect(body).toEqual({ id: expect.stringMatching(/^[0-9a-f-]{36}$/), ...legacyFields });
+  });
+
+  it('hands Motrix Next the fields it reads without asking for capabilities', async () => {
+    const identified = vi.fn();
+    client = new DesktopApiClient({ port: 29110, secret: 'secret' }, identified);
+    desktop({
+      '/ping': () => new Response(JSON.stringify(MOTRIX_NEXT)),
+      '/add': () => new Response(JSON.stringify({ action: 'queued' })),
+    });
+
+    await expect(client.addDownload(payload)).resolves.toEqual({ action: 'added', gid: '' });
+    const { filenameSource: _source, ...motrixFields } = legacyFields;
+    await expect(jsonBody(requestTo('/add'))).resolves.toEqual(motrixFields);
+    expect(
+      vi.mocked(fetch).mock.calls.map(([input]) => new URL((input as Request).url).pathname),
+    ).toEqual(['/ping', '/add']);
+    expect(identified).toHaveBeenCalledWith({
+      product: 'motrix-next',
+      version: '3.9.9',
+      protocol: 1,
+    });
   });
 
   it('rejects another product before submitting a download', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          product: 'another-product',
-          protocolVersion: 2,
-          filenameHints: true,
-        }),
-      ),
-    );
+    desktop({ '/ping': () => new Response(JSON.stringify({ ...RAYBURST, product: 'other' })) });
     await expect(client.addDownload({ url: 'https://example.test/file' })).rejects.toThrow();
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(requestAt(0).method).toBe('GET');
@@ -163,10 +242,30 @@ describe('DesktopApiClient', () => {
     for (const [call, payload] of [
       [() => client.ping(), { status: 'ok' }],
       [() => client.getStat(), { downloadSpeed: '0' }],
-      [() => client.addDownload({ url: 'https://example.com' }), { gid: 'missing-action' }],
     ] as const) {
       vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify(payload)));
       await expect(call()).rejects.toThrow();
+      vi.restoreAllMocks();
+    }
+    for (const [ping, answer] of [
+      [RAYBURST, { gid: 'missing-action' }],
+      [MOTRIX_NEXT, { gid: 'missing-action' }],
+      [
+        { ...RAYBURST, version: '4.0.1' },
+        { action: 'added', gid: 'not-protocol-2' },
+      ],
+    ] as const) {
+      desktop({
+        '/ping': () => new Response(JSON.stringify(ping)),
+        ...(ping.version === '4.0.1'
+          ? {
+              '/downloads/capabilities': () =>
+                new Response(JSON.stringify({ product: 'rayburst', protocolVersion: 2 })),
+            }
+          : {}),
+        '/add': () => new Response(JSON.stringify(answer)),
+      });
+      await expect(client.addDownload({ url: 'https://example.com' })).rejects.toThrow();
       vi.restoreAllMocks();
     }
   });
@@ -180,11 +279,9 @@ describe('DesktopApiClient', () => {
     vi.spyOn(globalThis, 'fetch').mockRejectedValueOnce(new TypeError('fetch failed'));
     await expect(client.ping()).rejects.toBeInstanceOf(ApiUnreachableError);
 
-    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response('Download rejected', { status: 409 }),
-    );
+    desktop({ '/add': () => new Response('Download rejected', { status: 409 }) });
     await expect(client.addDownload({ url: 'https://example.com/file.zip' })).rejects.toThrow(
-      'HTTP 409 — Download rejected',
+      'Add download failed: HTTP 409 — Download rejected',
     );
   });
 
@@ -205,26 +302,31 @@ describe('DesktopApiClient', () => {
     expect(signals[1]?.aborted).toBe(true);
   });
 
-  it('reports readiness without throwing', async () => {
+  it('reports readiness without throwing and remembers the desktop that answered', async () => {
+    const identified = vi.fn();
+    client = new DesktopApiClient({ port: 29110, secret: 'secret' }, identified);
     vi.spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ product: 'rayburst', status: 'ok', version: '1.0.0' })),
-      )
+      .mockResolvedValueOnce(new Response(JSON.stringify(MOTRIX_NEXT)))
       .mockResolvedValueOnce(new Response(JSON.stringify(stat)))
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ product: 'rayburst', protocolVersion: 3 })),
-      )
       .mockResolvedValueOnce(new Response('Unavailable', { status: 503 }));
 
     await expect(client.isReady()).resolves.toBe(true);
+    expect(identified).toHaveBeenCalledWith({
+      product: 'motrix-next',
+      version: '3.9.9',
+      protocol: 1,
+    });
     await expect(client.isReady()).resolves.toBe(false);
   });
+
   it('waits for the desktop to verify or confirm a handoff', async () => {
     vi.useFakeTimers();
     const signals: AbortSignal[] = [];
     vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
       const request = input as Request;
-      if (request.url.endsWith('/capabilities'))
+      const path = new URL(request.url).pathname;
+      if (path === '/ping') return new Response(JSON.stringify(RAYBURST));
+      if (path === '/downloads/capabilities')
         return new Response(JSON.stringify({ product: 'rayburst', protocolVersion: 3 }));
       signals.push(request.signal);
       return new Promise<Response>(() => {});
@@ -248,19 +350,19 @@ describe('DesktopApiClient', () => {
     const gate = new Promise<void>((resolve) => {
       release = resolve;
     });
-    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
-      if ((input as Request).url.endsWith('/capabilities')) {
+    desktop({
+      '/downloads/capabilities': async () => {
         await gate;
         return new Response(JSON.stringify({ product: 'rayburst', protocolVersion: 3 }));
-      }
-      return new Response(JSON.stringify({ action: 'added', gid: 'owned' }));
+      },
+      '/add': () => new Response(JSON.stringify({ action: 'added', gid: 'owned' })),
     });
     const delivery = client.addDownload({ url: 'https://example.test/file.zip' });
     client.updateConfig({ port: 29111, secret: 'changed' });
     release();
     await delivery;
-    expect(requestAt(1).url).toBe('http://127.0.0.1:29110/add');
-    expect(requestAt(1).headers.get('Authorization')).toBe('Bearer secret');
+    expect(requestTo('/add').url).toBe('http://127.0.0.1:29110/add');
+    expect(requestTo('/add').headers.get('Authorization')).toBe('Bearer secret');
     expect(await browser.storage.local.get(null)).toEqual({});
   });
 

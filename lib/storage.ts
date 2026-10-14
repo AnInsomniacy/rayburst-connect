@@ -14,7 +14,10 @@ import {
   parseSiteRules,
   parseSnapshot,
   parseUiPrefs,
+  parseDesktopMemory,
   type ConnectionConfig,
+  type DesktopIdentity,
+  type DesktopMemory,
   type DiagnosticSettings,
   type DiagnosticEvent,
   type DownloadSettings,
@@ -33,7 +36,11 @@ const SETTINGS_STORAGE_KEYS = [
   'diagnostics',
 ] as const;
 const DIAGNOSTIC_STORAGE_KEY = 'diagnosticLog' as const;
-type StorageKey = (typeof SETTINGS_STORAGE_KEYS)[number] | typeof DIAGNOSTIC_STORAGE_KEY;
+const DESKTOP_STORAGE_KEY = 'desktop' as const;
+type StorageKey =
+  | (typeof SETTINGS_STORAGE_KEYS)[number]
+  | typeof DIAGNOSTIC_STORAGE_KEY
+  | typeof DESKTOP_STORAGE_KEY;
 
 const local = (key: StorageKey) => `local:${key}` as const;
 
@@ -56,6 +63,10 @@ async function loadSettings(): Promise<DownloadSettings> {
 
 export async function loadUiPrefs(): Promise<UiPrefs> {
   return parseUiPrefs(await storage.getItem(local('uiPrefs')));
+}
+
+export async function loadDesktopMemory(): Promise<DesktopMemory> {
+  return parseDesktopMemory(await storage.getItem(local(DESKTOP_STORAGE_KEY)));
 }
 
 // ─── Writes (validated + normalized on the way in) ──────
@@ -99,6 +110,26 @@ export async function saveDiagnosticSettings(settings: DiagnosticSettings): Prom
 
 export async function updateUiPrefs(patch: Partial<UiPrefs>): Promise<void> {
   await saveUiPrefs({ ...(await loadUiPrefs()), ...patch });
+}
+
+/** Writes only a change. */
+export async function updateDesktopMemory(patch: Partial<DesktopMemory>): Promise<void> {
+  await navigator.locks.request(DESKTOP_STORAGE_KEY, async () => {
+    const current = await loadDesktopMemory();
+    const next = parseDesktopMemory({ ...current, ...patch });
+    if (JSON.stringify(next) !== JSON.stringify(current))
+      await storage.setItem(local(DESKTOP_STORAGE_KEY), next);
+  });
+}
+
+let rememberedDesktop = '';
+
+/** Records the desktop that answered; cheap enough to call on every answer. */
+export async function rememberDesktop(desktop: DesktopIdentity): Promise<void> {
+  const key = JSON.stringify(desktop);
+  if (key === rememberedDesktop) return;
+  rememberedDesktop = key;
+  await updateDesktopMemory({ desktop });
 }
 
 export async function saveDiagnosticEvents(events: DiagnosticEvent[]): Promise<void> {

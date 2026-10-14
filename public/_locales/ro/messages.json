@@ -106,6 +106,10 @@
     "message": "Conectat · Rayburst",
     "description": "Prefix for successful connection status"
   },
+  "options_connection_success_motrix": {
+    "message": "Conectat · Motrix Next",
+    "description": "Connection status when Motrix Next answered"
+  },
   "options_rules_empty": {
     "message": "Nicio regulă configurată.",
     "description": "Placeholder when no site rules exist"
@@ -271,6 +275,10 @@
     "message": "Timp limită la pornire",
     "description": "Desktop startup timeout label"
   },
+  "options_desktop_open_link_label": {
+    "message": "Pornește Rayburst printr-un link la nevoie",
+    "description": "Setting: open the desktop link in a tab when Native Messaging cannot start it"
+  },
   "options_seconds_suffix": {
     "message": "s",
     "description": "Seconds unit suffix"
@@ -390,6 +398,10 @@
   "notification_duplicate_guard_body": {
     "message": "Cerere duplicată omisă",
     "description": "Notification body shown when a duplicate download is blocked."
+  },
+  "notification_desktop_link_body": {
+    "message": "Dă clic pentru a activa pornirea Rayburst printr-un link din browser.",
+    "description": "Notification body after an unattended start failed; clicking opens the settings"
   },
   "options_privacy_section_label": {
     "message": "Confidentialitate",
@@ -523,9 +535,17 @@
     "message": "Verifică dacă Rayburst este instalat și setările API sunt corecte.",
     "description": "Popup launch failure guidance"
   },
+  "popup_launch_link_hint": {
+    "message": "Browserul poate porni Rayburst printr-un link.",
+    "description": "Popup launch failure guidance when the desktop could not be started at all"
+  },
   "popup_action_retry": {
     "message": "Încearcă din nou",
     "description": "Popup action to retry desktop launch"
+  },
+  "popup_action_launch_link": {
+    "message": "Pornește printr-un link",
+    "description": "Popup button: allow starting the desktop through its link and retry"
   },
   "options_diagnostics_column_time": {
     "message": "Oră",
@@ -746,7 +766,7 @@
     "description": "Media discovery: invalid"
   },
   "media_unavailable": {
-    "message": "Rayburst nu acceptă încă interfața media.",
+    "message": "Această versiune a aplicației desktop nu poate descărca fluxuri. Instalează cea mai recentă versiune Rayburst.",
     "description": "Media discovery: unavailable"
   },
   "media_expired": {
@@ -1075,14 +1095,29 @@
     "message": "Se verifică",
     "description": "Connection status while the desktop check is pending"
   },
-  "connection_legacy_title": {
-    "message": "Motrix Next nu mai este acceptat"
-  },
   "connection_unsupported_title": {
     "message": "Versiune desktop neacceptată"
   },
   "connection_upgrade_hint": {
     "message": "Instalează cea mai recentă versiune Rayburst și reconectează-te."
+  },
+  "connection_legacy_title": {
+    "message": "Actualizează la cea mai recentă versiune Rayburst",
+    "description": "Title of the update notice shown while connected to an older desktop"
+  },
+  "connection_legacy_hint": {
+    "message": "$1 este o versiune mai veche, așa că unele funcții nu sunt disponibile.",
+    "description": "Shown while connected to an older desktop, $1 = its name and version",
+    "placeholders": {
+      "1": {
+        "content": "$1",
+        "example": "Motrix Next 3.9.9"
+      }
+    }
+  },
+  "connection_legacy_dismiss": {
+    "message": "Închide",
+    "description": "Accessible label of the button that closes the popup update notice"
   },
   "connection_get_rayburst": {
     "message": "Descarcă Rayburst"

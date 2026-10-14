@@ -3,7 +3,9 @@
 import { computed } from 'vue';
 import { NFormItem, NInput, NInputNumber, NButton, NTag, NIcon } from 'naive-ui';
 import { CheckmarkCircleOutline, CloseCircleOutline } from '@vicons/ionicons5';
-import { isCompatibilityErrorName, type ConnectionStatus } from '@/lib/api';
+import type { ConnectionStatus, DesktopIdentity } from '@/lib/api';
+import { legacyDesktopName } from '@/lib/legacy';
+import LegacyDesktopNotice from '@/shared/components/LegacyDesktopNotice.vue';
 import UnsupportedDesktop from '@/shared/components/UnsupportedDesktop.vue';
 import { DEFAULT_CONNECTION_CONFIG } from '@/lib/schema';
 
@@ -12,6 +14,8 @@ const props = defineProps<{
   secret: string;
   status: ConnectionStatus;
   version: string | null;
+  /** The desktop that answered last; an older one keeps its update notice here. */
+  desktop: DesktopIdentity | null;
   error: string | null;
   testing: boolean;
 }>();
@@ -27,6 +31,7 @@ import { useI18n } from '@/shared/i18n/engine';
 const { t: i18n } = useI18n();
 
 const isConnected = computed(() => props.status === 'connected');
+const legacyDesktop = computed(() => props.desktop && legacyDesktopName(props.desktop));
 
 /** Map API error names to translated messages. */
 const ERROR_I18N: Record<string, [key: string, fallback: string]> = {
@@ -47,6 +52,7 @@ const errorMessage = computed(() => {
 
 <template>
   <div class="section">
+    <LegacyDesktopNotice v-if="legacyDesktop" :name="legacyDesktop" class="section__notice" />
     <div class="section__grid">
       <NFormItem :show-feedback="false" :label="i18n('options_api_port_label', 'API Port')">
         <NInputNumber
@@ -90,11 +96,15 @@ const errorMessage = computed(() => {
           class="section__feedback section__feedback--ok"
         >
           <NIcon :size="16"><CheckmarkCircleOutline /></NIcon>
-          {{ i18n('options_connection_success_prefix', 'Connected · Rayburst') }}
+          {{
+            desktop?.product === 'motrix-next'
+              ? i18n('options_connection_success_motrix', 'Connected · Motrix Next')
+              : i18n('options_connection_success_prefix', 'Connected · Rayburst')
+          }}
           <NTag size="small" round>v{{ version }}</NTag>
         </span>
         <span
-          v-else-if="error && !isCompatibilityErrorName(error)"
+          v-else-if="error && error !== 'ApiCompatibilityError'"
           key="err"
           class="section__feedback section__feedback--err"
         >
@@ -105,8 +115,7 @@ const errorMessage = computed(() => {
     </div>
     <Transition name="fade" mode="out-in">
       <UnsupportedDesktop
-        v-if="error && isCompatibilityErrorName(error)"
-        :error="error"
+        v-if="error === 'ApiCompatibilityError'"
         :version="version"
         :checking="testing"
         class="section__compatibility"
@@ -119,6 +128,9 @@ const errorMessage = computed(() => {
 <style scoped>
 .section__compatibility {
   margin-top: 16px;
+}
+.section__notice {
+  margin-bottom: 20px;
 }
 .section__grid {
   display: flex;

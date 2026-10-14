@@ -19,7 +19,9 @@ import { browser } from 'wxt/browser';
 import { NConfigProvider, NIcon, createDiscreteApi } from 'naive-ui';
 import { GlobeOutline, OpenOutline } from '@vicons/ionicons5';
 import {
+  loadDesktopMemory,
   loadSnapshot,
+  rememberDesktop,
   saveConnectionConfig,
   saveDiagnosticSettings,
   saveSiteRules,
@@ -31,6 +33,7 @@ import {
 import {
   createDefaultSnapshot,
   parseConnectionConfig,
+  parseDesktopMemory,
   parseDiagnosticSettings,
   parseDiagnosticEvents,
   parseDownloadSettings,
@@ -46,7 +49,12 @@ import {
   type UiPrefs,
 } from '@/lib/schema';
 import { createSettingsBackup, parseSettingsBackup } from '@/lib/backup';
-import { DesktopApiClient, checkConnection, type ConnectionStatus } from '@/lib/api';
+import {
+  DesktopApiClient,
+  checkConnection,
+  type ConnectionStatus,
+  type DesktopIdentity,
+} from '@/lib/api';
 import {
   hasCookieForwardingAccess,
   hasDownloadUiAccess,
@@ -399,6 +407,8 @@ async function exportDiagnosticReport(): Promise<void> {
 const connectionStatus = ref<ConnectionStatus>('disconnected');
 const connectionVersion = ref<string | null>(null);
 const connectionError = ref<string | null>(null);
+/** The desktop that answered last, here or anywhere else in the extension. */
+const knownDesktop = ref<DesktopIdentity | null>(null);
 const testingConnection = ref(false);
 
 async function testConnection(): Promise<void> {
@@ -415,6 +425,11 @@ async function testConnection(): Promise<void> {
   connectionStatus.value = result.status;
   connectionVersion.value = result.version;
   connectionError.value = result.status === 'disconnected' ? result.error : null;
+  if (result.status === 'connected') {
+    const { product, version, protocol } = result;
+    knownDesktop.value = { product, version, protocol };
+    void rememberDesktop(knownDesktop.value).catch(() => undefined);
+  }
   testingConnection.value = false;
 }
 
@@ -437,7 +452,12 @@ async function gatePermissions(settings: DownloadSettings): Promise<void> {
 }
 
 async function loadFromStorage(): Promise<void> {
-  const [data, events] = await Promise.all([loadSnapshot(), getDiagnosticEvents().catch(() => [])]);
+  const [data, events, memory] = await Promise.all([
+    loadSnapshot(),
+    getDiagnosticEvents().catch(() => []),
+    loadDesktopMemory(),
+  ]);
+  knownDesktop.value = memory.desktop;
   await gatePermissions(data.settings);
   draft.value = data;
   saved.value = jsonClone(data);
@@ -453,6 +473,9 @@ function bindStorageChanges(): void {
 
     if (changes.diagnosticLog?.newValue) {
       diagnosticEvents.value = parseDiagnosticEvents(changes.diagnosticLog.newValue);
+    }
+    if (changes.desktop?.newValue) {
+      knownDesktop.value = parseDesktopMemory(changes.desktop.newValue).desktop;
     }
 
     if (staged.value) return;
@@ -576,6 +599,7 @@ onUnmounted(() => {
                   :secret="draft.connection.secret"
                   :status="connectionStatus"
                   :version="connectionVersion"
+                  :desktop="knownDesktop"
                   :error="connectionError"
                   :testing="testingConnection"
                   @update:port="draft.connection.port = $event"

@@ -4,10 +4,7 @@ import { browser, type Browser } from 'wxt/browser';
 import { DownloadOrchestrator, type DownloadCandidate } from '@/lib/download/orchestrator';
 import { holdChromiumDownload } from '@/lib/download/chromium-takeover';
 import { DuplicateDownloadGuard } from '@/lib/download/duplicate-guard';
-import {
-  RequestHeaderContextStore,
-  type RequestHeaderMatchResult,
-} from '@/lib/download/request-context';
+import { RequestHeaderContextStore } from '@/lib/download/request-context';
 import { parseFirefoxDownloadResponse } from '@/lib/download/firefox-response';
 import { ApiAuthError, ApiCompatibilityError, ApiEngineError, DesktopApiClient } from '@/lib/api';
 import { startMediaBackground } from '@/lib/media/background';
@@ -17,6 +14,8 @@ import {
   DesktopActivationError,
   activateDesktop,
   createDesktopActivationCoordinator,
+  desktopLink,
+  nativeHosts,
   type DesktopActionResponse,
 } from '@/lib/desktop';
 import {
@@ -29,7 +28,15 @@ import {
   isExternalProtocol,
   type ExternalProtocol,
 } from '@/lib/browser';
-import { loadDiagnosticEvents, loadSnapshot, saveDiagnosticEvents } from '@/lib/storage';
+import {
+  loadDesktopMemory,
+  loadDiagnosticEvents,
+  loadSnapshot,
+  rememberDesktop,
+  saveDiagnosticEvents,
+  updateDesktopMemory,
+  updateSettings,
+} from '@/lib/storage';
 import {
   DEFAULT_DIAGNOSTIC_SETTINGS,
   DEFAULT_DOWNLOAD_SETTINGS,
@@ -66,7 +73,10 @@ export default defineBackground(() => {
   const requestHeaderContexts = new RequestHeaderContextStore();
   const duplicateDownloadGuard = new DuplicateDownloadGuard();
   let connectionConfig = parseConnectionConfig(null);
-  const desktopClient = new DesktopApiClient(connectionConfig);
+  // Remembers which desktop answered, to start the same one next time.
+  const desktopClient = new DesktopApiClient(connectionConfig, (desktop) => {
+    void rememberDesktop(desktop).catch(() => undefined);
+  });
   const activateDesktopAndWait = createDesktopActivationCoordinator();
 
   // ─── Logging ──────────────────────────────────────────
@@ -140,10 +150,86 @@ export default defineBackground(() => {
     });
   }
 
-  // ─── Orchestrator ─────────────────────────────────────
+  // ─── Desktop Activation ───────────────────────────────
 
-  const activateDesktopApp = () =>
-    activateDesktop((hostName, message) => browser.runtime.sendNativeMessage(hostName, message));
+  /**
+   * Starts the desktop through Native Messaging, or through its link in a tab
+   * when that fails and the user allowed it. Unattended starts that fail
+   * suggest the link once; the popup suggests it on its own.
+   */
+  async function activateDesktopApp(unattended: boolean): Promise<(() => void) | void> {
+    await ensureConfigLoaded();
+    const protocol = (await loadDesktopMemory()).desktop?.protocol ?? null;
+    try {
+      await activateDesktop(
+        (hostName, message) => browser.runtime.sendNativeMessage(hostName, message),
+        nativeHosts(protocol, import.meta.env.FIREFOX),
+      );
+    } catch (error) {
+      if (!(error instanceof DesktopActivationError)) throw error;
+      if (!settings.desktopUnavailable.openLink) {
+        if (unattended) void suggestDesktopLink();
+        throw error;
+      }
+      const link = desktopLink(protocol);
+      logInfo('desktop_link_opened', 'Rayburst was started through its link', {
+        link,
+        reason: error.code,
+      });
+      return openDesktopLink(link);
+    }
+  }
+
+  /** A focused tab shows the browser's confirmation for the link. */
+  async function openDesktopLink(url: string): Promise<() => void> {
+    const { id } = await browser.tabs.create({ url, active: true });
+    const close = () => {
+      clearTimeout(timer);
+      if (id !== undefined) void browser.tabs.remove(id).catch(() => undefined);
+    };
+    // Closed when the wait ends, or after a minute when nothing waits.
+    const timer = setTimeout(close, 60_000);
+    return close;
+  }
+
+  const DESKTOP_LINK_NOTIFICATION = 'desktop-link';
+
+  async function suggestDesktopLink(): Promise<void> {
+    try {
+      if ((await loadDesktopMemory()).linkSuggested) return;
+      await updateDesktopMemory({ linkSuggested: true });
+      await browser.notifications.create(DESKTOP_LINK_NOTIFICATION, {
+        type: 'basic',
+        iconUrl: 'icon/128.png',
+        title: bgI18n.t('popup_launch_failed_title', 'Could not start Rayburst'),
+        message: bgI18n.t(
+          'notification_desktop_link_body',
+          'Click to let the browser start Rayburst through a link instead.',
+        ),
+      });
+    } catch (error) {
+      logWarn('notification_failed', 'Start suggestion could not be shown', {
+        error: errorMessage(error),
+      });
+    }
+  }
+
+  // The notification offers the fallback; clicking it is the consent.
+  browser.notifications.onClicked.addListener((id) => {
+    if (id !== DESKTOP_LINK_NOTIFICATION) return;
+    void browser.notifications.clear(id);
+    void ensureConfigLoaded()
+      .then(() =>
+        updateSettings({ desktopUnavailable: { ...settings.desktopUnavailable, openLink: true } }),
+      )
+      .catch((error) => {
+        logWarn('config_load_failed', 'The link fallback could not be turned on', {
+          error: errorMessage(error),
+        });
+      });
+  });
+
+  // ─── Orchestrator ─────────────────────────────────────
 
   const browserBypass = new BrowserBypass();
   const orchestrator = new DownloadOrchestrator({
@@ -192,7 +278,7 @@ export default defineBackground(() => {
     desktopClient,
     activateDesktop: (timeoutMs) =>
       activateDesktopAndWait({
-        activate: activateDesktopApp,
+        activate: () => activateDesktopApp(true),
         checkReady: () => desktopClient.checkReady(),
         isFatalReadinessError: (error) =>
           error instanceof ApiAuthError ||
@@ -224,21 +310,10 @@ export default defineBackground(() => {
   // ─── webRequest Listeners ─────────────────────────────
 
   const ALL_HTTP_URLS = ['http://*/*', 'https://*/*'];
-  function matchRequestHeaders(item: { url: string; finalUrl?: string }): RequestHeaderMatchResult {
-    const observed = requestHeaderContexts.peek(item);
-    // Native download identity wins over a possibly incomplete redirect trace.
-    const originalUrl =
-      item.finalUrl && item.url !== item.finalUrl
-        ? item.url
-        : (observed.context?.originalUrl ?? item.url);
-    const source = { url: originalUrl };
-    const match = requestHeaderContexts.peek(source);
-    return { ...match, originalUrl };
-  }
 
   async function handleFirefoxResponseTakeover(candidate: DownloadCandidate): Promise<boolean> {
     await ensureConfigLoaded();
-    const match = matchRequestHeaders(candidate);
+    const match = requestHeaderContexts.download(candidate);
     return orchestrator.handleFirefoxResponseTakeover({
       ...candidate,
       url: match.originalUrl ?? candidate.url,
@@ -318,7 +393,7 @@ export default defineBackground(() => {
       }),
     activate: () =>
       activateDesktopAndWait({
-        activate: activateDesktopApp,
+        activate: () => activateDesktopApp(true),
         checkReady: () => desktopClient.checkReady(),
         isFatalReadinessError: (error) =>
           error instanceof ApiAuthError ||
@@ -335,7 +410,7 @@ export default defineBackground(() => {
     filenameSource?: 'browser-determined',
   ) {
     const identity = { url: item.url, finalUrl: item.finalUrl || item.url };
-    const match = matchRequestHeaders(identity);
+    const match = requestHeaderContexts.download(identity);
     return {
       id: item.id,
       url: match.originalUrl ?? item.url,
@@ -518,7 +593,7 @@ export default defineBackground(() => {
 
   async function handleDesktopOpen(): Promise<DesktopActionResponse> {
     try {
-      await activateDesktopApp();
+      await activateDesktopApp(false);
       return { ok: true };
     } catch (error) {
       const code = error instanceof DesktopActivationError ? error.code : 'unknown';
@@ -538,7 +613,7 @@ export default defineBackground(() => {
     await ensureConfigLoaded();
     try {
       const ready = await activateDesktopAndWait({
-        activate: activateDesktopApp,
+        activate: () => activateDesktopApp(false),
         checkReady: () => desktopClient.checkReady(),
         isFatalReadinessError: (error) =>
           error instanceof ApiAuthError ||

@@ -13,14 +13,23 @@ import { AlertCircleOutline, PauseOutline, PlayOutline, RocketOutline } from '@v
 import {
   DesktopApiClient,
   checkConnection,
-  isCompatibilityErrorName,
+  type DesktopIdentity,
   type DesktopTask,
   type StatResponse,
 } from '@/lib/api';
+import { legacyDesktopName } from '@/lib/legacy';
 import AutoHeight from '@/shared/components/AutoHeight.vue';
+import LegacyDesktopNotice from '@/shared/components/LegacyDesktopNotice.vue';
 import UnsupportedDesktop from '@/shared/components/UnsupportedDesktop.vue';
-import { loadSnapshot, updateSettings } from '@/lib/storage';
 import {
+  loadDesktopMemory,
+  loadSnapshot,
+  rememberDesktop,
+  updateDesktopMemory,
+  updateSettings,
+} from '@/lib/storage';
+import {
+  isActivationErrorCode,
   parseDesktopActionResponse,
   type DesktopAction,
   type DesktopActionResponse,
@@ -28,6 +37,7 @@ import {
 import {
   DEFAULT_CONNECTION_CONFIG,
   parseConnectionConfig,
+  parseDesktopMemory,
   parseDownloadSettings,
   parseUiPrefs,
 } from '@/lib/schema';
@@ -57,6 +67,14 @@ type PopupPhase = 'initializing' | 'disconnected' | 'launching' | 'connected' | 
 const phase = ref<PopupPhase>('initializing');
 const version = ref<string | null>(null);
 const errorType = ref<string | null>(null);
+/** The connected desktop; older ones lack the task list. */
+const desktop = ref<DesktopIdentity | null>(null);
+const legacyDesktop = computed(() => desktop.value && legacyDesktopName(desktop.value));
+/** The older desktop whose update notice was closed; a different one shows it again. */
+const noticeDismissed = ref<string | null>(null);
+const openLink = ref(false);
+/** The last start failed before the desktop could even be reached. */
+const activationFailed = ref(false);
 const connectionPort = ref(DEFAULT_CONNECTION_CONFIG.port);
 const globalStat = ref<StatResponse | null>(null);
 const tasks = ref<DesktopTask[]>([]);
@@ -74,10 +92,17 @@ watch(
   },
   { immediate: true },
 );
+// Older desktops report counts only; their waiting tasks include paused ones.
 const canPauseAll = computed(() =>
-  tasks.value.some((task) => task.status === 'active' || task.status === 'waiting'),
+  legacyDesktop.value
+    ? Number(globalStat.value?.numActive) > 0
+    : tasks.value.some((task) => task.status === 'active' || task.status === 'waiting'),
 );
-const canResumeAll = computed(() => tasks.value.some((task) => task.status === 'paused'));
+const canResumeAll = computed(() =>
+  legacyDesktop.value
+    ? !canPauseAll.value && Number(globalStat.value?.numWaiting) > 0
+    : tasks.value.some((task) => task.status === 'paused'),
+);
 const tabTransition = computed(() => (view.value === 'media' ? 'tab-forward' : 'tab-back'));
 const apiClient = new DesktopApiClient({ ...DEFAULT_CONNECTION_CONFIG });
 let stopPolling: (() => void) | null = null;
@@ -91,11 +116,16 @@ async function fetchData(): Promise<boolean> {
     version.value = result.version;
     errorType.value = result.status === 'disconnected' ? result.error : null;
     if (result.status === 'connected') {
-      globalStat.value = result.stat;
+      const { status: _status, stat, ...identity } = result;
+      desktop.value = identity;
+      void rememberDesktop(identity).catch(() => undefined);
+      globalStat.value = stat;
       phase.value = 'connected';
       await refreshTasks();
       return true;
-    } else if (phase.value !== 'launching' && phase.value !== 'failed') {
+    }
+    desktop.value = null;
+    if (phase.value !== 'launching' && phase.value !== 'failed') {
       phase.value = 'disconnected';
     }
     return false;
@@ -129,6 +159,10 @@ function applyPending(list: DesktopTask[]): DesktopTask[] {
 
 /** Keeps the last list when the desktop is briefly busy. */
 async function refreshTasks(): Promise<void> {
+  if (legacyDesktop.value) {
+    tasks.value = [];
+    return;
+  }
   try {
     tasks.value = applyPending((await apiClient.getTasks()).tasks);
   } catch {
@@ -177,11 +211,13 @@ function openSettings(): void {
 
 async function launchApp(): Promise<void> {
   phase.value = 'launching';
+  activationFailed.value = false;
   try {
     const response = await sendDesktopAction('START_DESKTOP');
     if (!response.ok) {
-      if (isCompatibilityErrorName(response.error) || response.error.startsWith('ApiEngine'))
+      if (response.error === 'ApiCompatibilityError' || response.error.startsWith('ApiEngine'))
         errorType.value = response.error;
+      activationFailed.value = isActivationErrorCode(response.error);
       phase.value = 'failed';
       return;
     }
@@ -189,6 +225,25 @@ async function launchApp(): Promise<void> {
   } catch {
     phase.value = 'failed';
   }
+}
+
+function dismissNotice(): void {
+  noticeDismissed.value = legacyDesktop.value;
+  void updateDesktopMemory({ noticeDismissed: noticeDismissed.value }).catch(() => undefined);
+}
+
+/** Allows starting through the desktop's link, then tries again. */
+async function launchThroughLink(): Promise<void> {
+  try {
+    const { settings } = await loadSnapshot();
+    await updateSettings({
+      desktopUnavailable: { ...settings.desktopUnavailable, openLink: true },
+    });
+  } catch {
+    return;
+  }
+  openLink.value = true;
+  await launchApp();
 }
 
 async function checkAgain(): Promise<void> {
@@ -238,13 +293,18 @@ function bindStorageChanges(): void {
     if (area !== 'local') return;
 
     if (changes.settings?.newValue) {
-      enabled.value = parseDownloadSettings(changes.settings.newValue).enabled;
+      const settings = parseDownloadSettings(changes.settings.newValue);
+      enabled.value = settings.enabled;
+      openLink.value = settings.desktopUnavailable.openLink;
     }
     if (changes.connection?.newValue) {
       const connection = parseConnectionConfig(changes.connection.newValue);
       connectionPort.value = connection.port;
       apiClient.updateConfig(connection);
       void fetchData();
+    }
+    if (changes.desktop?.newValue) {
+      noticeDismissed.value = parseDesktopMemory(changes.desktop.newValue).noticeDismissed;
     }
     if (changes.uiPrefs?.newValue) {
       const prefs = parseUiPrefs(changes.uiPrefs.newValue);
@@ -261,8 +321,10 @@ function bindStorageChanges(): void {
 // ─── Lifecycle ──────────────────────────────────────────
 
 onMounted(async () => {
-  const data = await loadSnapshot();
+  const [data, memory] = await Promise.all([loadSnapshot(), loadDesktopMemory()]);
+  noticeDismissed.value = memory.noticeDismissed;
   enabled.value = data.settings.enabled;
+  openLink.value = data.settings.desktopUnavailable.openLink;
   theme.setMode(data.uiPrefs.theme);
   theme.setColorScheme(data.uiPrefs.colorScheme);
   i18nCtx.setLocale(data.uiPrefs.locale);
@@ -356,13 +418,12 @@ onUnmounted(() => {
                     <NSkeleton height="108px" :sharp="false" />
                   </section>
                   <section
-                    v-else-if="errorType && isCompatibilityErrorName(errorType)"
+                    v-else-if="errorType === 'ApiCompatibilityError'"
                     key="unsupported"
                     class="popup-page popup-unsupported"
                   >
                     <UnsupportedDesktop
                       layout="page"
-                      :error="errorType"
                       :version="version"
                       :checking="checking"
                       @retry="checkAgain"
@@ -395,7 +456,17 @@ onUnmounted(() => {
                     class="popup-page"
                   >
                     <StatDashboard :stat="globalStat" :disabled="!enabled" />
+                    <Transition name="pop">
+                      <LegacyDesktopNotice
+                        v-if="legacyDesktop && legacyDesktop !== noticeDismissed"
+                        layout="popup"
+                        :name="legacyDesktop"
+                        class="popup-legacy"
+                        @dismiss="dismissNotice"
+                      />
+                    </Transition>
                     <TaskList
+                      v-if="!legacyDesktop"
                       :tasks="tasks"
                       @pause="(gid) => controlTask(gid, 'pause')"
                       @resume="(gid) => controlTask(gid, 'resume')"
@@ -469,10 +540,15 @@ onUnmounted(() => {
                         </p>
                         <p class="popup-banner__hint">
                           {{
-                            i18n(
-                              'popup_launch_failed_hint',
-                              'Check that Rayburst is installed and its API settings are correct.',
-                            )
+                            activationFailed && !openLink
+                              ? i18n(
+                                  'popup_launch_link_hint',
+                                  'The browser can start Rayburst through a link instead.',
+                                )
+                              : i18n(
+                                  'popup_launch_failed_hint',
+                                  'Check that Rayburst is installed and its API settings are correct.',
+                                )
                           }}
                         </p>
                       </div>
@@ -531,6 +607,13 @@ onUnmounted(() => {
                         >{{ i18n('popup_action_open', 'Open Rayburst') }}</NButton
                       >
                       <NButton
+                        v-if="phase === 'failed' && activationFailed && !openLink"
+                        size="small"
+                        secondary
+                        @click="launchThroughLink"
+                        >{{ i18n('popup_action_launch_link', 'Start Through a Link') }}</NButton
+                      >
+                      <NButton
                         size="small"
                         type="primary"
                         @click="errorType?.startsWith('ApiEngine') ? checkAgain() : launchApp()"
@@ -564,6 +647,9 @@ onUnmounted(() => {
 <style scoped>
 .popup-unsupported {
   display: flex;
+}
+.popup-legacy {
+  margin: 0 12px;
 }
 .sniffer-tab {
   display: inline-flex;

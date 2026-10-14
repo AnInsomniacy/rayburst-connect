@@ -106,6 +106,10 @@
     "message": "已連接 · Rayburst",
     "description": "Prefix for successful connection status"
   },
+  "options_connection_success_motrix": {
+    "message": "已連接 · Motrix Next",
+    "description": "Connection status when Motrix Next answered"
+  },
   "options_rules_empty": {
     "message": "尚未設定規則。",
     "description": "Placeholder when no site rules exist"
@@ -271,6 +275,10 @@
     "message": "啟動逾時",
     "description": "Desktop startup timeout label"
   },
+  "options_desktop_open_link_label": {
+    "message": "無法直接啟動時透過連結啟動 Rayburst",
+    "description": "Setting: open the desktop link in a tab when Native Messaging cannot start it"
+  },
   "options_seconds_suffix": {
     "message": "秒",
     "description": "Seconds unit suffix"
@@ -390,6 +398,10 @@
   "notification_duplicate_guard_body": {
     "message": "重複請求已跳過",
     "description": "Notification body shown when a duplicate download is blocked."
+  },
+  "notification_desktop_link_body": {
+    "message": "點擊開啟「透過瀏覽器連結啟動 Rayburst」。",
+    "description": "Notification body after an unattended start failed; clicking opens the settings"
   },
   "options_privacy_section_label": {
     "message": "隱私",
@@ -523,9 +535,17 @@
     "message": "請確認 Rayburst 已安裝，且 API 設定正確。",
     "description": "Popup launch failure guidance"
   },
+  "popup_launch_link_hint": {
+    "message": "可以改由瀏覽器透過連結啟動 Rayburst。",
+    "description": "Popup launch failure guidance when the desktop could not be started at all"
+  },
   "popup_action_retry": {
     "message": "重試",
     "description": "Popup action to retry desktop launch"
+  },
+  "popup_action_launch_link": {
+    "message": "透過連結啟動",
+    "description": "Popup button: allow starting the desktop through its link and retry"
   },
   "options_diagnostics_column_time": {
     "message": "時間",
@@ -746,7 +766,7 @@
     "description": "Media discovery: invalid"
   },
   "media_unavailable": {
-    "message": "Rayburst 尚未支援媒體介面。",
+    "message": "此版本的桌面端無法下載串流媒體，請安裝新版 Rayburst。",
     "description": "Media discovery: unavailable"
   },
   "media_expired": {
@@ -1075,14 +1095,29 @@
     "message": "檢查中",
     "description": "Connection status while the desktop check is pending"
   },
-  "connection_legacy_title": {
-    "message": "不再支援 Motrix Next"
-  },
   "connection_unsupported_title": {
     "message": "不支援此桌面版本"
   },
   "connection_upgrade_hint": {
     "message": "請安裝新版 Rayburst 後重新連線。"
+  },
+  "connection_legacy_title": {
+    "message": "建議更新到新版 Rayburst",
+    "description": "Title of the update notice shown while connected to an older desktop"
+  },
+  "connection_legacy_hint": {
+    "message": "目前連線的 $1 是舊版，部分功能無法使用。",
+    "description": "Shown while connected to an older desktop, $1 = its name and version",
+    "placeholders": {
+      "1": {
+        "content": "$1",
+        "example": "Motrix Next 3.9.9"
+      }
+    }
+  },
+  "connection_legacy_dismiss": {
+    "message": "關閉",
+    "description": "Accessible label of the button that closes the popup update notice"
   },
   "connection_get_rayburst": {
     "message": "取得 Rayburst"

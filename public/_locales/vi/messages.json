@@ -106,6 +106,10 @@
     "message": "Đã kết nối · Rayburst",
     "description": "Prefix for successful connection status"
   },
+  "options_connection_success_motrix": {
+    "message": "Đã kết nối · Motrix Next",
+    "description": "Connection status when Motrix Next answered"
+  },
   "options_rules_empty": {
     "message": "Chưa có quy tắc nào được cấu hình.",
     "description": "Placeholder when no site rules exist"
@@ -271,6 +275,10 @@
     "message": "Thời gian chờ khởi chạy",
     "description": "Desktop startup timeout label"
   },
+  "options_desktop_open_link_label": {
+    "message": "Khởi chạy Rayburst qua liên kết khi cần",
+    "description": "Setting: open the desktop link in a tab when Native Messaging cannot start it"
+  },
   "options_seconds_suffix": {
     "message": "giây",
     "description": "Seconds unit suffix"
@@ -390,6 +398,10 @@
   "notification_duplicate_guard_body": {
     "message": "Đã bỏ qua yêu cầu trùng lặp",
     "description": "Notification body shown when a duplicate download is blocked."
+  },
+  "notification_desktop_link_body": {
+    "message": "Nhấp để bật khởi chạy Rayburst qua liên kết trình duyệt.",
+    "description": "Notification body after an unattended start failed; clicking opens the settings"
   },
   "options_privacy_section_label": {
     "message": "Quyen rieng tu",
@@ -523,9 +535,17 @@
     "message": "Hãy kiểm tra Rayburst đã được cài đặt và cấu hình API chính xác.",
     "description": "Popup launch failure guidance"
   },
+  "popup_launch_link_hint": {
+    "message": "Trình duyệt có thể khởi chạy Rayburst qua liên kết thay thế.",
+    "description": "Popup launch failure guidance when the desktop could not be started at all"
+  },
   "popup_action_retry": {
     "message": "Thử lại",
     "description": "Popup action to retry desktop launch"
+  },
+  "popup_action_launch_link": {
+    "message": "Khởi chạy qua liên kết",
+    "description": "Popup button: allow starting the desktop through its link and retry"
   },
   "options_diagnostics_column_time": {
     "message": "Thời gian",
@@ -746,7 +766,7 @@
     "description": "Media discovery: invalid"
   },
   "media_unavailable": {
-    "message": "Rayburst chưa hỗ trợ giao diện phương tiện.",
+    "message": "Phiên bản ứng dụng máy tính này không tải được luồng. Cài đặt Rayburst mới nhất.",
     "description": "Media discovery: unavailable"
   },
   "media_expired": {
@@ -1075,14 +1095,29 @@
     "message": "Đang kiểm tra",
     "description": "Connection status while the desktop check is pending"
   },
-  "connection_legacy_title": {
-    "message": "Motrix Next không còn được hỗ trợ"
-  },
   "connection_unsupported_title": {
     "message": "Phiên bản máy tính không được hỗ trợ"
   },
   "connection_upgrade_hint": {
     "message": "Cài đặt Rayburst mới nhất rồi kết nối lại."
+  },
+  "connection_legacy_title": {
+    "message": "Cập nhật lên Rayburst mới nhất",
+    "description": "Title of the update notice shown while connected to an older desktop"
+  },
+  "connection_legacy_hint": {
+    "message": "$1 là phiên bản cũ nên một số tính năng không dùng được.",
+    "description": "Shown while connected to an older desktop, $1 = its name and version",
+    "placeholders": {
+      "1": {
+        "content": "$1",
+        "example": "Motrix Next 3.9.9"
+      }
+    }
+  },
+  "connection_legacy_dismiss": {
+    "message": "Đóng",
+    "description": "Accessible label of the button that closes the popup update notice"
   },
   "connection_get_rayburst": {
     "message": "Tải Rayburst"

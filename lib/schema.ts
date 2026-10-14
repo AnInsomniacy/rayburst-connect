@@ -179,6 +179,8 @@ const DownloadSettingsSchema = lenient(
       z.object({
         action: z.enum(['launch', 'browser']).catch('launch'),
         startupTimeoutSeconds: z.number().int().min(1).max(60).catch(15),
+        // When Native Messaging cannot start the desktop, open its link in a tab.
+        openLink: z.boolean().catch(false),
       }),
     ),
     forwardRequestHeaders: z.boolean().catch(true),
@@ -300,6 +302,7 @@ const DiagnosticCodeSchema = z.enum([
   'media_discovery_failed',
   'firefox_interception_failed',
   'desktop_activation_failed',
+  'desktop_link_opened',
   'desktop_incompatible',
   'cookie_collect_failed',
   'permission_granted',
@@ -337,6 +340,34 @@ export type DiagnosticEvent = z.output<typeof DiagnosticEventSchema>;
 export type DiagnosticLevel = DiagnosticEvent['level'];
 
 const DiagnosticEventsSchema = filteredArray(DiagnosticEventSchema);
+
+// ─── Desktop Memory ─────────────────────────────────────
+// What the extension learned about the desktop; neither a setting nor backed up.
+
+const DesktopIdentitySchema = z.object({
+  product: z.enum(['rayburst', 'motrix-next']),
+  version: z.string().min(1).max(64),
+  /** 1: Motrix Next 3.8+, 2: Rayburst 4.0, 3: Rayburst 4.1 and later. */
+  protocol: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+});
+
+const DesktopMemorySchema = lenient(
+  z.object({
+    /** The desktop that answered last. */
+    desktop: DesktopIdentitySchema.nullable().catch(null),
+    /** The link fallback was suggested once after a failed start. */
+    linkSuggested: z.boolean().catch(false),
+    /** The older desktop whose update notice the popup closed. */
+    noticeDismissed: z.string().max(96).nullable().catch(null),
+  }),
+);
+
+export type DesktopIdentity = z.output<typeof DesktopIdentitySchema>;
+export type DesktopProduct = DesktopIdentity['product'];
+export type DesktopProtocol = DesktopIdentity['protocol'];
+export type DesktopMemory = z.output<typeof DesktopMemorySchema>;
+export const parseDesktopMemory = (input: unknown): DesktopMemory =>
+  DesktopMemorySchema.parse(input);
 
 // ─── Composite Snapshot ─────────────────────────────────
 

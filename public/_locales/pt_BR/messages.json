@@ -106,6 +106,10 @@
     "message": "Conectado · Rayburst",
     "description": "Prefix for successful connection status"
   },
+  "options_connection_success_motrix": {
+    "message": "Conectado · Motrix Next",
+    "description": "Connection status when Motrix Next answered"
+  },
   "options_rules_empty": {
     "message": "Nenhuma regra configurada.",
     "description": "Placeholder when no site rules exist"
@@ -271,6 +275,10 @@
     "message": "Tempo limite de inicialização",
     "description": "Desktop startup timeout label"
   },
+  "options_desktop_open_link_label": {
+    "message": "Iniciar o Rayburst por um link quando necessário",
+    "description": "Setting: open the desktop link in a tab when Native Messaging cannot start it"
+  },
   "options_seconds_suffix": {
     "message": "s",
     "description": "Seconds unit suffix"
@@ -390,6 +398,10 @@
   "notification_duplicate_guard_body": {
     "message": "Solicitação duplicada ignorada",
     "description": "Notification body shown when a duplicate download is blocked."
+  },
+  "notification_desktop_link_body": {
+    "message": "Clique para ativar o início do Rayburst por um link do navegador.",
+    "description": "Notification body after an unattended start failed; clicking opens the settings"
   },
   "options_privacy_section_label": {
     "message": "Privacidade",
@@ -523,9 +535,17 @@
     "message": "Verifique se o Rayburst está instalado e se as configurações da API estão corretas.",
     "description": "Popup launch failure guidance"
   },
+  "popup_launch_link_hint": {
+    "message": "O navegador pode iniciar o Rayburst por um link.",
+    "description": "Popup launch failure guidance when the desktop could not be started at all"
+  },
   "popup_action_retry": {
     "message": "Tentar novamente",
     "description": "Popup action to retry desktop launch"
+  },
+  "popup_action_launch_link": {
+    "message": "Iniciar por um link",
+    "description": "Popup button: allow starting the desktop through its link and retry"
   },
   "options_diagnostics_column_time": {
     "message": "Hora",
@@ -746,7 +766,7 @@
     "description": "Media discovery: invalid"
   },
   "media_unavailable": {
-    "message": "O Rayburst ainda não suporta a interface de mídia.",
+    "message": "Esta versão do aplicativo para desktop não consegue baixar transmissões. Instale a versão mais recente do Rayburst.",
     "description": "Media discovery: unavailable"
   },
   "media_expired": {
@@ -1075,14 +1095,29 @@
     "message": "Verificando",
     "description": "Connection status while the desktop check is pending"
   },
-  "connection_legacy_title": {
-    "message": "Motrix Next não é mais compatível"
-  },
   "connection_unsupported_title": {
     "message": "Versão para desktop incompatível"
   },
   "connection_upgrade_hint": {
     "message": "Instale a versão mais recente do Rayburst e conecte novamente."
+  },
+  "connection_legacy_title": {
+    "message": "Atualize para a versão mais recente do Rayburst",
+    "description": "Title of the update notice shown while connected to an older desktop"
+  },
+  "connection_legacy_hint": {
+    "message": "$1 é uma versão antiga, por isso alguns recursos não estão disponíveis.",
+    "description": "Shown while connected to an older desktop, $1 = its name and version",
+    "placeholders": {
+      "1": {
+        "content": "$1",
+        "example": "Motrix Next 3.9.9"
+      }
+    }
+  },
+  "connection_legacy_dismiss": {
+    "message": "Fechar",
+    "description": "Accessible label of the button that closes the popup update notice"
   },
   "connection_get_rayburst": {
     "message": "Baixar Rayburst"
