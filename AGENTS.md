@@ -331,6 +331,8 @@ locked dependencies. Keep checks directly in `ci.yml`; no configurable gate wrap
 - **Download ownership** — the browser holds its download until `/add` answers. Only
   `added` and `cancelled` release it; any other outcome, including a lost answer,
   lets the browser continue. Never cancel a browser download without that answer.
+  The held item is paused meanwhile, so the browser does not download while the
+  desktop dialog waits.
 - **Formatting**: Prettier with project config (`.prettierrc`).
 
 ---

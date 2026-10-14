@@ -256,6 +256,7 @@ describe('DownloadOrchestrator', () => {
     const orchestrator = new DownloadOrchestrator(baseDeps);
     await expect(orchestrator.handleChromiumTakeover(item())).resolves.toBe(false);
     expect(baseDeps.downloads.cancel).not.toHaveBeenCalled();
+    expect(baseDeps.downloads.resume).toHaveBeenCalledWith(1);
     expect(baseDeps.diagnosticLog.append).toHaveBeenCalledWith(
       expect.objectContaining({
         code: 'download_restored_to_browser',
@@ -279,5 +280,6 @@ describe('DownloadOrchestrator', () => {
     await expect(orchestrator.handleChromiumTakeover(item())).resolves.toBe(false);
     expect(add).toHaveBeenCalledTimes(1);
     expect(baseDeps.downloads.cancel).not.toHaveBeenCalled();
+    expect(baseDeps.downloads.resume).toHaveBeenCalledWith(1);
   });
 });

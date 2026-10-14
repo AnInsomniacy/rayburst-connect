@@ -159,18 +159,38 @@ export class DownloadOrchestrator {
       this.logBrowserFallback(item, 'pause-failed', 'continued', errorMessage(error));
       return false;
     }
+    return this.handOverPaused(item, 'firefox-download');
+  }
+
+  async handleChromiumTakeover(item: DownloadItem): Promise<boolean> {
+    if (item.state !== 'in_progress' || !this.evaluateCandidate(item)) return false;
+    // Holding the filename does not stop the transfer. Pause it so the browser
+    // does not download while the desktop dialog waits for the user.
     try {
-      const claimed = await this.handleBrowserDownload(item, 'firefox-download');
+      await this.deps.downloads.pause(item.id);
+    } catch (error) {
+      // The file cannot complete before its filename is set. Hand it over as is.
+      this.log(
+        'download_pause_failed',
+        'Browser download could not be paused',
+        { downloadId: item.id, error: errorMessage(error) },
+        'warn',
+      );
+      return this.handleBrowserDownload(item, 'chromium-download');
+    }
+    return this.handOverPaused(item, 'chromium-download');
+  }
+
+  /** The browser resumes its paused download unless the desktop took it. */
+  private async handOverPaused(item: DownloadItem, source: DownloadSource): Promise<boolean> {
+    try {
+      const claimed = await this.handleBrowserDownload(item, source);
       if (!claimed) await this.deps.downloads.resume(item.id);
       return claimed;
     } catch (error) {
       await this.deps.downloads.resume(item.id);
       throw error;
     }
-  }
-
-  handleChromiumTakeover(item: DownloadItem): Promise<boolean> {
-    return this.handleBrowserDownload(item, 'chromium-download');
   }
 
   private async handleBrowserDownload(

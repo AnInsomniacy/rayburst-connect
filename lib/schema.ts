@@ -298,6 +298,7 @@ const DiagnosticCodeSchema = z.enum([
   'download_delivery_failed',
   'download_duplicate_blocked',
   'download_cancel_failed',
+  'download_pause_failed',
   'download_handler_failed',
   'media_discovery_failed',
   'firefox_interception_failed',

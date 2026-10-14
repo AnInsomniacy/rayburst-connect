@@ -35,9 +35,12 @@ browser download items carry no tab, so the clicked URL is the match.
 Private browser downloads remain in the browser. Version 2 kept a handoff journal
 under `pending-download:` keys; the background removes those entries at startup.
 
-Chromium holds filename determination until the desktop answers and calls
-`suggest` exactly once. Firefox holds attachment responses through its native Promise-based
-blocking callback; its downloads fallback pauses and resumes the original item.
+Chromium holds filename determination until the desktop answers, but keeps
+receiving data meanwhile, so the extension also pauses the item. Only a download
+the browser continues is resumed and given its filename through `suggest`; a
+released one is cancelled. Firefox holds attachment responses through its native
+Promise-based blocking callback; its downloads fallback pauses and resumes the
+original item the same way.
 Preflight failures release the original request, never a synthetic replacement GET.
 HTML/page-save and known non-GET requests stay in the browser before site rules run.
 Site rules normalize pasted HTTP(S) URLs to hostnames and use the existing picomatch
