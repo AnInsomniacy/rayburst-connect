@@ -10,13 +10,38 @@ import {
 } from '../schema';
 import { mediaIdentity } from './detection';
 
+/**
+ * Firefox keeps each stored value as a native copy until a later garbage
+ * collection, so rewriting a busy catalogue for every streamed segment grows
+ * its memory without bound. Observation writes persist at most this often.
+ */
+const OBSERVATION_PERSIST_MS = 1000;
+
+/** `later` is for passive observations: kept in memory now, persisted within a second. */
+type Write = boolean | 'later';
+
 /** One writer owns the session catalogue. A worker restart restores its committed snapshot. */
 export function createMediaCatalog() {
   let session: MediaSession | undefined;
   let committed = '';
+  let persistedAt = 0;
+  let deferred: ReturnType<typeof setTimeout> | undefined;
   let queue: Promise<unknown> = Promise.resolve();
 
-  function transact<T>(action: (state: MediaSession) => T | Promise<T>, write = false): Promise<T> {
+  async function persist(state: MediaSession) {
+    clearTimeout(deferred);
+    deferred = undefined;
+    const encoded = JSON.stringify(state);
+    if (encoded === committed) return;
+    await browser.storage.session.set({ [MEDIA_SESSION_KEY]: state });
+    committed = encoded;
+    persistedAt = Date.now();
+  }
+
+  function transact<T>(
+    action: (state: MediaSession) => T | Promise<T>,
+    write: Write = false,
+  ): Promise<T> {
     const work = queue.then(async () => {
       if (!session) {
         const saved = await browser.storage.session.get(MEDIA_SESSION_KEY);
@@ -30,16 +55,17 @@ export function createMediaCatalog() {
       // Mutate a copy: failed persistence must not become visible as committed state.
       const next = structuredClone(session);
       const result = await action(next);
-      if (write) {
-        prune(next);
-        const validated = MediaSessionSchema.parse(next);
-        const encoded = JSON.stringify(validated);
-        if (encoded !== committed) {
-          await browser.storage.session.set({ [MEDIA_SESSION_KEY]: validated });
-          committed = encoded;
-        }
-        session = validated;
-      }
+      prune(next);
+      const validated = MediaSessionSchema.parse(next);
+      const wait = persistedAt + OBSERVATION_PERSIST_MS - Date.now();
+      if (write === 'later' && wait > 0) {
+        // A failed deferred write stays uncommitted and is retried by the next one.
+        deferred ??= setTimeout(() => {
+          deferred = undefined;
+          void transact(() => undefined, true).catch(() => undefined);
+        }, wait);
+      } else await persist(validated);
+      session = validated;
       return result;
     });
     queue = work.catch(() => undefined);
@@ -101,7 +127,7 @@ export function createMediaCatalog() {
   let flush: Promise<void> | undefined;
   async function run<T>(
     action: (state: MediaSession) => T | Promise<T>,
-    write = false,
+    write: Write = false,
   ): Promise<T> {
     await flush;
     return transact(action, write);
@@ -143,7 +169,7 @@ export function createMediaCatalog() {
           }
           merge(existing, candidate);
         }
-      }, true);
+      }, 'later');
     });
     return flush;
   }

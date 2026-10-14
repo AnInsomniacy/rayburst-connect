@@ -21,15 +21,15 @@ function configure(value: unknown) {
   document.documentElement.lang = i18n.effectiveLocale.value.replace('_', '-');
   document.documentElement.dir = ['ar', 'fa'].includes(i18n.effectiveLocale.value) ? 'rtl' : 'ltr';
 }
-const changed: Parameters<typeof browser.storage.onChanged.addListener>[0] = (changes, area) => {
-  if (area === 'local' && changes.uiPrefs) configure(changes.uiPrefs.newValue);
+const changed: Parameters<typeof browser.storage.local.onChanged.addListener>[0] = (changes) => {
+  if (changes.uiPrefs) configure(changes.uiPrefs.newValue);
 };
 configure(props.prefs);
 onMounted(() => {
-  browser.storage.onChanged.addListener(changed);
+  browser.storage.local.onChanged.addListener(changed);
 });
 onUnmounted(() => {
-  browser.storage.onChanged.removeListener(changed);
+  browser.storage.local.onChanged.removeListener(changed);
 });
 </script>
 

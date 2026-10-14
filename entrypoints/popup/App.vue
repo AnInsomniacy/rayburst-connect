@@ -291,9 +291,7 @@ async function toggleEnabled(): Promise<void> {
 // ─── Live Sync ──────────────────────────────────────────
 
 function bindStorageChanges(): void {
-  const listener: Parameters<typeof browser.storage.onChanged.addListener>[0] = (changes, area) => {
-    if (area !== 'local') return;
-
+  const listener: Parameters<typeof browser.storage.local.onChanged.addListener>[0] = (changes) => {
     if (changes.settings?.newValue) {
       const settings = parseDownloadSettings(changes.settings.newValue);
       enabled.value = settings.enabled;
@@ -316,8 +314,8 @@ function bindStorageChanges(): void {
     }
   };
 
-  browser.storage.onChanged.addListener(listener);
-  stopStorageListener = () => browser.storage.onChanged.removeListener(listener);
+  browser.storage.local.onChanged.addListener(listener);
+  stopStorageListener = () => browser.storage.local.onChanged.removeListener(listener);
 }
 
 // ─── Lifecycle ──────────────────────────────────────────

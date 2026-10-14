@@ -10,6 +10,7 @@ import {
   type RequestHeaderContextStore,
 } from '../download/request-context';
 import { detectMedia, mediaOrigin, type MediaObservation } from './detection';
+import { isMissingReceiver } from '../messaging';
 import { captureMediaContext } from './request-context';
 import type { MediaCatalog } from './catalog';
 import { selectMedia } from './rules';
@@ -46,6 +47,12 @@ export function startMediaDiscovery(options: {
   const generations = new Map<string, number>();
   const safely = (work: Promise<unknown>) => {
     void work.catch(options.report);
+  };
+  /** A page without the content script, such as a restricted one, has nothing to rescan. */
+  const rescan = (tabId: number) => {
+    void browser.tabs.sendMessage(tabId, { type: 'MEDIA_RESCAN' }).catch((error: unknown) => {
+      if (!isMissingReceiver(error)) options.report(error);
+    });
   };
   const configuration = options.ensureConfig();
   safely(configuration);
@@ -135,7 +142,7 @@ export function startMediaDiscovery(options: {
           frameUrl: current.frame.url,
           pageUrl: current.tab.url ?? '',
         });
-      }, true);
+      }, 'later');
     }
     if (!detected) return;
     await catalog.observe({
@@ -343,9 +350,9 @@ export function startMediaDiscovery(options: {
             if (details.frameId === 0) item.pageUrl = details.url;
             if (item.frameId === details.frameId) item.frameUrl = details.url;
           }
-      }, true),
+      }, 'later'),
     );
-    safely(browser.tabs.sendMessage(details.tabId, { type: 'MEDIA_RESCAN' }));
+    rescan(details.tabId);
   };
   browser.webNavigation.onHistoryStateUpdated.addListener(sameDocumentNavigation);
   browser.webNavigation.onReferenceFragmentUpdated.addListener(sameDocumentNavigation);
@@ -356,9 +363,7 @@ export function startMediaDiscovery(options: {
     safely(catalog.remove(tabId));
   });
   browser.tabs.onReplaced.addListener((added, removed) => {
-    safely(
-      catalog.remove(removed).then(() => browser.tabs.sendMessage(added, { type: 'MEDIA_RESCAN' })),
-    );
+    safely(catalog.remove(removed).then(() => rescan(added)));
   });
 
   return {

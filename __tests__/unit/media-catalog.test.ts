@@ -114,6 +114,30 @@ describe('media session ownership', () => {
     await catalog.observe(mediaCandidate());
     expect(await catalog.run((state) => state.candidates)).toHaveLength(1);
   });
+  it('persists a stream of observations at most once a second (#97)', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'], shouldAdvanceTime: true });
+    try {
+      const catalog = createMediaCatalog();
+      const write = vi.spyOn(browser.storage.session, 'set');
+      // A live stream's segments, one every 90 ms.
+      for (let i = 0; i < 10; i++) {
+        void catalog.observe(mediaCandidate({ url: `https://example.com/${i}.m4s` }));
+        await vi.advanceTimersByTimeAsync(90);
+      }
+      // The first segment persists at once, the other nine together a second later.
+      expect(write).toHaveBeenCalledTimes(1);
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(write).toHaveBeenCalledTimes(2);
+      const restored = createMediaCatalog();
+      expect(await restored.run((state) => state.candidates)).toHaveLength(10);
+      // Anything else still persists immediately, carrying pending observations with it.
+      await catalog.observe(mediaCandidate({ url: 'https://example.com/late.m4s' }));
+      await catalog.remove(1, 'missing');
+      expect(write).toHaveBeenCalledTimes(3);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
   it('repairs media settings without changing download interception preferences', () => {
     expect(
       parseDownloadSettings({

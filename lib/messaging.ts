@@ -28,6 +28,11 @@ export function respondWith(handler: MessageHandler) {
   };
 }
 
+/** The tab or frame has no content script listening. */
+export function isMissingReceiver(error: unknown): boolean {
+  return error instanceof Error && error.message.includes('Receiving end does not exist');
+}
+
 /**
  * Messages a tab's content script. Tabs opened before the extension started or
  * reloaded have none, so it is injected once and the message sent again.
@@ -37,8 +42,7 @@ export async function sendToTab(tabId: number, message: unknown, frameId?: numbe
   try {
     return (await browser.tabs.sendMessage(tabId, message, options)) as unknown;
   } catch (error) {
-    if (!(error instanceof Error) || !error.message.includes('Receiving end does not exist'))
-      throw error;
+    if (!isMissingReceiver(error)) throw error;
     await browser.scripting.executeScript({
       target: frameId === undefined ? { tabId, allFrames: true } : { tabId, frameIds: [frameId] },
       files: ['/content-scripts/content.js'],

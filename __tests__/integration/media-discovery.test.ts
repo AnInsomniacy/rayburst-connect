@@ -17,6 +17,8 @@ let documentId: string;
 let frameUrl: string;
 
 async function snapshot() {
+  // Observations reach session storage at most once a second.
+  await vi.advanceTimersByTimeAsync(1000);
   const saved = await browser.storage.session.get(MEDIA_SESSION_KEY);
   const result = MediaSessionSchema.safeParse(saved[MEDIA_SESSION_KEY]);
   return result.success ? result.data : { candidates: [], operations: [], contexts: [] };
@@ -49,6 +51,7 @@ function resource(
 beforeEach(async () => {
   fakeBrowser.reset();
   vi.restoreAllMocks();
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'], shouldAdvanceTime: true });
   const tab = await fakeBrowser.tabs.create({ url: 'https://example.com/watch', active: true });
   if (tab.id === undefined) throw new Error('Missing test tab');
   tabId = tab.id;
@@ -102,6 +105,7 @@ beforeEach(async () => {
   await vi.waitFor(async () => expect(browser.action.setBadgeText).toHaveBeenCalled());
 });
 afterEach(() => {
+  vi.useRealTimers();
   fakeBrowser.reset();
   vi.restoreAllMocks();
 });

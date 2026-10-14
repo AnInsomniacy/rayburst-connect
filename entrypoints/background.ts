@@ -707,9 +707,8 @@ export default defineBackground(() => {
 
   // ─── Storage Sync ─────────────────────────────────────
 
-  browser.storage.onChanged.addListener((changes, area) => {
-    if (area !== 'local') return;
-
+  // Session writes are the media catalogue; listening to them would copy it here each time.
+  browser.storage.local.onChanged.addListener((changes) => {
     if (changes.connection?.newValue) {
       connectionConfig = parseConnectionConfig(changes.connection.newValue);
       desktopClient.updateConfig(connectionConfig);

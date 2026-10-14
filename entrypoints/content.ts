@@ -38,11 +38,10 @@ export default defineContentScript({
     void browser.storage.local.get('settings').then((data) => {
       if (!disposed) configure(data.settings);
     });
-    const changed: Parameters<typeof browser.storage.onChanged.addListener>[0] = (
+    const changed: Parameters<typeof browser.storage.local.onChanged.addListener>[0] = (
       changes,
-      area,
     ) => {
-      if (area === 'local' && changes.settings) configure(changes.settings.newValue);
+      if (changes.settings) configure(changes.settings.newValue);
     };
     const message = respondWith((raw: unknown) => {
       if (!raw || typeof raw !== 'object' || !('type' in raw)) return undefined;
@@ -100,7 +99,7 @@ export default defineContentScript({
           window.postMessage({ channel: 'rayburst-ack', id: data.id, ok: false }, location.origin);
       });
     });
-    browser.storage.onChanged.addListener(changed);
+    browser.storage.local.onChanged.addListener(changed);
     browser.runtime.onMessage.addListener(message);
     const click = createExternalProtocolClickHandler({
       shouldIntercept: (link) => settings.enabled && settings.interceptionScope[link.protocol],
@@ -139,7 +138,7 @@ export default defineContentScript({
     ctx.onInvalidated(() => {
       disposed = true;
       observer?.stop();
-      browser.storage.onChanged.removeListener(changed);
+      browser.storage.local.onChanged.removeListener(changed);
       browser.runtime.onMessage.removeListener(message);
     });
   },

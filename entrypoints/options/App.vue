@@ -468,9 +468,7 @@ async function loadFromStorage(): Promise<void> {
 let stopStorageListener: (() => void) | null = null;
 
 function bindStorageChanges(): void {
-  const listener: Parameters<typeof browser.storage.onChanged.addListener>[0] = (changes, area) => {
-    if (area !== 'local') return;
-
+  const listener: Parameters<typeof browser.storage.local.onChanged.addListener>[0] = (changes) => {
     if (changes.diagnosticLog?.newValue) {
       diagnosticEvents.value = parseDiagnosticEvents(changes.diagnosticLog.newValue);
     }
@@ -522,8 +520,8 @@ function bindStorageChanges(): void {
     }
   };
 
-  browser.storage.onChanged.addListener(listener);
-  stopStorageListener = () => browser.storage.onChanged.removeListener(listener);
+  browser.storage.local.onChanged.addListener(listener);
+  stopStorageListener = () => browser.storage.local.onChanged.removeListener(listener);
 }
 
 // ─── Lifecycle ──────────────────────────────────────────
