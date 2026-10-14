@@ -2,7 +2,7 @@ import identity from '../../browser-identity.json';
 import { validatePackage, findZipByNamePart, fetchJson } from './workflow-utils';
 import { createAmoJwt, getFirefoxVersions } from './store-api';
 
-import { requiredEnv, runCommand, stringField } from './workflow-utils';
+import { requiredEnv, runCommand, setOutput, stringField } from './workflow-utils';
 
 type FirefoxPublishDecision = {
   action: 'publish' | 'skip';
@@ -40,6 +40,7 @@ async function publishFirefoxFromEnv(): Promise<void> {
 
   if (decision.action === 'skip') {
     console.log(`::notice::${decision.reason}`);
+    setOutput('result', `Skipped: ${decision.reason}`);
     return;
   }
 
@@ -62,6 +63,7 @@ async function publishFirefoxFromEnv(): Promise<void> {
   if (output.exitCode !== 0) {
     throw new Error(`Firefox AMO signing failed: ${output.output.slice(0, 500)}`);
   }
+  setOutput('result', 'Submitted for review');
 }
 
 if (process.argv[1]?.endsWith('/publish-firefox.ts')) {

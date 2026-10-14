@@ -14,6 +14,7 @@ import {
   isRecord,
   optionalEnv,
   requiredEnv,
+  setOutput,
   stringField,
 } from './workflow-utils';
 
@@ -91,6 +92,7 @@ async function publishChromeFromEnv(): Promise<void> {
 
   if (decision.action === 'skip') {
     console.log(`::notice::${decision.reason}`);
+    setOutput('result', `Skipped: ${decision.reason}`);
     return;
   }
 
@@ -102,6 +104,7 @@ async function publishChromeFromEnv(): Promise<void> {
 
   const publish = await publishChromeItem(config, token);
   console.log(`Chrome Web Store publish state: ${publish.state || 'unknown'}`);
+  setOutput('result', `Submitted, ${publish.state || 'state unknown'}`);
 }
 
 async function fetchChromeStatus(config: ChromeConfig, token: string): Promise<ChromeStoreStatus> {

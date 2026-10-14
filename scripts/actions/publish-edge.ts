@@ -9,6 +9,7 @@ import {
   isRecord,
   optionalEnv,
   requiredEnv,
+  setOutput,
   stringField,
 } from './workflow-utils';
 
@@ -153,6 +154,7 @@ async function publishEdgeFromEnv(): Promise<void> {
     );
     if (decision.action === 'skip') {
       console.log(`::notice::${decision.reason}`);
+      setOutput('result', `Skipped: ${decision.reason}`);
       return;
     }
   }
@@ -178,12 +180,14 @@ async function publishEdgeFromEnv(): Promise<void> {
   if (publishResult.decision.action === 'skipped-in-review') {
     console.log('::notice::Edge Add-ons: another submission is currently in review');
     await saveRepositoryVariables(updates);
+    setOutput('result', 'Skipped: another submission is in review');
     return;
   }
 
   if (publishResult.decision.action === 'skipped-no-updates') {
     console.log('::notice::Edge Add-ons: no publishable draft updates were found');
     await saveRepositoryVariables(updates);
+    setOutput('result', 'Skipped: no draft updates to publish');
     return;
   }
 
@@ -194,6 +198,10 @@ async function publishEdgeFromEnv(): Promise<void> {
   }
 
   await saveRepositoryVariables(updates);
+  setOutput(
+    'result',
+    publishResult.decision.action === 'pending' ? 'Submitted, review pending' : 'Submitted',
+  );
 }
 
 async function uploadDraftPackage(input: {

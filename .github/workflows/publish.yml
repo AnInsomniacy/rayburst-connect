@@ -39,6 +39,8 @@ jobs:
   publish-chrome:
     name: Publish to Chrome Web Store
     needs: resolve-version
+    outputs:
+      result: ${{ steps.publish.outputs.result }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
 
@@ -55,6 +57,7 @@ jobs:
         run: gh release download "$RELEASE_TAG" --pattern "rayburst-connect-${VERSION}-chromium-mv3.zip" --dir .output
 
       - name: Upload and publish to Chrome Web Store
+        id: publish
         env:
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
           CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
@@ -66,6 +69,8 @@ jobs:
   publish-firefox:
     name: Publish to Firefox AMO
     needs: resolve-version
+    outputs:
+      result: ${{ steps.publish.outputs.result }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
 
@@ -87,6 +92,7 @@ jobs:
           git archive --format=zip "$RELEASE_SHA" > source-code.zip
 
       - name: Sign and submit to AMO
+        id: publish
         env:
           FIREFOX_API_KEY: ${{ secrets.FIREFOX_API_KEY }}
           FIREFOX_API_SECRET: ${{ secrets.FIREFOX_API_SECRET }}
@@ -96,6 +102,8 @@ jobs:
   publish-edge:
     name: Publish to Edge Add-ons
     needs: resolve-version
+    outputs:
+      result: ${{ steps.publish.outputs.result }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
 
@@ -112,6 +120,7 @@ jobs:
         run: gh release download "$RELEASE_TAG" --pattern "rayburst-connect-${VERSION}-chromium-mv3.zip" --dir .output
 
       - name: Upload and publish to Edge Add-ons
+        id: publish
         env:
           EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
           EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
@@ -121,3 +130,41 @@ jobs:
           EDGE_LAST_OPERATION_VERSION: ${{ vars.EDGE_LAST_OPERATION_VERSION }}
           VERSION: ${{ needs.resolve-version.outputs.version }}
         run: pnpm exec tsx scripts/actions/publish-edge.ts
+
+  summary:
+    name: Summary
+    needs: [resolve-version, publish-chrome, publish-firefox, publish-edge]
+    if: always() && needs.resolve-version.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+
+    steps:
+      - name: Write the publish summary
+        env:
+          TAG: ${{ needs.resolve-version.outputs.tag }}
+          CHROME: ${{ needs.publish-chrome.result }}
+          CHROME_RESULT: ${{ needs.publish-chrome.outputs.result }}
+          FIREFOX: ${{ needs.publish-firefox.result }}
+          FIREFOX_RESULT: ${{ needs.publish-firefox.outputs.result }}
+          EDGE: ${{ needs.publish-edge.result }}
+          EDGE_RESULT: ${{ needs.publish-edge.outputs.result }}
+        run: |
+          # A store job that failed or did not finish leaves no result of its own.
+          result() {
+            case "$1" in
+              success) echo "${2:-Done}" ;;
+              failure) echo "Failed, see the job log" ;;
+              *) echo "${1^}" ;;
+            esac
+          }
+          {
+            echo "## Publish Summary"
+            echo
+            echo "Release: \`$TAG\`"
+            echo
+            echo "| Store | Result |"
+            echo "| --- | --- |"
+            echo "| Chrome Web Store | $(result "$CHROME" "$CHROME_RESULT") |"
+            echo "| Firefox AMO | $(result "$FIREFOX" "$FIREFOX_RESULT") |"
+            echo "| Edge Add-ons | $(result "$EDGE" "$EDGE_RESULT") |"
+          } >> "$GITHUB_STEP_SUMMARY"

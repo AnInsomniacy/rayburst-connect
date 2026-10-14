@@ -209,7 +209,7 @@ All code changes must be finalized before starting. Execute in strict order:
    - Resolves the target tag and commit; runs publishing scripts from the workflow commit
    - Downloads the existing packages from that release; no rebuild or repeated quality gate
    - Submits existing packages to Chrome Web Store, Firefox AMO, and Edge Add-ons
-   - Reports submission results in each store job
+   - Reports each store's result in a summary table on the run page
 
 ### Store Publishing Details
 
@@ -300,7 +300,8 @@ production release. Publishing tools run from the workflow commit, so fixes also
 to existing releases. Chrome, Firefox and Edge jobs download
 its existing packages and submit them through `scripts/actions`. Firefox also receives
 the source archive for that exact tag. Store jobs do not rebuild or rerun source tests.
-Each job reports its own result; no separate summary runner is needed.
+Each store job outputs a one-line result; a final shell-only summary job tabulates them
+on the run page.
 
 ### `store-status.yml` (Manual Dispatch Only)
 
