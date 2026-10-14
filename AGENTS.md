@@ -201,7 +201,9 @@ All code changes must be finalized before starting. Execute in strict order:
    - Builds and packages `.zip` for Chromium and Firefox once each
    - Uploads artifacts to the GitHub Release
 
-5. **Publish to stores** — go to Actions → "Publish to Stores" → Run workflow.
+5. **Publish to stores** — the user alone does this. Agents publish GitHub Releases but never
+   submit to a store, run or dispatch the store workflows, or touch store settings and secrets.
+   The user goes to Actions → "Publish to Stores" → Run workflow.
    Enter the version number or leave as `latest` to auto-detect. The workflow:
    - Resolves the target tag and commit; runs publishing scripts from the workflow commit
    - Downloads the existing packages from that release; no rebuild or repeated quality gate
