@@ -276,8 +276,8 @@
     "description": "Desktop startup timeout label"
   },
   "options_desktop_open_link_label": {
-    "message": "Inicia Rayburst amb un enllaç si cal",
-    "description": "Setting: open the desktop link in a tab when Native Messaging cannot start it"
+    "message": "Inicia Rayburst amb un enllaç del navegador (mètode antic)",
+    "description": "Setting: start the desktop by opening its link in a tab instead of Native Messaging"
   },
   "options_seconds_suffix": {
     "message": "s",

@@ -276,8 +276,8 @@
     "description": "Desktop startup timeout label"
   },
   "options_desktop_open_link_label": {
-    "message": "Khởi chạy Rayburst qua liên kết khi cần",
-    "description": "Setting: open the desktop link in a tab when Native Messaging cannot start it"
+    "message": "Khởi chạy Rayburst qua liên kết trình duyệt (cách cũ)",
+    "description": "Setting: start the desktop by opening its link in a tab instead of Native Messaging"
   },
   "options_seconds_suffix": {
     "message": "giây",

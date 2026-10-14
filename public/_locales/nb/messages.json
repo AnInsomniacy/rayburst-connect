@@ -276,8 +276,8 @@
     "description": "Desktop startup timeout label"
   },
   "options_desktop_open_link_label": {
-    "message": "Start Rayburst via en lenke ved behov",
-    "description": "Setting: open the desktop link in a tab when Native Messaging cannot start it"
+    "message": "Start Rayburst via en nettleserlenke (gammel metode)",
+    "description": "Setting: start the desktop by opening its link in a tab instead of Native Messaging"
   },
   "options_seconds_suffix": {
     "message": "s",

@@ -276,8 +276,8 @@
     "description": "Desktop startup timeout label"
   },
   "options_desktop_open_link_label": {
-    "message": "必要なときはリンクで Rayburst を起動",
-    "description": "Setting: open the desktop link in a tab when Native Messaging cannot start it"
+    "message": "ブラウザーのリンクで Rayburst を起動（従来の方法）",
+    "description": "Setting: start the desktop by opening its link in a tab instead of Native Messaging"
   },
   "options_seconds_suffix": {
     "message": "秒",

@@ -276,8 +276,8 @@
     "description": "Desktop startup timeout label"
   },
   "options_desktop_open_link_label": {
-    "message": "无法直接启动时通过链接启动 Rayburst",
-    "description": "Setting: open the desktop link in a tab when Native Messaging cannot start it"
+    "message": "通过浏览器链接启动 Rayburst（旧方式）",
+    "description": "Setting: start the desktop by opening its link in a tab instead of Native Messaging"
   },
   "options_seconds_suffix": {
     "message": "秒",

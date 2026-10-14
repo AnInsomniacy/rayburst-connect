@@ -199,7 +199,9 @@ const unavailableActionOptions = computed(() => [
       <NFormItem
         class="settings-row"
         :show-feedback="false"
-        :label="i18n('options_desktop_open_link_label', 'Start Rayburst Through a Link If Needed')"
+        :label="
+          i18n('options_desktop_open_link_label', 'Start Rayburst Through a Browser Link (Legacy)')
+        "
       >
         <NSwitch
           :value="desktopUnavailable.openLink"

@@ -276,8 +276,8 @@
     "description": "Desktop startup timeout label"
   },
   "options_desktop_open_link_label": {
-    "message": "ज़रूरत पड़ने पर लिंक से Rayburst शुरू करें",
-    "description": "Setting: open the desktop link in a tab when Native Messaging cannot start it"
+    "message": "ब्राउज़र लिंक से Rayburst शुरू करें (पुराना तरीका)",
+    "description": "Setting: start the desktop by opening its link in a tab instead of Native Messaging"
   },
   "options_seconds_suffix": {
     "message": "सेकंड",

@@ -104,10 +104,10 @@ so an upgrade still starts. With no answer yet Rayburst comes first.
 The `rayburst://` scheme activates the desktop only. It never creates a download or
 transports cookies. Downloads use the authenticated HTTP handoff and its receipts.
 
-Native Messaging starts the desktop. When no host is installed or the host fails,
-and "Start Rayburst Through a Link If Needed" is on, the worker opens
-`rayburst://` (`motrixnext://` for Motrix Next) in a focused tab so the browser
-can ask to open the desktop, then closes the tab once the wait for readiness
-ends. The setting is off by default. A failed start in the popup offers to turn
-it on and retry; the first unattended failure shows one notification whose click
-turns it on.
+Native Messaging starts the desktop by default. With "Start Rayburst Through a
+Browser Link (Legacy)" on, the worker skips Native Messaging and opens `rayburst://`
+(`motrixnext://` for Motrix Next) in a focused tab so the browser can ask to
+open the desktop, then closes the tab once the wait for readiness ends, as
+desktops before Native Messaging were started. When Native Messaging fails, the
+popup offers to turn the setting on and retry; the first unattended failure
+shows one notification whose click turns it on.

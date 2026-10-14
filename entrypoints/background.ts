@@ -154,29 +154,25 @@ export default defineBackground(() => {
 
   /**
    * Starts the desktop through Native Messaging, or through its link in a tab
-   * when that fails and the user allowed it. Unattended starts that fail
+   * when the user chose the link. Unattended Native Messaging failures
    * suggest the link once; the popup suggests it on its own.
    */
   async function activateDesktopApp(unattended: boolean): Promise<(() => void) | void> {
     await ensureConfigLoaded();
     const protocol = (await loadDesktopMemory()).desktop?.protocol ?? null;
+    if (settings.desktopUnavailable.openLink) {
+      const link = desktopLink(protocol);
+      logInfo('desktop_link_opened', 'Rayburst was started through its link', { link });
+      return openDesktopLink(link);
+    }
     try {
       await activateDesktop(
         (hostName, message) => browser.runtime.sendNativeMessage(hostName, message),
         nativeHosts(protocol, import.meta.env.FIREFOX),
       );
     } catch (error) {
-      if (!(error instanceof DesktopActivationError)) throw error;
-      if (!settings.desktopUnavailable.openLink) {
-        if (unattended) void suggestDesktopLink();
-        throw error;
-      }
-      const link = desktopLink(protocol);
-      logInfo('desktop_link_opened', 'Rayburst was started through its link', {
-        link,
-        reason: error.code,
-      });
-      return openDesktopLink(link);
+      if (unattended && error instanceof DesktopActivationError) void suggestDesktopLink();
+      throw error;
     }
   }
 

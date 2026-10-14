@@ -179,7 +179,7 @@ const DownloadSettingsSchema = lenient(
       z.object({
         action: z.enum(['launch', 'browser']).catch('launch'),
         startupTimeoutSeconds: z.number().int().min(1).max(60).catch(15),
-        // When Native Messaging cannot start the desktop, open its link in a tab.
+        // Start the desktop by opening its link in a tab instead of Native Messaging.
         openLink: z.boolean().catch(false),
       }),
     ),
