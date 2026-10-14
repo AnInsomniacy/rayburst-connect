@@ -168,7 +168,7 @@ workflow that accepts production releases only. Creating a Release never submits
 ./scripts/release.sh
 ```
 
-On GitHub: create a Release, select the tag, **check "Set as a pre-release"**.
+Create the GitHub Release for the tag with `gh release create --prerelease`; no user approval is needed.
 CI builds zip artifacts and attaches them to the Release. No store submission.
 Download the zip and sideload via `chrome://extensions` for local testing.
 
@@ -193,11 +193,11 @@ All code changes must be finalized before starting. Execute in strict order:
    This formats code, runs all quality gates (compile → test → lint → i18n → format),
    commits all changes, creates an annotated tag `v{VERSION}`, and pushes to origin.
 
-3. **Generate Release Title and Notes** following the conventions below, output in two
-   separate code blocks (title + body) so the user can copy-paste into the GitHub Release page.
+3. **Generate Release Title and Notes** following the conventions below.
 
-4. **User publishes on GitHub** — do **not** check "Set as a pre-release".
-   CI automatically:
+4. **Publish on GitHub** with `gh release create`, not as a pre-release; releases need
+   no user approval. If `gh` is unavailable, output the title and body in two separate
+   code blocks for the user to paste. CI automatically:
    - Builds and packages `.zip` for Chromium and Firefox once each
    - Uploads artifacts to the GitHub Release
 
