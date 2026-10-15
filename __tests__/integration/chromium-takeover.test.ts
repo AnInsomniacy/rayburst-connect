@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { holdChromiumDownload } from '@/lib/download/chromium-takeover';
+import {
+  CHROMIUM_FILENAME_DEADLINE_MS,
+  holdChromiumDownload,
+} from '@/lib/download/chromium-takeover';
 import { DownloadOrchestrator } from '@/lib/download/orchestrator';
 import { ApiUnreachableError } from '@/lib/api';
 import { downloadItem, downloadDeps } from '../fixtures/download';
@@ -82,5 +85,37 @@ describe('browser ownership during handoff', () => {
     );
     await vi.waitFor(() => expect(suggest).toHaveBeenCalledTimes(1));
     expect(errors).toHaveBeenCalledWith(failure);
+  });
+
+  it('names the paused download before Chromium stops waiting, then erases it once accepted', async () => {
+    vi.useFakeTimers();
+    try {
+      const deps = downloadDeps();
+      let answer!: (response: { action: 'accepted' }) => void;
+      vi.mocked(deps.desktopClient.addDownload).mockImplementation(
+        () => new Promise((resolve) => (answer = resolve)),
+      );
+      const suggest = vi.fn();
+      holdChromiumDownload(
+        () => new DownloadOrchestrator(deps).handleChromiumTakeover(downloadItem()),
+        vi.fn(),
+        suggest,
+      );
+      await vi.waitFor(() => expect(answer).toBeDefined());
+      // The desktop shows the dialog at once instead of waiting for the user.
+      expect(deps.desktopClient.addDownload).toHaveBeenCalledWith(
+        expect.objectContaining({ ack: 'early' }),
+      );
+      await vi.advanceTimersByTimeAsync(CHROMIUM_FILENAME_DEADLINE_MS);
+      expect(suggest).toHaveBeenCalledTimes(1);
+      expect(deps.downloads.resume).not.toHaveBeenCalled();
+      answer({ action: 'accepted' });
+      await vi.waitFor(() => expect(deps.downloads.erase).toHaveBeenCalledWith({ id: 1 }));
+      expect(deps.downloads.cancel).toHaveBeenCalledWith(1);
+      expect(deps.downloads.resume).not.toHaveBeenCalled();
+      expect(suggest).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

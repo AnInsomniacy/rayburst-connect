@@ -7,12 +7,15 @@ is documented in [Download ownership](https://github.com/AnInsomniacy/rayburst/b
 
 Before `POST /add`, check authenticated `GET /downloads/capabilities` for
 `protocolVersion: 3`. The browser keeps holding its download until `/add` answers:
-`added` (with a GID) and `cancelled` release it; `fallback` (with a reason), an
-error, a timeout or a lost answer let the browser continue. A held download sends
-`verify: true` with the MIME type and size the browser received, so the desktop
-can check with the engine that it would receive the same file. The request may
-stay open up to 150 s while the user confirms in the desktop; the worker keeps
-itself alive meanwhile. Nothing is journaled and nothing is replayed.
+`accepted`, `added` (with a GID) and `cancelled` release it; `fallback` (with a
+reason), an error, a timeout or a lost answer let the browser continue. A held
+download sends `verify: true` with the MIME type and size the browser received, so
+the desktop can check with the engine that it would receive the same file.
+Requests send `ack: "early"`, so the desktop answers `accepted` as soon as its
+confirmation dialog shows the download and owns it from then on. A desktop that
+predates `ack` answers once the user decides; the request may then stay open up
+to 150 s and the worker keeps itself alive meanwhile. Nothing is journaled and
+nothing is replayed.
 
 The extension captures names from native browser events and passes decoded text.
 `filenameSource: browser` identifies browser-resolved names, including Firefox's
@@ -38,7 +41,9 @@ under `pending-download:` keys; the background removes those entries at startup.
 Chromium holds filename determination until the desktop answers, but keeps
 receiving data meanwhile, so the extension also pauses the item. Only a download
 the browser continues is resumed and given its filename through `suggest`; a
-released one is cancelled. Firefox holds attachment responses through its native
+released one is cancelled and erased from the browser's list. Chromium waits at
+most 15 s for a filename, so an answer still missing after 12 s names the paused
+item through `suggest`; it stays paused until the answer decides. Firefox holds attachment responses through its native
 Promise-based blocking callback; its downloads fallback pauses and resumes the
 original item the same way.
 Preflight failures release the original request, never a synthetic replacement GET.
@@ -50,9 +55,10 @@ Actual request cookies take precedence; fallback uses the captured cookie store 
 the browser's partition key when available. Raw Content-Disposition header bytes
 are decoded at that boundary only, never by re-decoding browser-supplied filenames.
 
-The desktop dialog answers a held download when the user adds or removes it;
-closing the dialog answers `cancelled`. An unanswered request falls back after
-120 s and is withdrawn from the dialog.
+With `ack: "early"` the desktop dialog keeps the download until the user adds or
+removes it, without a deadline. Without it, the dialog answers when the user adds
+or removes the download, closing it answers `cancelled`, and an unanswered request
+falls back after 120 s and is withdrawn from the dialog.
 
 Behavior tests cover browser takeover, hint preservation, capability negotiation,
 verification fields, every answer and a lost answer. Run `pnpm compile`,

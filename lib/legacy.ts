@@ -35,7 +35,14 @@ export function isMotrixNext(discovery: { product?: string; version: string }): 
 
 /** The request fields each older desktop reads; it never saw the newer ones. */
 export function legacyAddRequest(request: AddDownloadRequest, protocol: LegacyProtocol): object {
-  const { verify: _verify, mime: _mime, size: _size, filenameSource, ...common } = request;
+  const {
+    verify: _verify,
+    mime: _mime,
+    size: _size,
+    ack: _ack,
+    filenameSource,
+    ...common
+  } = request;
   return protocol === 2 ? { id: crypto.randomUUID(), ...common, filenameSource } : common;
 }
 

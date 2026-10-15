@@ -3,9 +3,10 @@
  *
  * Automatic flow (Chromium takeover / Firefox response / Firefox fallback):
  *   filter → duplicate guard → unavailable policy → verify-and-add over HTTP.
- *   The browser holds its download until the desktop answers. Only `added`
- *   and `cancelled` release it; a fallback answer, an error or a lost answer
- *   lets the browser continue, so a download is never lost.
+ *   The browser holds its download until the desktop answers. `accepted`
+ *   (the confirmation shows), `added` and `cancelled` release it; a fallback
+ *   answer, an error or a lost answer lets the browser continue, so a
+ *   download is never lost.
  *
  * Explicit flow (context menu, protocol links):
  *   submit over HTTP → activate Rayburst → retry over HTTP.
@@ -115,7 +116,7 @@ type DeliveryFailureReason =
 type Readiness = { ok: true } | { ok: false; reason: DeliveryFailureReason; error?: string };
 
 type DeliveryResult =
-  | { ok: true; action: 'added' | 'cancelled' }
+  | { ok: true; action: 'accepted' | 'added' | 'cancelled' }
   | { ok: false; reason: DeliveryFailureReason; error?: string };
 
 type DownloadSource =
@@ -450,6 +451,7 @@ export class DownloadOrchestrator {
         ? 'browser'
         : 'suggested',
       url: job.url,
+      ack: 'early',
       finalUrl: job.finalUrl || undefined,
       referer: job.referer || undefined,
       cookie: job.cookie.value || undefined,

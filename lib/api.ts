@@ -47,8 +47,8 @@ export const API_CONNECTIVITY_TIMEOUT_MS = 500;
 /** Timeout for API requests that perform real work. */
 export const API_REQUEST_TIMEOUT_MS = 5000;
 /**
- * `/add` answers once the engine verified the download (at most ~25 s) or the
- * user confirmed it in the desktop dialog (at most 120 s).
+ * `/add` answers once the dialog shows the download. Desktops without early
+ * answers wait for the user's decision (at most 120 s).
  */
 export const API_HANDOFF_TIMEOUT_MS = 150_000;
 /** Retry attempts for failed API calls. */
