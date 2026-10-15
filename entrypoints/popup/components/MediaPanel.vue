@@ -77,14 +77,17 @@ const scanTurns = ref(0);
 const selected = computed(() => state.value?.items.find((item) => item.id === selectedId.value));
 const resourceCount = computed(() => countMediaResources(state.value?.items ?? []));
 const hasFilter = computed(() => Boolean(query.value.trim()) || kind.value !== 'all');
-const filtered = computed(() => {
+/** Resources matching the search, before the type filter. */
+const searched = computed(() => {
   const needle = query.value.trim().toLowerCase();
-  const values = (state.value?.items ?? []).filter(
+  return (state.value?.items ?? []).filter(
     (item) =>
       isMediaResource(item) &&
-      (kind.value === 'all' || item.kind === kind.value) &&
       `${item.title} ${item.filename} ${item.url} ${item.mime}`.toLowerCase().includes(needle),
   );
+});
+const filtered = computed(() => {
+  const values = searched.value.filter((item) => kind.value === 'all' || item.kind === kind.value);
   return values.sort((a, b) =>
     sort.value === 'size'
       ? (b.size ?? 0) - (a.size ?? 0)
@@ -121,6 +124,19 @@ const rows = computed<Row[]>(() => {
 const visibleItems = computed(() =>
   rows.value.flatMap((row) => (row.item && row.item.method === 'GET' ? [row.item] : [])),
 );
+/** What a batch action takes: the checked resources the filters show. */
+const checkedItems = computed(() => filtered.value.filter((item) => checked.value.has(item.id)));
+const allVisibleChecked = computed(
+  () =>
+    visibleItems.value.length > 0 && visibleItems.value.every((item) => checked.value.has(item.id)),
+);
+const someVisibleChecked = computed(() =>
+  visibleItems.value.some((item) => checked.value.has(item.id)),
+);
+function toggleVisible() {
+  const value = !allVisibleChecked.value;
+  visibleItems.value.forEach((item) => toggle(item.id, value));
+}
 const mergeable = computed(() => {
   const items = filtered.value.filter((item) => checked.value.has(item.id));
   return (
@@ -163,19 +179,24 @@ const sorts = computed(() => [
   { value: 'name', label: t('resources_name') },
 ]);
 const showFilters = computed(() => resourceCount.value >= 4 || hasFilter.value);
-const kinds = computed(() =>
-  ['all', ...new Set(state.value?.items.filter(isMediaResource).map((item) => item.kind))].map(
-    (value) => ({
-      value,
-      label:
-        value === 'all'
-          ? t('resources_all')
-          : ['hls', 'dash', 'json'].includes(value)
-            ? value.toUpperCase()
-            : t(`resources_kind_${value}`),
-    }),
-  ),
-);
+/** Types with their counts under the current search; the chosen one stays even at zero. */
+const kinds = computed(() => {
+  const counts = new Map<string, number>();
+  for (const item of searched.value) counts.set(item.kind, (counts.get(item.kind) ?? 0) + 1);
+  if (kind.value !== 'all' && !counts.has(kind.value)) counts.set(kind.value, 0);
+  return [['all', searched.value.length] as const, ...counts].map(([value, count]) => ({
+    value,
+    count,
+    label:
+      value === 'all'
+        ? t('resources_all')
+        : ['hls', 'dash', 'json'].includes(value)
+          ? value.toUpperCase()
+          : t(`resources_kind_${value}`),
+  }));
+});
+/** One type needs no chips to choose it. */
+const showKinds = computed(() => kinds.value.length > 2 || kind.value !== 'all');
 const pending = computed(() =>
   Boolean(
     selected.value?.operation &&
@@ -352,7 +373,7 @@ function toggle(id: string, value: boolean) {
   checked.value = next;
 }
 async function batch(action: 'download' | 'copy' | 'clear') {
-  const items = filtered.value.filter((item) => checked.value.has(item.id));
+  const items = checkedItems.value;
   if (action === 'copy') {
     await navigator.clipboard.writeText(items.map((item) => item.url).join('\n'));
     return;
@@ -592,20 +613,6 @@ onUnmounted(() => {
                     <NIcon><SearchOutline /></NIcon>
                   </template>
                 </NInput>
-                <NPopselect v-model:value="kind" :options="kinds" trigger="click">
-                  <NButton
-                    size="small"
-                    quaternary
-                    icon-placement="right"
-                    class="resource-picker"
-                    :aria-label="t('resources_type')"
-                  >
-                    {{ kinds.find((option) => option.value === kind)?.label }}
-                    <template #icon>
-                      <NIcon><ChevronDownOutline /></NIcon>
-                    </template>
-                  </NButton>
-                </NPopselect>
                 <NPopselect v-model:value="sort" :options="sorts" trigger="click">
                   <NButton
                     size="small"
@@ -621,10 +628,40 @@ onUnmounted(() => {
                   </NButton>
                 </NPopselect>
               </div>
+              <div
+                v-if="showKinds"
+                class="resource-kinds"
+                role="radiogroup"
+                :aria-label="t('resources_type')"
+              >
+                <button
+                  v-for="option in kinds"
+                  :key="option.value"
+                  type="button"
+                  role="radio"
+                  :aria-checked="kind === option.value"
+                  :class="['resource-kind', { 'resource-kind--active': kind === option.value }]"
+                  @click="kind = option.value"
+                >
+                  {{ option.label }}<span class="resource-kind-count">{{ option.count }}</span>
+                </button>
+              </div>
             </CollapsePanel>
-            <p v-if="expanded || allTabs || hasFilter" class="resource-summary">
-              {{ tSub('sniffer_results', [String(filtered.length), String(resourceCount)]) }}
-            </p>
+            <div
+              v-if="visibleItems.length > 1 || expanded || allTabs || hasFilter"
+              class="resource-list-head"
+            >
+              <NCheckbox
+                v-if="visibleItems.length > 1"
+                :checked="allVisibleChecked"
+                :indeterminate="!allVisibleChecked && someVisibleChecked"
+                :aria-label="t('resources_select_all')"
+                @update:checked="toggleVisible"
+              />
+              <span class="resource-summary">{{
+                tSub('sniffer_results', [String(filtered.length), String(resourceCount)])
+              }}</span>
+            </div>
             <div :class="['resource-list', { 'scroll-fade': !expanded }]">
               <template v-for="row in rows" :key="row.key">
                 <article v-if="row.group" class="resource-row resource-row--tracks">
@@ -807,16 +844,8 @@ onUnmounted(() => {
                 >{{ tool.label }}</NTooltip
               >
               <span class="toolbar-space" />
-              <!-- The right side always holds the next step: select, then act. -->
+              <!-- The right side always holds the batch download; checked rows enable it. -->
               <TransitionGroup tag="div" name="pop" class="resource-batch">
-                <NButton
-                  v-if="!checked.size && visibleItems.length > 1"
-                  key="select"
-                  size="small"
-                  secondary
-                  @click="action('all')"
-                  >{{ t('resources_select_all') }}</NButton
-                >
                 <NButton
                   v-if="mergeable"
                   key="merge"
@@ -828,13 +857,14 @@ onUnmounted(() => {
                   >{{ t('resources_merge') }}</NButton
                 >
                 <NButton
-                  v-if="checked.size"
+                  v-if="visibleItems.length > 1 || checkedItems.length"
                   key="download"
                   size="small"
                   type="primary"
                   :loading="busy"
+                  :disabled="!checkedItems.length"
                   @click="batch('download')"
-                  >{{ t('media_download') }} · {{ checked.size }}</NButton
+                  >{{ t('media_download') }} · {{ checkedItems.length }}</NButton
                 >
               </TransitionGroup>
             </footer>
@@ -846,9 +876,59 @@ onUnmounted(() => {
 </template>
 <style scoped>
 .resource-summary {
-  padding: 0 4px 6px;
   color: var(--color-on-surface-variant);
   font-size: 12px;
+}
+
+.resource-list-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 24px;
+  padding: 0 4px 6px;
+}
+
+.resource-kinds {
+  display: flex;
+  gap: 6px;
+  padding-top: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.resource-kind {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.resource-kind:hover {
+  background: var(--color-surface-container-high);
+}
+
+.resource-kind--active {
+  border-color: transparent;
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+}
+
+.resource-kind-count {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.72;
 }
 
 .resources {
