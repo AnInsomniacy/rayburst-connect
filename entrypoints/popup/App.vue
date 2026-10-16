@@ -666,12 +666,12 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
+/* The browser caps the popup's height, at 600 pixels before zoom, and the
+ * page scrolls past it: one scrollbar whatever the zoom. */
 .popup-root {
   --tab-shift: 24px;
   width: 100%;
   display: flex;
-  max-height: 600px;
-  overflow: hidden;
   background: var(--color-surface);
   color: var(--color-on-surface);
   font-family: var(--font-sans);
@@ -684,8 +684,6 @@ onUnmounted(() => {
 .popup-content {
   min-width: 0;
   width: 100%;
-  overflow: auto;
-  overscroll-behavior: contain;
 }
 
 /* The leaving pane floats over the entering one, so the height animates

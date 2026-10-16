@@ -37,6 +37,9 @@ export default defineConfig({
       // WXT builds the service worker as an IIFE, so manual code-splitting is
       // not valid for every entrypoint. Keep the warning threshold explicit.
       chunkSizeWarningLimit: 1024,
+      // Chrome does not use module preloads in extension pages and warns about
+      // each one; the chunks load from the package either way.
+      modulePreload: false,
     },
     plugins: [
       localesPlugin(),
