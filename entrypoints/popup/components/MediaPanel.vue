@@ -662,7 +662,7 @@ onUnmounted(() => {
                 tSub('sniffer_results', [String(filtered.length), String(resourceCount)])
               }}</span>
             </div>
-            <div :class="['resource-list', { 'scroll-fade': !expanded }]">
+            <div class="resource-list">
               <template v-for="row in rows" :key="row.key">
                 <article v-if="row.group" class="resource-row resource-row--tracks">
                   <span class="resource-tracks-icon" aria-hidden="true"
@@ -937,16 +937,6 @@ onUnmounted(() => {
   gap: 8px;
   padding: 0 12px 12px;
   min-width: 0;
-}
-/* In the popup the list scrolls on its own, keeping the window within its limit. */
-.resources:not(.expanded) .resource-list {
-  max-height: 264px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-.resources:not(.expanded) .resource-tools {
-  max-height: 240px;
-  overflow-y: auto;
 }
 .resource-state {
   margin: 24px auto;

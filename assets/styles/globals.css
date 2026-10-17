@@ -369,53 +369,6 @@ body .n-popover-shared.popover-transition-leave-to {
   }
 }
 
-/* ── scroll-fade: a capped list fades at the edge that has more ─── */
-@property --scroll-fade-top {
-  syntax: '<length>';
-  inherits: false;
-  initial-value: 0px;
-}
-
-@property --scroll-fade-bottom {
-  syntax: '<length>';
-  inherits: false;
-  initial-value: 0px;
-}
-
-.scroll-fade {
-  mask-image: linear-gradient(
-    to bottom,
-    transparent,
-    #000 var(--scroll-fade-top),
-    #000 calc(100% - var(--scroll-fade-bottom)),
-    transparent
-  );
-}
-
-/* Without scroll timelines the list simply ends at its edge. */
-@supports (animation-timeline: scroll()) {
-  .scroll-fade {
-    animation: scroll-fade linear both;
-    animation-timeline: scroll(self);
-  }
-}
-
-@keyframes scroll-fade {
-  0% {
-    --scroll-fade-top: 0px;
-    --scroll-fade-bottom: 24px;
-  }
-  8%,
-  92% {
-    --scroll-fade-top: 24px;
-    --scroll-fade-bottom: 24px;
-  }
-  100% {
-    --scroll-fade-top: 24px;
-    --scroll-fade-bottom: 0px;
-  }
-}
-
 /* ── icon-swap: a control's icon crossfading in place ──────────── */
 /* Both icons share the spot: the old one leaves the flow and fades out
    while the new one fades in, so there is no gap and nothing travels. */

@@ -83,7 +83,7 @@ function detail(task: DesktopTask): string {
 </script>
 
 <template>
-  <TransitionGroup v-if="rows.length > 0" tag="ul" name="task" class="task-list scroll-fade">
+  <TransitionGroup v-if="rows.length > 0" tag="ul" name="task" class="task-list">
     <li
       v-for="row in rows"
       :key="row.task.gid"
@@ -129,10 +129,8 @@ function detail(task: DesktopTask): string {
   position: relative;
   display: grid;
   gap: 2px;
-  max-height: 220px;
   margin: 0 12px;
   padding: 0;
-  overflow-y: auto;
   list-style: none;
 }
 
