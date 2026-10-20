@@ -1,6 +1,6 @@
 {
   "name": "rayburst-connect",
-  "description": "Rayburst Connect — Send downloads to Rayburst",
+  "description": "Redefining the companion browser extension",
   "private": true,
   "version": "2.1.7",
   "type": "module",
