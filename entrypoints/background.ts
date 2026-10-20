@@ -227,13 +227,41 @@ export default defineBackground(() => {
 
   // ─── Orchestrator ─────────────────────────────────────
 
+  /**
+   * Chromium cannot resume a download whose filename is still held, and the
+   * download stays paused once the filename is released. Resume it as soon as
+   * the browser allows.
+   */
+  async function resumeDownload(id: number): Promise<void> {
+    const resume = () =>
+      browser.downloads.resume(id).catch((error: unknown) => {
+        logWarn('download_restore_failed', 'Browser download could not be resumed', {
+          downloadId: id,
+          error: errorMessage(error),
+        });
+      });
+    // Listen before looking, so the change cannot slip in between.
+    const listener = (delta: Browser.downloads.DownloadDelta) => {
+      if (delta.id !== id) return;
+      const ended = delta.state && delta.state.current !== 'in_progress';
+      if (!ended && !delta.canResume?.current) return;
+      browser.downloads.onChanged.removeListener(listener);
+      if (!ended) void resume();
+    };
+    browser.downloads.onChanged.addListener(listener);
+    const [item] = await browser.downloads.search({ id });
+    if (item?.state === 'in_progress' && !item.canResume) return;
+    browser.downloads.onChanged.removeListener(listener);
+    if (item?.state === 'in_progress') await resume();
+  }
+
   const browserBypass = new BrowserBypass();
   const orchestrator = new DownloadOrchestrator({
     downloads: {
       cancel: (id) => browser.downloads.cancel(id),
       erase: (query) => browser.downloads.erase(query).then(() => {}),
       pause: (id) => browser.downloads.pause(id),
-      resume: (id) => browser.downloads.resume(id),
+      resume: resumeDownload,
     },
     cookies: {
       getAll: async (details) => {
@@ -505,8 +533,9 @@ export default defineBackground(() => {
   }
 
   function registerContextMenu(): void {
-    // Menu entries survive a worker restart. Update the existing entry first.
-    void browser.contextMenus.update(CONTEXT_MENU_ID, { title: contextMenuTitle() }).catch(() =>
+    // Menu entries survive a worker restart, and updating one can fail while
+    // the browser still restores it. Replace the entry instead.
+    void browser.contextMenus.removeAll().then(() =>
       browser.contextMenus.create(
         {
           id: CONTEXT_MENU_ID,
