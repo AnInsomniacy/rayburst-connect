@@ -109,11 +109,20 @@ function altClick(isBypassed: (urls: string[]) => boolean): FilterStage {
   };
 }
 
-/** Skip downloads triggered by another extension (including ourselves). */
-const selfTrigger: FilterStage = {
-  name: 'self-trigger',
-  evaluate: (ctx) => (ctx.byExtensionId ? 'skip' : null),
-};
+/**
+ * Downloads an extension started: never our own (the browser fallback), and
+ * those of other extensions only when the user allows them.
+ */
+function extensionTrigger(selfId: string | undefined): FilterStage {
+  return {
+    name: 'extension-trigger',
+    evaluate: (ctx, config) => {
+      if (!ctx.byExtensionId) return null;
+      const foreign = selfId !== undefined && ctx.byExtensionId !== selfId;
+      return foreign && config.interceptionScope.otherExtensions ? null : 'skip';
+    },
+  };
+}
 
 const interceptionScope: FilterStage = {
   name: 'interception-scope',
@@ -136,8 +145,9 @@ const scheme: FilterStage = {
 /** User matching rules cannot make a browser-bound operation replayable. */
 const browserOwnership: FilterStage = {
   name: 'browser-ownership',
-  evaluate: (ctx) => {
-    if (ctx.incognito || (ctx.requestMethod && ctx.requestMethod !== 'GET')) return 'skip';
+  evaluate: (ctx, config) => {
+    if (ctx.incognito && !config.interceptionScope.incognito) return 'skip';
+    if (ctx.requestMethod && ctx.requestMethod !== 'GET') return 'skip';
     if (DOCUMENT_MIMES.has(baseMime(ctx.mimeType))) return 'skip';
     const name = ctx.filename || extractFilenameFromUrl(ctx.finalUrl) || '';
     // Complete-page saves do not expose a reliable public save-mode flag.
@@ -203,11 +213,12 @@ const minimumFileSize: FilterStage = {
 export function createFilterPipeline(
   getRules: () => SiteRule[],
   isBypassed: (urls: string[]) => boolean = () => false,
+  selfId?: string,
 ): FilterStage[] {
   return [
     enabled,
     altClick(isBypassed),
-    selfTrigger,
+    extensionTrigger(selfId),
     interceptionScope,
     scheme,
     browserOwnership,

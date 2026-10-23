@@ -363,6 +363,22 @@
     "message": "Thunder 링크",
     "description": "Label for the Thunder link interception scope toggle."
   },
+  "options_scope_incognito_label": {
+    "message": "비공개 창의 다운로드",
+    "description": "Label for the private-window download interception toggle."
+  },
+  "options_scope_incognito_hint": {
+    "message": "비공개 창의 다운로드가 Rayburst로 전달되며 작업 목록과 기록에 표시됩니다. 브라우저에서도 이 확장 프로그램을 비공개 창에서 허용해야 합니다.",
+    "description": "Hint under the private-window download interception toggle."
+  },
+  "options_scope_other_extensions_label": {
+    "message": "다른 확장 프로그램이 시작한 다운로드",
+    "description": "Label for the toggle that takes over downloads other extensions start."
+  },
+  "options_scope_other_extensions_hint": {
+    "message": "예: 링크 해제 확장 프로그램이 시작한 다운로드. Rayburst는 같은 파일을 받을 수 있는지 확인한 후에만 넘겨받습니다.",
+    "description": "Hint under the other-extension download interception toggle."
+  },
   "options_min_size_label": {
     "message": "최소 파일 크기",
     "description": "Label for the minimum file size setting."

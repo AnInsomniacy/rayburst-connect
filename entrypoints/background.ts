@@ -26,6 +26,7 @@ import {
   hasCookieForwardingAccess,
   hasDownloadUiAccess,
   isExternalProtocol,
+  tabCookieStoreId,
   type ExternalProtocol,
 } from '@/lib/browser';
 import {
@@ -257,6 +258,7 @@ export default defineBackground(() => {
 
   const browserBypass = new BrowserBypass();
   const orchestrator = new DownloadOrchestrator({
+    extensionId: browser.runtime.id,
     downloads: {
       cancel: (id) => browser.downloads.cancel(id),
       erase: (query) => browser.downloads.erase(query).then(() => {}),
@@ -273,7 +275,15 @@ export default defineBackground(() => {
           return false;
         });
         if (!granted) return [];
-        const { tabId, frameId, ...query } = details;
+        const { tabId, frameId, incognito, ...query } = details;
+        // A private window or a Firefox container has its own cookie store; a
+        // request's cookies come from the store of its tab. A private
+        // download whose store is unknown gets none rather than the ordinary
+        // profile's.
+        if (!query.storeId) {
+          query.storeId = await tabCookieStoreId(tabId);
+          if (!query.storeId && incognito) return [];
+        }
         if (
           !import.meta.env.FIREFOX &&
           tabId !== undefined &&

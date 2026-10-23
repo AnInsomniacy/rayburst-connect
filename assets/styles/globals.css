@@ -193,6 +193,14 @@ body {
   margin-bottom: 0;
 }
 
+/* A short explanation under the setting it belongs to. */
+.settings-hint {
+  margin: -4px 0 0;
+  color: var(--color-on-surface-variant);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
 /* Shared Vue transitions. */
 
 .media-forward-enter-active,

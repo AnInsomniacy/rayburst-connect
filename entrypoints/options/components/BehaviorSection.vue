@@ -102,6 +102,34 @@ const unavailableActionOptions = computed(() => [
               @update:value="emit('update:scope', { thunder: $event })"
             />
           </NFormItem>
+
+          <NFormItem
+            class="settings-row settings-row--nested"
+            :show-feedback="false"
+            :label="i18n('options_scope_incognito_label', 'Private Window Downloads')"
+          >
+            <NSwitch
+              :value="interceptionScope.incognito"
+              @update:value="emit('update:scope', { incognito: $event })"
+            />
+          </NFormItem>
+          <p class="settings-hint">
+            {{ i18n('options_scope_incognito_hint') }}
+          </p>
+
+          <NFormItem
+            class="settings-row settings-row--nested"
+            :show-feedback="false"
+            :label="i18n('options_scope_other_extensions_label', 'Downloads From Other Extensions')"
+          >
+            <NSwitch
+              :value="interceptionScope.otherExtensions"
+              @update:value="emit('update:scope', { otherExtensions: $event })"
+            />
+          </NFormItem>
+          <p class="settings-hint">
+            {{ i18n('options_scope_other_extensions_hint') }}
+          </p>
         </div>
       </CollapsePanel>
     </section>

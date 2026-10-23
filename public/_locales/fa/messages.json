@@ -363,6 +363,22 @@
     "message": "لینک‌های Thunder",
     "description": "Label for the Thunder link interception scope toggle."
   },
+  "options_scope_incognito_label": {
+    "message": "دانلودهای پنجره‌های خصوصی",
+    "description": "Label for the private-window download interception toggle."
+  },
+  "options_scope_incognito_hint": {
+    "message": "دانلودهای پنجره‌های خصوصی به Rayburst سپرده می‌شوند و در فهرست کارها و تاریخچهٔ آن نمایش داده می‌شوند. مرورگر نیز باید این افزونه را در پنجره‌های خصوصی مجاز کند.",
+    "description": "Hint under the private-window download interception toggle."
+  },
+  "options_scope_other_extensions_label": {
+    "message": "دانلودهای افزونه‌های دیگر",
+    "description": "Label for the toggle that takes over downloads other extensions start."
+  },
+  "options_scope_other_extensions_hint": {
+    "message": "برای نمونه، پیوندهایی که یک افزونهٔ بازکنندهٔ پیوند حل می‌کند. Rayburst تنها پس از اطمینان از دریافت همان فایل، دانلود را برعهده می‌گیرد.",
+    "description": "Hint under the other-extension download interception toggle."
+  },
   "options_min_size_label": {
     "message": "حداقل اندازه فایل",
     "description": "Label for the minimum file size setting."

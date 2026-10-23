@@ -363,6 +363,22 @@
     "message": "Thunder リンク",
     "description": "Label for the Thunder link interception scope toggle."
   },
+  "options_scope_incognito_label": {
+    "message": "プライベートウィンドウのダウンロード",
+    "description": "Label for the private-window download interception toggle."
+  },
+  "options_scope_incognito_hint": {
+    "message": "プライベートウィンドウのダウンロードは Rayburst に渡され、タスク一覧と履歴に表示されます。ブラウザーでもこの拡張機能をプライベートウィンドウで許可する必要があります。",
+    "description": "Hint under the private-window download interception toggle."
+  },
+  "options_scope_other_extensions_label": {
+    "message": "他の拡張機能によるダウンロード",
+    "description": "Label for the toggle that takes over downloads other extensions start."
+  },
+  "options_scope_other_extensions_hint": {
+    "message": "たとえばリンク解決系の拡張機能が開始したダウンロードです。Rayburst は同じファイルを受け取れることを確認してから引き継ぎます。",
+    "description": "Hint under the other-extension download interception toggle."
+  },
   "options_min_size_label": {
     "message": "最小ファイルサイズ",
     "description": "Label for the minimum file size setting."

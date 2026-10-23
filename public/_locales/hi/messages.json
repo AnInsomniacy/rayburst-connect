@@ -363,6 +363,22 @@
     "message": "Thunder Links (thunder:)",
     "description": "Label for the Thunder link interception scope toggle."
   },
+  "options_scope_incognito_label": {
+    "message": "निजी विंडो के डाउनलोड",
+    "description": "Label for the private-window download interception toggle."
+  },
+  "options_scope_incognito_hint": {
+    "message": "निजी विंडो के डाउनलोड Rayburst को जाते हैं और उसकी कार्य सूची व इतिहास में दिखते हैं। ब्राउज़र को भी इस एक्सटेंशन को निजी विंडो में अनुमति देनी होगी।",
+    "description": "Hint under the private-window download interception toggle."
+  },
+  "options_scope_other_extensions_label": {
+    "message": "अन्य एक्सटेंशन के डाउनलोड",
+    "description": "Label for the toggle that takes over downloads other extensions start."
+  },
+  "options_scope_other_extensions_hint": {
+    "message": "जैसे लिंक अनलॉक करने वाले एक्सटेंशन द्वारा हल किए गए लिंक। Rayburst यह जाँचने के बाद ही लेता है कि उसे वही फ़ाइल मिल रही है।",
+    "description": "Hint under the other-extension download interception toggle."
+  },
   "options_min_size_label": {
     "message": "छोटी फ़ाइल फ़िल्टर",
     "description": "Label for the minimum file size setting."

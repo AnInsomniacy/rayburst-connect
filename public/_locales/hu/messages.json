@@ -363,6 +363,22 @@
     "message": "Thunder hivatkozások",
     "description": "Label for the Thunder link interception scope toggle."
   },
+  "options_scope_incognito_label": {
+    "message": "Privát ablakok letöltései",
+    "description": "Label for the private-window download interception toggle."
+  },
+  "options_scope_incognito_hint": {
+    "message": "A privát ablakok letöltései a Rayburstbe kerülnek, és megjelennek a feladatlistájában és az előzményekben. A böngészőnek is engedélyeznie kell ezt a bővítményt privát ablakokban.",
+    "description": "Hint under the private-window download interception toggle."
+  },
+  "options_scope_other_extensions_label": {
+    "message": "Más bővítmények letöltései",
+    "description": "Label for the toggle that takes over downloads other extensions start."
+  },
+  "options_scope_other_extensions_hint": {
+    "message": "Például egy linkfeloldó bővítmény által feloldott linkek. A Rayburst csak akkor veszi át, ha ellenőrizte, hogy ugyanazt a fájlt kapja.",
+    "description": "Hint under the other-extension download interception toggle."
+  },
   "options_min_size_label": {
     "message": "Minimális fájlméret",
     "description": "Label for the minimum file size setting."

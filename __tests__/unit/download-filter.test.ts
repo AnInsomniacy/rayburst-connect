@@ -27,15 +27,21 @@ function evaluate(candidate: FilterContext, config = settings(), rules: SiteRule
   return evaluateFilterPipeline(
     candidate,
     config,
-    createFilterPipeline(() => rules),
+    createFilterPipeline(() => rules, undefined, 'rayburst-connect'),
   );
+}
+
+function scope(patch: Partial<DownloadSettings['interceptionScope']>): DownloadSettings {
+  return settings({
+    interceptionScope: { ...DEFAULT_DOWNLOAD_SETTINGS.interceptionScope, ...patch },
+  });
 }
 
 describe('download filter pipeline', () => {
   it('applies the ordered safety gates', () => {
     const cases: Array<[FilterContext, DownloadSettings, string]> = [
       [context(), settings({ enabled: false }), 'enabled'],
-      [context({ byExtensionId: 'another-extension' }), settings(), 'self-trigger'],
+      [context({ byExtensionId: 'another-extension' }), settings(), 'extension-trigger'],
       [
         context(),
         settings({
@@ -54,6 +60,34 @@ describe('download filter pipeline', () => {
       expect(evaluate(candidate, config)).toEqual({ verdict: 'skip', stageName });
     }
     expect(evaluate(context())).toEqual({ verdict: 'intercept', stageName: null });
+  });
+
+  it('takes private-window and other-extension downloads only when enabled', () => {
+    expect(evaluate(context({ incognito: true }), scope({ incognito: true }))).toEqual({
+      verdict: 'intercept',
+      stageName: null,
+    });
+    const foreign = context({ byExtensionId: 'another-extension' });
+    expect(evaluate(foreign, scope({ otherExtensions: true }))).toEqual({
+      verdict: 'intercept',
+      stageName: null,
+    });
+    for (const own of [
+      context({ byExtensionId: 'rayburst-connect' }),
+      context({ byExtensionId: 'rayburst-connect', incognito: true }),
+    ]) {
+      expect(evaluate(own, scope({ incognito: true, otherExtensions: true }))).toEqual({
+        verdict: 'skip',
+        stageName: 'extension-trigger',
+      });
+    }
+    expect(
+      evaluateFilterPipeline(
+        foreign,
+        scope({ otherExtensions: true }),
+        createFilterPipeline(() => []),
+      ),
+    ).toEqual({ verdict: 'skip', stageName: 'extension-trigger' });
   });
 
   it('matches site rules against page, request, and redirected hosts', () => {

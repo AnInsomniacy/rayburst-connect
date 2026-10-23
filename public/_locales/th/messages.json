@@ -363,6 +363,22 @@
     "message": "ลิงก์ Thunder",
     "description": "Label for the Thunder link interception scope toggle."
   },
+  "options_scope_incognito_label": {
+    "message": "การดาวน์โหลดจากหน้าต่างส่วนตัว",
+    "description": "Label for the private-window download interception toggle."
+  },
+  "options_scope_incognito_hint": {
+    "message": "การดาวน์โหลดจากหน้าต่างส่วนตัวจะส่งไปยัง Rayburst และแสดงในรายการงานและประวัติ เบราว์เซอร์ต้องอนุญาตส่วนขยายนี้ในหน้าต่างส่วนตัวด้วย",
+    "description": "Hint under the private-window download interception toggle."
+  },
+  "options_scope_other_extensions_label": {
+    "message": "การดาวน์โหลดจากส่วนขยายอื่น",
+    "description": "Label for the toggle that takes over downloads other extensions start."
+  },
+  "options_scope_other_extensions_hint": {
+    "message": "เช่น ลิงก์ที่ส่วนขยายปลดล็อกลิงก์แปลงมา Rayburst จะรับไปหลังจากตรวจสอบแล้วว่าได้รับไฟล์เดียวกันเท่านั้น",
+    "description": "Hint under the other-extension download interception toggle."
+  },
   "options_min_size_label": {
     "message": "ขนาดไฟล์ขั้นต่ำ",
     "description": "Label for the minimum file size setting."

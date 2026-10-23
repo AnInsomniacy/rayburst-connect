@@ -363,6 +363,22 @@
     "message": "Thunderlinks",
     "description": "Label for the Thunder link interception scope toggle."
   },
+  "options_scope_incognito_label": {
+    "message": "Downloads uit privévensters",
+    "description": "Label for the private-window download interception toggle."
+  },
+  "options_scope_incognito_hint": {
+    "message": "Downloads uit privévensters gaan naar Rayburst en verschijnen in de takenlijst en geschiedenis. De browser moet deze extensie ook toestaan in privévensters.",
+    "description": "Hint under the private-window download interception toggle."
+  },
+  "options_scope_other_extensions_label": {
+    "message": "Downloads van andere extensies",
+    "description": "Label for the toggle that takes over downloads other extensions start."
+  },
+  "options_scope_other_extensions_hint": {
+    "message": "Bijvoorbeeld links die een extensie voor het ontgrendelen van links oplost. Rayburst neemt pas over nadat het heeft gecontroleerd dat het hetzelfde bestand ontvangt.",
+    "description": "Hint under the other-extension download interception toggle."
+  },
   "options_min_size_label": {
     "message": "Minimale bestandsgrootte",
     "description": "Label for the minimum file size setting."

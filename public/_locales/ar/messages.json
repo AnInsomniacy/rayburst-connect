@@ -363,6 +363,22 @@
     "message": "روابط Thunder",
     "description": "Label for the Thunder link interception scope toggle."
   },
+  "options_scope_incognito_label": {
+    "message": "التنزيلات من النوافذ الخاصة",
+    "description": "Label for the private-window download interception toggle."
+  },
+  "options_scope_incognito_hint": {
+    "message": "تنتقل التنزيلات من النوافذ الخاصة إلى Rayburst وتظهر في قائمة مهامه وسجله. يجب أيضًا أن يسمح المتصفح بهذه الإضافة في النوافذ الخاصة.",
+    "description": "Hint under the private-window download interception toggle."
+  },
+  "options_scope_other_extensions_label": {
+    "message": "التنزيلات من الإضافات الأخرى",
+    "description": "Label for the toggle that takes over downloads other extensions start."
+  },
+  "options_scope_other_extensions_hint": {
+    "message": "مثل الروابط التي تحلها إضافة لفك الروابط. لا يتولى Rayburst التنزيل إلا بعد التحقق من أنه يتلقى الملف نفسه.",
+    "description": "Hint under the other-extension download interception toggle."
+  },
   "options_min_size_label": {
     "message": "الحد الأدنى لحجم الملف",
     "description": "Label for the minimum file size setting."

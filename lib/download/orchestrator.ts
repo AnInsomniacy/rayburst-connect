@@ -43,6 +43,8 @@ export interface OrchestratorDeps {
       storeId?: string;
       tabId?: number;
       frameId?: number;
+      /** A private download never borrows the ordinary profile's cookies. */
+      incognito?: boolean;
     }) => Promise<Array<{ name: string; value: string }>>;
   };
   diagnosticLog: { append: (event: DiagnosticInput) => void };
@@ -59,6 +61,8 @@ export interface OrchestratorDeps {
    */
   activateDesktop: (timeoutMs: number) => Promise<boolean>;
   onDuplicateBlocked: () => void;
+  /** This extension's ID; its own browser fallback downloads are never taken over. */
+  extensionId?: string;
 }
 
 /** Download data shared by browser downloads and Firefox response interception. */
@@ -149,6 +153,7 @@ export class DownloadOrchestrator {
     this.filterStages = createFilterPipeline(
       () => deps.getSiteRules(),
       (urls) => deps.isBypassed?.(urls) ?? false,
+      deps.extensionId,
     );
   }
 
@@ -386,7 +391,7 @@ export class DownloadOrchestrator {
       url: item.url,
       finalUrl: effectiveUrl,
       referer: tabUrl,
-      cookie: await this.resolveCookieHeader(item.url, item.requestHeaderContext),
+      cookie: await this.resolveCookieHeader(item.url, item.requestHeaderContext, item.incognito),
       filenameHint: filename,
       filenameSource,
       headerContext: item.requestHeaderContext,
@@ -514,6 +519,7 @@ export class DownloadOrchestrator {
   private async resolveCookieHeader(
     url: string,
     headerContext?: RequestHeaderContext,
+    incognito?: boolean,
   ): Promise<{ value: string; source: string }> {
     if (!this.deps.getSettings().forwardCookies) return { value: '', source: 'disabled' };
 
@@ -527,6 +533,7 @@ export class DownloadOrchestrator {
         storeId: headerContext?.cookieStoreId,
         tabId: headerContext?.tabId,
         frameId: headerContext?.frameId,
+        incognito,
       });
       const value = cookies.map((c) => `${c.name}=${c.value}`).join('; ');
       return { value, source: value ? 'cookies-api' : 'none' };

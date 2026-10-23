@@ -363,6 +363,22 @@
     "message": "Tautan Thunder",
     "description": "Label for the Thunder link interception scope toggle."
   },
+  "options_scope_incognito_label": {
+    "message": "Unduhan dari jendela pribadi",
+    "description": "Label for the private-window download interception toggle."
+  },
+  "options_scope_incognito_hint": {
+    "message": "Unduhan dari jendela pribadi diteruskan ke Rayburst dan muncul di daftar tugas serta riwayatnya. Peramban juga harus mengizinkan ekstensi ini di jendela pribadi.",
+    "description": "Hint under the private-window download interception toggle."
+  },
+  "options_scope_other_extensions_label": {
+    "message": "Unduhan dari ekstensi lain",
+    "description": "Label for the toggle that takes over downloads other extensions start."
+  },
+  "options_scope_other_extensions_hint": {
+    "message": "Misalnya tautan yang diurai oleh ekstensi pembuka tautan. Rayburst baru mengambil alih setelah memastikan menerima file yang sama.",
+    "description": "Hint under the other-extension download interception toggle."
+  },
   "options_min_size_label": {
     "message": "Ukuran File Minimum",
     "description": "Label for the minimum file size setting."

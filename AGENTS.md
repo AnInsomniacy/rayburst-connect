@@ -69,7 +69,7 @@ public/_locales/                 # Chrome i18n bundles (27 languages, SSOT)
 `lib/download/filter.ts` evaluates candidates through ordered pure-function stages; the
 first non-null verdict wins, default is intercept:
 
-enabled → self-trigger → interception-scope → scheme → browser-ownership → site-rule →
+enabled → extension-trigger → interception-scope → scheme → browser-ownership → site-rule →
 file-extension-rule → minimum-file-size
 
 ### A″. Persistence Model

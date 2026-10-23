@@ -363,6 +363,22 @@
     "message": "迅雷链接（thunder:）",
     "description": "Label for the Thunder link interception scope toggle."
   },
+  "options_scope_incognito_label": {
+    "message": "隐私窗口中的下载",
+    "description": "Label for the private-window download interception toggle."
+  },
+  "options_scope_incognito_hint": {
+    "message": "隐私窗口中的下载会交给 Rayburst，并出现在其任务列表和历史记录中。浏览器还需允许此扩展在隐私窗口中运行。",
+    "description": "Hint under the private-window download interception toggle."
+  },
+  "options_scope_other_extensions_label": {
+    "message": "其他扩展发起的下载",
+    "description": "Label for the toggle that takes over downloads other extensions start."
+  },
+  "options_scope_other_extensions_hint": {
+    "message": "例如由链接解析类扩展发起的下载。Rayburst 确认能获取同一文件后才会接管。",
+    "description": "Hint under the other-extension download interception toggle."
+  },
   "options_min_size_label": {
     "message": "小文件过滤",
     "description": "Label for the minimum file size setting."

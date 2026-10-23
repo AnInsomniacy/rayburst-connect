@@ -363,6 +363,22 @@
     "message": "Thunder връзки",
     "description": "Label for the Thunder link interception scope toggle."
   },
+  "options_scope_incognito_label": {
+    "message": "Изтегляния от частни прозорци",
+    "description": "Label for the private-window download interception toggle."
+  },
+  "options_scope_incognito_hint": {
+    "message": "Изтеглянията от частни прозорци отиват в Rayburst и се показват в списъка със задачи и историята му. Браузърът също трябва да разреши това разширение в частни прозорци.",
+    "description": "Hint under the private-window download interception toggle."
+  },
+  "options_scope_other_extensions_label": {
+    "message": "Изтегляния от други разширения",
+    "description": "Label for the toggle that takes over downloads other extensions start."
+  },
+  "options_scope_other_extensions_hint": {
+    "message": "Например връзки, разрешени от разширение за отключване на връзки. Rayburst поема изтеглянето само след като провери, че получава същия файл.",
+    "description": "Hint under the other-extension download interception toggle."
+  },
   "options_min_size_label": {
     "message": "Минимален размер на файла",
     "description": "Label for the minimum file size setting."

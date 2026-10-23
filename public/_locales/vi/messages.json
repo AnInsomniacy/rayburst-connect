@@ -363,6 +363,22 @@
     "message": "Liên kết Thunder",
     "description": "Label for the Thunder link interception scope toggle."
   },
+  "options_scope_incognito_label": {
+    "message": "Tải xuống từ cửa sổ riêng tư",
+    "description": "Label for the private-window download interception toggle."
+  },
+  "options_scope_incognito_hint": {
+    "message": "Các tải xuống từ cửa sổ riêng tư được chuyển cho Rayburst và hiện trong danh sách tác vụ cùng lịch sử. Trình duyệt cũng phải cho phép tiện ích này trong cửa sổ riêng tư.",
+    "description": "Hint under the private-window download interception toggle."
+  },
+  "options_scope_other_extensions_label": {
+    "message": "Tải xuống từ tiện ích khác",
+    "description": "Label for the toggle that takes over downloads other extensions start."
+  },
+  "options_scope_other_extensions_hint": {
+    "message": "Ví dụ: liên kết do một tiện ích mở khóa liên kết phân giải. Rayburst chỉ tiếp nhận sau khi kiểm tra rằng nó nhận được cùng một tệp.",
+    "description": "Hint under the other-extension download interception toggle."
+  },
   "options_min_size_label": {
     "message": "Kích thước tệp tối thiểu",
     "description": "Label for the minimum file size setting."

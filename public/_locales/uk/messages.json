@@ -363,6 +363,22 @@
     "message": "Thunder-посилання",
     "description": "Label for the Thunder link interception scope toggle."
   },
+  "options_scope_incognito_label": {
+    "message": "Завантаження з приватних вікон",
+    "description": "Label for the private-window download interception toggle."
+  },
+  "options_scope_incognito_hint": {
+    "message": "Завантаження з приватних вікон передаються в Rayburst і з’являються в його списку завдань та історії. Браузер також має дозволити це розширення в приватних вікнах.",
+    "description": "Hint under the private-window download interception toggle."
+  },
+  "options_scope_other_extensions_label": {
+    "message": "Завантаження інших розширень",
+    "description": "Label for the toggle that takes over downloads other extensions start."
+  },
+  "options_scope_other_extensions_hint": {
+    "message": "Наприклад, посилання, отримані розширенням для розблокування посилань. Rayburst перебирає завантаження лише після перевірки, що отримує той самий файл.",
+    "description": "Hint under the other-extension download interception toggle."
+  },
   "options_min_size_label": {
     "message": "Мінімальний розмір файлу",
     "description": "Label for the minimum file size setting."

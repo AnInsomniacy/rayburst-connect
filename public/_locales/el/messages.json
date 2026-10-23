@@ -363,6 +363,22 @@
     "message": "Σύνδεσμοι Thunder",
     "description": "Label for the Thunder link interception scope toggle."
   },
+  "options_scope_incognito_label": {
+    "message": "Λήψεις από ιδιωτικά παράθυρα",
+    "description": "Label for the private-window download interception toggle."
+  },
+  "options_scope_incognito_hint": {
+    "message": "Οι λήψεις από ιδιωτικά παράθυρα περνούν στο Rayburst και εμφανίζονται στη λίστα εργασιών και στο ιστορικό του. Το πρόγραμμα περιήγησης πρέπει επίσης να επιτρέπει αυτή την επέκταση σε ιδιωτικά παράθυρα.",
+    "description": "Hint under the private-window download interception toggle."
+  },
+  "options_scope_other_extensions_label": {
+    "message": "Λήψεις από άλλες επεκτάσεις",
+    "description": "Label for the toggle that takes over downloads other extensions start."
+  },
+  "options_scope_other_extensions_hint": {
+    "message": "Για παράδειγμα, σύνδεσμοι που επιλύει μια επέκταση ξεκλειδώματος συνδέσμων. Το Rayburst αναλαμβάνει μόνο αφού ελέγξει ότι λαμβάνει το ίδιο αρχείο.",
+    "description": "Hint under the other-extension download interception toggle."
+  },
   "options_min_size_label": {
     "message": "Ελάχιστο μέγεθος αρχείου",
     "description": "Label for the minimum file size setting."

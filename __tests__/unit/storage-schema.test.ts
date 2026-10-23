@@ -39,7 +39,14 @@ describe('persisted schema repair', () => {
       enabled: false,
       forwardCookies: true,
       desktopUnavailable: { action: 'browser', startupTimeoutSeconds: 15, openLink: false },
-      interceptionScope: { browserDownloads: true, magnet: false, ed2k: true, thunder: true },
+      interceptionScope: {
+        browserDownloads: true,
+        magnet: false,
+        ed2k: true,
+        thunder: true,
+        incognito: false,
+        otherExtensions: false,
+      },
     });
   });
 

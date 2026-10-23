@@ -363,6 +363,22 @@
     "message": "Thunder Links (thunder:)",
     "description": "Label for the Thunder link interception scope toggle."
   },
+  "options_scope_incognito_label": {
+    "message": "Private Window Downloads",
+    "description": "Label for the private-window download interception toggle."
+  },
+  "options_scope_incognito_hint": {
+    "message": "Downloads from private windows go to Rayburst and appear in its task list and history. The browser must also allow this extension in private windows.",
+    "description": "Hint under the private-window download interception toggle."
+  },
+  "options_scope_other_extensions_label": {
+    "message": "Downloads From Other Extensions",
+    "description": "Label for the toggle that takes over downloads other extensions start."
+  },
+  "options_scope_other_extensions_hint": {
+    "message": "For example, links resolved by a link-unlocking extension. Rayburst takes over only after checking that it receives the same file.",
+    "description": "Hint under the other-extension download interception toggle."
+  },
   "options_min_size_label": {
     "message": "Small File Filter",
     "description": "Label for the minimum file size setting."

@@ -213,6 +213,10 @@ const DownloadSettingsSchema = lenient(
         magnet: z.boolean().catch(true),
         ed2k: z.boolean().catch(true),
         thunder: z.boolean().catch(true),
+        // Private-window downloads end up in Rayburst's task list and history.
+        incognito: z.boolean().catch(false),
+        // Downloads another extension started, e.g. a link resolver.
+        otherExtensions: z.boolean().catch(false),
       }),
     ),
   }),

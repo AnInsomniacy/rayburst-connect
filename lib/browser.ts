@@ -25,6 +25,18 @@ export const hasDownloadUiAccess = (): Promise<boolean> =>
 export const requestDownloadUiAccess = (): Promise<boolean> =>
   browser.permissions.request(DOWNLOAD_UI_PERMISSION);
 
+// ─── Cookies ───────────────────────────────────────────
+
+/**
+ * The cookie store a tab reads from. A private window or a Firefox container
+ * has its own; `undefined` when the tab is unknown or already gone.
+ */
+export async function tabCookieStoreId(tabId: number | undefined): Promise<string | undefined> {
+  if (tabId === undefined || tabId < 0) return undefined;
+  const stores = await browser.cookies.getAllCookieStores();
+  return stores.find((store) => store.tabIds.includes(tabId))?.id;
+}
+
 // ─── Context Menu ───────────────────────────────────────
 
 export const CONTEXT_MENU_ID = 'download-with-rayburst';
@@ -49,15 +61,19 @@ export function buildDuplicateDownloadNotification(title: string, message: strin
 
 // ─── External Protocol Links (magnet / ed2k / thunder) ──
 
-export type ExternalProtocol = Exclude<keyof InterceptionScope, 'browserDownloads'>;
+const EXTERNAL_PROTOCOLS = [
+  'magnet',
+  'ed2k',
+  'thunder',
+] as const satisfies readonly (keyof InterceptionScope)[];
+
+export type ExternalProtocol = (typeof EXTERNAL_PROTOCOLS)[number];
 export type ExternalProtocolDisposition = 'handled' | 'browser';
 
 interface ExternalProtocolLink {
   protocol: ExternalProtocol;
   url: string;
 }
-
-const EXTERNAL_PROTOCOLS: readonly ExternalProtocol[] = ['magnet', 'ed2k', 'thunder'];
 
 export function isExternalProtocol(value: string): value is ExternalProtocol {
   return (EXTERNAL_PROTOCOLS as readonly string[]).includes(value);

@@ -363,6 +363,22 @@
     "message": "Thunder-lenker",
     "description": "Label for the Thunder link interception scope toggle."
   },
+  "options_scope_incognito_label": {
+    "message": "Nedlastinger fra private vinduer",
+    "description": "Label for the private-window download interception toggle."
+  },
+  "options_scope_incognito_hint": {
+    "message": "Nedlastinger fra private vinduer går til Rayburst og vises i oppgavelisten og historikken. Nettleseren må også tillate denne utvidelsen i private vinduer.",
+    "description": "Hint under the private-window download interception toggle."
+  },
+  "options_scope_other_extensions_label": {
+    "message": "Nedlastinger fra andre utvidelser",
+    "description": "Label for the toggle that takes over downloads other extensions start."
+  },
+  "options_scope_other_extensions_hint": {
+    "message": "For eksempel lenker som en utvidelse for å låse opp lenker løser. Rayburst tar over først etter å ha kontrollert at den mottar den samme filen.",
+    "description": "Hint under the other-extension download interception toggle."
+  },
   "options_min_size_label": {
     "message": "Minste filstørrelse",
     "description": "Label for the minimum file size setting."
