@@ -231,8 +231,10 @@ export class DownloadOrchestrator {
     const duplicate = this.reserveDuplicate(item);
     if (duplicate.blocked) {
       this.reportDuplicate(item.finalUrl || item.url, duplicate.shouldNotify);
-      // A heuristic match is no proof the desktop has it. Keep this browser item.
-      return false;
+      // The first request holds the reservation until the desktop has it; had
+      // it failed, it would have gone back to the browser and released it.
+      // This copy is not needed in either place.
+      return true;
     }
     const readiness = await this.prepareDesktop(this.deps.getSettings());
     if (!readiness.ok) {

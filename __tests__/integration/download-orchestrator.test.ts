@@ -11,6 +11,14 @@ function desktopClient(ready = true) {
   return client;
 }
 
+function deferredAdd() {
+  let resolve!: (value: { action: 'added'; gid: string }) => void;
+  const promise = new Promise<{ action: 'added'; gid: string }>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
+
 describe('DownloadOrchestrator', () => {
   let baseDeps: OrchestratorDeps;
 
@@ -270,6 +278,32 @@ describe('DownloadOrchestrator', () => {
     const orchestrator = new DownloadOrchestrator(baseDeps);
     await expect(orchestrator.handleChromiumTakeover(item())).resolves.toBe(true);
     expect(baseDeps.downloads.cancel).toHaveBeenCalledWith(1);
+  });
+
+  it('cancels a duplicate browser download instead of letting the browser keep it', async () => {
+    const pending = deferredAdd();
+    vi.mocked(baseDeps.desktopClient.addDownload).mockReturnValueOnce(pending.promise);
+    const orchestrator = new DownloadOrchestrator(baseDeps);
+    const first = orchestrator.handleChromiumTakeover(item({ id: 1 }));
+    await expect(orchestrator.handleChromiumTakeover(item({ id: 2 }))).resolves.toBe(true);
+    expect(baseDeps.downloads.cancel).toHaveBeenCalledWith(2);
+    expect(baseDeps.downloads.resume).not.toHaveBeenCalledWith(2);
+    expect(baseDeps.onDuplicateBlocked).toHaveBeenCalledTimes(1);
+    expect(baseDeps.desktopClient.addDownload).toHaveBeenCalledTimes(1);
+    pending.resolve({ action: 'added', gid: 'gid' });
+    await expect(first).resolves.toBe(true);
+    expect(baseDeps.downloads.cancel).toHaveBeenCalledWith(1);
+  });
+
+  it('lets a later request through once the first went back to the browser', async () => {
+    vi.mocked(baseDeps.desktopClient.addDownload)
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValueOnce({ action: 'added', gid: 'gid' });
+    const orchestrator = new DownloadOrchestrator(baseDeps);
+    await expect(orchestrator.handleChromiumTakeover(item({ id: 1 }))).resolves.toBe(false);
+    await expect(orchestrator.handleChromiumTakeover(item({ id: 2 }))).resolves.toBe(true);
+    expect(baseDeps.onDuplicateBlocked).not.toHaveBeenCalled();
+    expect(baseDeps.downloads.cancel).toHaveBeenCalledWith(2);
   });
 
   it('never releases the browser download after a lost answer', async () => {
