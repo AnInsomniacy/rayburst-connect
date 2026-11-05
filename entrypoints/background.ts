@@ -492,8 +492,10 @@ export default defineBackground(() => {
     );
   }
 
+  // Downloads other extensions start reach the filter, which honors the
+  // other-extensions scope; this extension's own browser fallbacks never do.
   function isPotentialChromiumDownload(item: Browser.downloads.DownloadItem): boolean {
-    if (item.state !== 'in_progress' || item.byExtensionId) return false;
+    if (item.state !== 'in_progress' || item.byExtensionId === browser.runtime.id) return false;
     try {
       return ['http:', 'https:'].includes(new URL(item.url).protocol);
     } catch {
