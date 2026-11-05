@@ -331,6 +331,10 @@
     "message": "Hide Browser Download Bar",
     "description": "Label for the optional browser download bar hiding setting."
   },
+  "options_show_popup_after_handoff_label": {
+    "message": "Show Popup After Sending to Rayburst",
+    "description": "Label for the Chromium setting that opens the popup after Rayburst adds an intercepted download."
+  },
   "options_forward_request_headers_label": {
     "message": "Forward Request Headers",
     "description": "Label for the request header forwarding setting."

@@ -331,6 +331,9 @@
     "message": "Ukryj pasek pobierania przeglądarki",
     "description": "Label for the optional browser download bar hiding setting."
   },
+  "options_show_popup_after_handoff_label": {
+    "message": "Pokazuj okno po wysłaniu do Rayburst"
+  },
   "options_forward_request_headers_label": {
     "message": "Przekazuj nagłówki żądań",
     "description": "Label for the request header forwarding setting."

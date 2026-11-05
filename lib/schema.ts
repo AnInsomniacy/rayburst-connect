@@ -175,6 +175,8 @@ const DownloadSettingsSchema = lenient(
     enabled: z.boolean().catch(true),
     mediaDiscovery: MediaSettingsSchema,
     hideDownloadBar: z.boolean().catch(false),
+    // Chromium: show the popup's task list once Rayburst has added a download (#789).
+    showPopupAfterHandoff: z.boolean().catch(false),
     desktopUnavailable: lenient(
       z.object({
         action: z.enum(['launch', 'browser']).catch('launch'),
@@ -303,6 +305,8 @@ const DiagnosticCodeSchema = z.enum([
   'download_duplicate_blocked',
   'download_cancel_failed',
   'download_pause_failed',
+  'download_pause_slow',
+  'download_handoff_deadline',
   'download_handler_failed',
   'media_discovery_failed',
   'firefox_interception_failed',
@@ -319,6 +323,7 @@ const DiagnosticCodeSchema = z.enum([
   'download_bar_failed',
   'notification_failed',
   'context_menu_failed',
+  'popup_not_shown',
 ]);
 
 export type DiagnosticCode = z.output<typeof DiagnosticCodeSchema>;

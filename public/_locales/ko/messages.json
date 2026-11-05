@@ -331,6 +331,9 @@
     "message": "브라우저 다운로드 표시줄 숨기기",
     "description": "Label for the optional browser download bar hiding setting."
   },
+  "options_show_popup_after_handoff_label": {
+    "message": "Rayburst로 보낸 후 팝업 표시"
+  },
   "options_forward_request_headers_label": {
     "message": "요청 헤더 전달",
     "description": "Label for the request header forwarding setting."

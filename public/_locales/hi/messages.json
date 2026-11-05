@@ -331,6 +331,9 @@
     "message": "ब्राउज़र डाउनलोड बार छिपाएं",
     "description": "Label for the optional browser download bar hiding setting."
   },
+  "options_show_popup_after_handoff_label": {
+    "message": "Rayburst को भेजने के बाद पॉपअप दिखाएँ"
+  },
   "options_forward_request_headers_label": {
     "message": "Request Headers फॉरवर्ड करें",
     "description": "Label for the request header forwarding setting."

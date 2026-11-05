@@ -331,6 +331,9 @@
     "message": "Nascondi la barra dei download del browser",
     "description": "Label for the optional browser download bar hiding setting."
   },
+  "options_show_popup_after_handoff_label": {
+    "message": "Mostra il popup dopo l'invio a Rayburst"
+  },
   "options_forward_request_headers_label": {
     "message": "Inoltra intestazioni richiesta",
     "description": "Label for the request header forwarding setting."

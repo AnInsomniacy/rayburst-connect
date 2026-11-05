@@ -331,6 +331,9 @@
     "message": "إخفاء شريط تنزيلات المتصفح",
     "description": "Label for the optional browser download bar hiding setting."
   },
+  "options_show_popup_after_handoff_label": {
+    "message": "إظهار النافذة المنبثقة بعد الإرسال إلى Rayburst"
+  },
   "options_forward_request_headers_label": {
     "message": "إعادة توجيه ترويسات الطلب",
     "description": "Label for the request header forwarding setting."

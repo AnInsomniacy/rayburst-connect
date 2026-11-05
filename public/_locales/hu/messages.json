@@ -331,6 +331,9 @@
     "message": "Böngésző letöltési sávjának elrejtése",
     "description": "Label for the optional browser download bar hiding setting."
   },
+  "options_show_popup_after_handoff_label": {
+    "message": "Felugró ablak megjelenítése a Rayburstnek küldés után"
+  },
   "options_forward_request_headers_label": {
     "message": "Kérésfejlécek továbbítása",
     "description": "Label for the request header forwarding setting."

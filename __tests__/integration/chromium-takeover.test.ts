@@ -118,4 +118,30 @@ describe('browser ownership during handoff', () => {
       vi.useRealTimers();
     }
   });
+
+  it('goes on when pausing hangs and names where a stuck handoff is', async () => {
+    vi.useFakeTimers();
+    try {
+      const deps = downloadDeps();
+      vi.mocked(deps.downloads.pause).mockReturnValue(new Promise<void>(() => {}));
+      vi.mocked(deps.desktopClient.addDownload).mockReturnValue(new Promise(() => {}));
+      const orchestrator = new DownloadOrchestrator(deps);
+      const suggest = vi.fn();
+      const stages: Array<string | undefined> = [];
+      holdChromiumDownload(
+        () => orchestrator.handleChromiumTakeover(downloadItem()),
+        vi.fn(),
+        suggest,
+        () => stages.push(orchestrator.handoffStage(1)),
+      );
+      await vi.advanceTimersByTimeAsync(CHROMIUM_FILENAME_DEADLINE_MS);
+      expect(deps.diagnosticLog.append).toHaveBeenCalledWith(
+        expect.objectContaining({ code: 'download_pause_slow', level: 'warn' }),
+      );
+      expect(stages).toEqual(['send']);
+      expect(suggest).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

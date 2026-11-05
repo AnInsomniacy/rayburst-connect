@@ -11,6 +11,7 @@
  * Explicit flow (context menu, protocol links):
  *   submit over HTTP → activate Rayburst → retry over HTTP.
  */
+import { withDeadline } from '@/lib/deadline';
 import type { DownloadSettings, SiteRule } from '@/lib/schema';
 import type { DiagnosticInput } from '@/lib/diagnostics';
 import { ApiAuthError, ApiCompatibilityError, type DesktopApiClient } from '@/lib/api';
@@ -61,6 +62,8 @@ export interface OrchestratorDeps {
    */
   activateDesktop: (timeoutMs: number) => Promise<boolean>;
   onDuplicateBlocked: () => void;
+  /** Rayburst added an intercepted download without asking. */
+  onAdded?: () => void;
   /** This extension's ID; its own browser fallback downloads are never taken over. */
   extensionId?: string;
 }
@@ -140,6 +143,12 @@ interface SendUrlOptions {
 
 const SILENT_SKIP_STAGES = new Set(['enabled', 'self-trigger', 'interception-scope', 'scheme']);
 
+/** How long pausing a browser download may take before the handoff goes on. */
+export const PAUSE_DEADLINE_MS = 3_000;
+
+/** The step a browser download's handoff is at. */
+export type HandoffStage = 'pause' | 'desktop' | 'request' | 'send' | 'release';
+
 /** Browser names are already decoded text. The engine owns final path policy. */
 function filenameHint(value: string): string | undefined {
   return value.trim().replace(/^.*[/\\]/, '') || undefined;
@@ -149,6 +158,8 @@ function filenameHint(value: string): string | undefined {
 
 export class DownloadOrchestrator {
   private readonly filterStages;
+  /** Open handoffs of browser downloads, for a report when one runs out of time (#108). */
+  private readonly stages = new Map<number, HandoffStage>();
   constructor(private readonly deps: OrchestratorDeps) {
     this.filterStages = createFilterPipeline(
       () => deps.getSiteRules(),
@@ -157,11 +168,35 @@ export class DownloadOrchestrator {
     );
   }
 
+  /** Where the handoff of browser download `id` is, while it is open. */
+  handoffStage(id: number): HandoffStage | undefined {
+    return this.stages.get(id);
+  }
+
+  /** Pauses a browser download; a pause that hangs does not hold the handoff. */
+  private async pause(item: DownloadItem): Promise<void> {
+    this.stages.set(item.id, 'pause');
+    const paused = await withDeadline(
+      this.deps.downloads.pause(item.id).then(() => true),
+      PAUSE_DEADLINE_MS,
+      () => false,
+    );
+    if (!paused) {
+      this.log(
+        'download_pause_slow',
+        'Browser download did not pause in time',
+        { downloadId: item.id },
+        'warn',
+      );
+    }
+  }
+
   async handleFirefoxCreatedDownload(item: DownloadItem): Promise<boolean> {
     if (item.state !== 'in_progress' || !this.evaluateCandidate(item)) return false;
     try {
-      await this.deps.downloads.pause(item.id);
+      await this.pause(item);
     } catch (error) {
+      this.stages.delete(item.id);
       this.logBrowserFallback(item, 'pause-failed', 'continued', errorMessage(error));
       return false;
     }
@@ -173,7 +208,7 @@ export class DownloadOrchestrator {
     // Holding the filename does not stop the transfer. Pause it so the browser
     // does not download while the desktop dialog waits for the user.
     try {
-      await this.deps.downloads.pause(item.id);
+      await this.pause(item);
     } catch (error) {
       // The file cannot complete before its filename is set. Hand it over as is.
       this.log(
@@ -182,7 +217,11 @@ export class DownloadOrchestrator {
         { downloadId: item.id, error: errorMessage(error) },
         'warn',
       );
-      return this.handleBrowserDownload(item, 'chromium-download');
+      try {
+        return await this.handleBrowserDownload(item, 'chromium-download');
+      } finally {
+        this.stages.delete(item.id);
+      }
     }
     return this.handOverPaused(item, 'chromium-download');
   }
@@ -191,11 +230,16 @@ export class DownloadOrchestrator {
   private async handOverPaused(item: DownloadItem, source: DownloadSource): Promise<boolean> {
     try {
       const claimed = await this.handleBrowserDownload(item, source);
-      if (!claimed) await this.deps.downloads.resume(item.id);
+      if (!claimed) {
+        this.stages.set(item.id, 'release');
+        await this.deps.downloads.resume(item.id);
+      }
       return claimed;
     } catch (error) {
       await this.deps.downloads.resume(item.id);
       throw error;
+    } finally {
+      this.stages.delete(item.id);
     }
   }
 
@@ -236,16 +280,23 @@ export class DownloadOrchestrator {
       // This copy is not needed in either place.
       return true;
     }
+    const stage = (next: HandoffStage) => {
+      if ('id' in item && typeof item.id === 'number') this.stages.set(item.id, next);
+    };
+    stage('desktop');
     const readiness = await this.prepareDesktop(this.deps.getSettings());
     if (!readiness.ok) {
       this.deps.duplicateGuard.release(duplicate.reservation);
       this.logBrowserFallback(item, readiness.reason, 'continued', readiness.error);
       return false;
     }
+    stage('request');
     const job = await this.buildJob(item, candidate.tabUrl, source);
+    stage('send');
     const delivery = await this.sendToDesktop(job, { allowActivation: false });
     if (delivery.ok) {
       if (delivery.action === 'cancelled') this.deps.duplicateGuard.release(duplicate.reservation);
+      if (delivery.action === 'added') this.deps.onAdded?.();
       return true;
     }
     this.deps.duplicateGuard.release(duplicate.reservation);

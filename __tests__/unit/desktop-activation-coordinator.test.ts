@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createDesktopActivationCoordinator } from '@/lib/desktop';
+import { ACTIVATION_GRACE_MS, createDesktopActivationCoordinator } from '@/lib/desktop';
 
 describe('createDesktopActivationCoordinator', () => {
   beforeEach(() => vi.useFakeTimers());
@@ -99,5 +99,24 @@ describe('createDesktopActivationCoordinator', () => {
       expect(await pending).toBe(ready);
       expect(cleanup).toHaveBeenCalledOnce();
     }
+  });
+
+  it('ends an attempt whose activation never answers', async () => {
+    const coordinate = createDesktopActivationCoordinator();
+    const stuck = coordinate({
+      activate: () => new Promise(() => {}),
+      checkReady: vi.fn().mockResolvedValue(false),
+      maxWaitMs: 1000,
+    });
+    await vi.advanceTimersByTimeAsync(1000 + ACTIVATION_GRACE_MS);
+    expect(await stuck).toBe(false);
+
+    const next = coordinate({
+      activate: vi.fn().mockResolvedValue(undefined),
+      checkReady: vi.fn().mockResolvedValue(true),
+      maxWaitMs: 1000,
+    });
+    await vi.runAllTimersAsync();
+    expect(await next).toBe(true);
   });
 });

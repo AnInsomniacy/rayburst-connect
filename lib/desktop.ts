@@ -2,6 +2,7 @@
  * Desktop activation and readiness coordination: Native Messaging first, and
  * the desktop's link scheme in a tab when the user allowed that fallback.
  */
+import { withDeadline } from '@/lib/deadline';
 import { z } from '@/lib/validation';
 import type { DesktopProtocol } from './api';
 import { MOTRIX_NEXT_LINK, MOTRIX_NEXT_NATIVE_HOST } from './legacy';
@@ -149,13 +150,24 @@ async function activateAndWaitForApi(options: DesktopActivationOptions): Promise
   }
 }
 
-/** Create one coordinator that coalesces concurrent activation attempts. */
+/** Time an activation may take beyond its readiness wait, for starting the app. */
+export const ACTIVATION_GRACE_MS = 10_000;
+
+/**
+ * Create one coordinator that coalesces concurrent activation attempts. An
+ * attempt ends by its deadline even when a native host never answers, so it
+ * cannot hold the downloads that join it.
+ */
 export function createDesktopActivationCoordinator(): ActivateDesktopAndWait {
   let pending: Promise<boolean> | null = null;
 
   return (options) => {
     if (pending) return pending;
-    pending = activateAndWaitForApi(options).finally(() => {
+    pending = withDeadline(
+      activateAndWaitForApi(options),
+      options.maxWaitMs + ACTIVATION_GRACE_MS,
+      () => false,
+    ).finally(() => {
       pending = null;
     });
     return pending;

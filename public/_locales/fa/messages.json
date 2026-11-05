@@ -331,6 +331,9 @@
     "message": "پنهان کردن نوار دانلود مرورگر",
     "description": "Label for the optional browser download bar hiding setting."
   },
+  "options_show_popup_after_handoff_label": {
+    "message": "نمایش پنجرهٔ بازشو پس از ارسال به Rayburst"
+  },
   "options_forward_request_headers_label": {
     "message": "ارسال سربرگ‌های درخواست",
     "description": "Label for the request header forwarding setting."

@@ -331,6 +331,9 @@
     "message": "Приховати панель завантажень браузера",
     "description": "Label for the optional browser download bar hiding setting."
   },
+  "options_show_popup_after_handoff_label": {
+    "message": "Показувати спливне вікно після надсилання в Rayburst"
+  },
   "options_forward_request_headers_label": {
     "message": "Передавати заголовки запиту",
     "description": "Label for the request header forwarding setting."

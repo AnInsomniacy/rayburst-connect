@@ -331,6 +331,9 @@
     "message": "隐藏浏览器下载栏",
     "description": "Label for the optional browser download bar hiding setting."
   },
+  "options_show_popup_after_handoff_label": {
+    "message": "发送到 Rayburst 后显示弹出窗口"
+  },
   "options_forward_request_headers_label": {
     "message": "转发请求头",
     "description": "Label for the request header forwarding setting."

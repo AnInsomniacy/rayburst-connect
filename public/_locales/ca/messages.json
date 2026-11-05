@@ -331,6 +331,9 @@
     "message": "Amaga la barra de baixades del navegador",
     "description": "Label for the optional browser download bar hiding setting."
   },
+  "options_show_popup_after_handoff_label": {
+    "message": "Mostra la finestra emergent després d'enviar a Rayburst"
+  },
   "options_forward_request_headers_label": {
     "message": "Reenvia capçaleres de sol·licitud",
     "description": "Label for the request header forwarding setting."

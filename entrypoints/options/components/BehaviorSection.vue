@@ -14,6 +14,7 @@ defineProps<{
   interceptionScope: InterceptionScope;
   hideDownloadBar: boolean;
   canControlDownloadUi: boolean;
+  showPopupAfterHandoff: boolean;
   desktopUnavailable: DesktopUnavailableSettings;
   forwardRequestHeaders: boolean;
   forwardCookies: boolean;
@@ -24,6 +25,7 @@ const emit = defineEmits<{
   'update:enabled': [value: boolean];
   'update:scope': [value: Partial<InterceptionScope>];
   'update:hideDownloadBar': [value: boolean];
+  'update:showPopupAfterHandoff': [value: boolean];
   'update:desktopUnavailable': [value: Partial<DesktopUnavailableSettings>];
   'update:forwardRequestHeaders': [value: boolean];
   'update:forwardCookies': [value: boolean];
@@ -179,6 +181,19 @@ const unavailableActionOptions = computed(() => [
         :label="i18n('options_hide_download_bar_label', 'Hide Browser Download Bar')"
       >
         <NSwitch :value="hideDownloadBar" @update:value="emit('update:hideDownloadBar', $event)" />
+      </NFormItem>
+
+      <!-- Only Chromium opens an extension popup without a click. -->
+      <NFormItem
+        v-if="canControlDownloadUi"
+        class="settings-row"
+        :show-feedback="false"
+        :label="i18n('options_show_popup_after_handoff_label', 'Show Downloads After Sending')"
+      >
+        <NSwitch
+          :value="showPopupAfterHandoff"
+          @update:value="emit('update:showPopupAfterHandoff', $event)"
+        />
       </NFormItem>
 
       <NFormItem

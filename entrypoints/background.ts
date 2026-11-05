@@ -231,29 +231,37 @@ export default defineBackground(() => {
   /**
    * Chromium cannot resume a download whose filename is still held, and the
    * download stays paused once the filename is released. Resume it as soon as
-   * the browser allows.
+   * the browser allows. Firefox reports a paused download as interrupted
+   * (#107), so whether it can resume decides, not its state.
    */
   async function resumeDownload(id: number): Promise<void> {
-    const resume = () =>
-      browser.downloads.resume(id).catch((error: unknown) => {
+    let settled = false;
+    const settle = async () => {
+      const [item] = await browser.downloads.search({ id });
+      // Still held: a later change makes it resumable.
+      if (settled || (item?.state === 'in_progress' && !item.canResume)) return;
+      settled = true;
+      browser.downloads.onChanged.removeListener(listener);
+      if (!item?.canResume) return;
+      await browser.downloads.resume(id).catch((error: unknown) => {
         logWarn('download_restore_failed', 'Browser download could not be resumed', {
           downloadId: id,
           error: errorMessage(error),
         });
       });
+    };
     // Listen before looking, so the change cannot slip in between.
     const listener = (delta: Browser.downloads.DownloadDelta) => {
       if (delta.id !== id) return;
-      const ended = delta.state && delta.state.current !== 'in_progress';
-      if (!ended && !delta.canResume?.current) return;
-      browser.downloads.onChanged.removeListener(listener);
-      if (!ended) void resume();
+      settle().catch((error: unknown) => {
+        logWarn('download_restore_failed', 'Browser download could not be resumed', {
+          downloadId: id,
+          error: errorMessage(error),
+        });
+      });
     };
     browser.downloads.onChanged.addListener(listener);
-    const [item] = await browser.downloads.search({ id });
-    if (item?.state === 'in_progress' && !item.canResume) return;
-    browser.downloads.onChanged.removeListener(listener);
-    if (item?.state === 'in_progress') await resume();
+    await settle();
   }
 
   const browserBypass = new BrowserBypass();
@@ -264,6 +272,13 @@ export default defineBackground(() => {
       erase: (query) => browser.downloads.erase(query).then(() => {}),
       pause: (id) => browser.downloads.pause(id),
       resume: resumeDownload,
+    },
+    onAdded: () => {
+      if (import.meta.env.FIREFOX || !settings.showPopupAfterHandoff) return;
+      // Chrome 127+; without a focused window the browser declines.
+      browser.action.openPopup().catch((error: unknown) => {
+        logInfo('popup_not_shown', 'The popup could not be shown', { error: errorMessage(error) });
+      });
     },
     cookies: {
       getAll: async (details) => {
@@ -526,6 +541,15 @@ export default defineBackground(() => {
       () => handleChromiumTakeover(item),
       (error) => logDownloadHandlerError(item, error),
       suggest,
+      () =>
+        logWarn(
+          'download_handoff_deadline',
+          'The browser named the download before Rayburst answered',
+          {
+            downloadId: item.id,
+            stage: orchestrator.handoffStage(item.id) ?? 'start',
+          },
+        ),
     );
   }
 

@@ -617,6 +617,7 @@ onUnmounted(() => {
                   :enabled="draft.settings.enabled"
                   :interception-scope="draft.settings.interceptionScope"
                   :hide-download-bar="draft.settings.hideDownloadBar"
+                  :show-popup-after-handoff="draft.settings.showPopupAfterHandoff"
                   :can-control-download-ui="canControlDownloadUi"
                   :desktop-unavailable="draft.settings.desktopUnavailable"
                   :forward-request-headers="draft.settings.forwardRequestHeaders"
@@ -634,6 +635,7 @@ onUnmounted(() => {
                   @update:forward-request-headers="draft.settings.forwardRequestHeaders = $event"
                   @update:forward-cookies="handleForwardCookiesChange"
                   @update:alt-click-bypass="draft.settings.altClickBypass = $event"
+                  @update:show-popup-after-handoff="draft.settings.showPopupAfterHandoff = $event"
                 />
               </div>
             </div>

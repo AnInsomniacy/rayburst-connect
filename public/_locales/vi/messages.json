@@ -331,6 +331,9 @@
     "message": "Ẩn thanh tải xuống của trình duyệt",
     "description": "Label for the optional browser download bar hiding setting."
   },
+  "options_show_popup_after_handoff_label": {
+    "message": "Hiện cửa sổ bật lên sau khi gửi tới Rayburst"
+  },
   "options_forward_request_headers_label": {
     "message": "Chuyển tiếp tiêu đề yêu cầu",
     "description": "Label for the request header forwarding setting."

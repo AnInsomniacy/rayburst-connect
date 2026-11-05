@@ -331,6 +331,9 @@
     "message": "Ascunde bara de descărcări a browserului",
     "description": "Label for the optional browser download bar hiding setting."
   },
+  "options_show_popup_after_handoff_label": {
+    "message": "Afișează fereastra pop-up după trimiterea către Rayburst"
+  },
   "options_forward_request_headers_label": {
     "message": "Redirecționează antetele cererii",
     "description": "Label for the request header forwarding setting."

@@ -14,6 +14,7 @@ export function holdChromiumDownload(
   handoff: () => Promise<boolean>,
   onError: (error: unknown) => void,
   suggest: () => void,
+  onDeadline?: () => void,
 ): true {
   let suggested = false;
   const release = () => {
@@ -21,7 +22,11 @@ export function holdChromiumDownload(
     suggested = true;
     suggest();
   };
-  const deadline = setTimeout(release, CHROMIUM_FILENAME_DEADLINE_MS);
+  // A handoff open this long is stuck somewhere; the report names where.
+  const deadline = setTimeout(() => {
+    onDeadline?.();
+    release();
+  }, CHROMIUM_FILENAME_DEADLINE_MS);
   void Promise.resolve()
     .then(handoff)
     .catch((error: unknown) => {
