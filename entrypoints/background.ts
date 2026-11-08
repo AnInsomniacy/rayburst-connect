@@ -21,11 +21,13 @@ import {
 import {
   CONTEXT_MENU_CONTEXTS,
   CONTEXT_MENU_ID,
+  NOTIFICATION_ICON,
   buildDuplicateDownloadNotification,
   extractContextMenuUrl,
   hasCookieForwardingAccess,
   hasDownloadUiAccess,
   isExternalProtocol,
+  partitionedTabCookies,
   tabCookieStoreId,
   type ExternalProtocol,
 } from '@/lib/browser';
@@ -197,7 +199,7 @@ export default defineBackground(() => {
       await updateDesktopMemory({ linkSuggested: true });
       await browser.notifications.create(DESKTOP_LINK_NOTIFICATION, {
         type: 'basic',
-        iconUrl: 'icon/128.png',
+        iconUrl: NOTIFICATION_ICON,
         title: bgI18n.t('popup_launch_failed_title', 'Could not start Rayburst'),
         message: bgI18n.t(
           'notification_desktop_link_body',
@@ -303,16 +305,9 @@ export default defineBackground(() => {
           !import.meta.env.FIREFOX &&
           tabId !== undefined &&
           tabId >= 0 &&
-          browser.cookies.getPartitionKey
+          typeof browser.cookies.getPartitionKey === 'function'
         ) {
-          const { partitionKey } = await browser.cookies.getPartitionKey({ tabId, frameId });
-          const [ordinary, partitioned] = await Promise.all([
-            browser.cookies.getAll(query),
-            browser.cookies.getAll({ ...query, partitionKey }),
-          ]);
-          return [...ordinary, ...partitioned].sort(
-            (left, right) => right.path.length - left.path.length,
-          );
+          return partitionedTabCookies(query, { tabId, frameId });
         }
         return browser.cookies.getAll(query);
       },
