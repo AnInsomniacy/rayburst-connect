@@ -6,9 +6,14 @@ Redefining the companion browser extension
 
 `public/icon/icon.svg` mirrors the desktop app’s `public/logo.svg`; both products use the same mark. WXT's official auto-icons module builds
 the required PNG sizes and manifest entries. UI surfaces use the source SVG directly.
-`docs/brand/banner.png` is the English README banner with the current slogan. Use no terminal punctuation in slogans, including translations.
-`docs/brand/media-discovery.png` shows media discovery and preview using the approved
-product references. Campaign artwork omits release numbers and preserves the interface.
+`docs/brand/banner.png` is the English README banner (4:1, 2400×600) with the current slogan.
+`docs/brand/social-preview.png` (1280×640) is the GitHub social preview, set in the
+repository settings. Use no terminal punctuation in slogans, including translations.
+`docs/store/images/` holds the store artwork: `promo-small-tile.png` (440×280, the Chrome
+small promo tile and Edge small tile), `promo-marquee.png` (1400×560, the Chrome marquee
+and Edge large tile) and five 1280×800 screenshots, numbered in upload order. Firefox
+Add-ons uses the screenshots only. Campaign artwork omits release numbers and preserves
+the interface.
 
 The default color seed is `#7B3ED1`. Light and dark themes use Material Color Utilities,
 with separate semantic colors for information, warnings, errors and success. The
