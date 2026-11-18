@@ -303,6 +303,15 @@
     "message": "متوقف شده",
     "description": "Label next to the interception toggle when inactive"
   },
+  "options_api_host_label": {
+    "message": "میزبان"
+  },
+  "options_api_host_invalid": {
+    "message": "نام میزبان یا نشانی IP را بدون http:// یا پورت وارد کنید."
+  },
+  "options_api_host_remote_hint": {
+    "message": "دانلودها همراه کوکی‌ها و اطلاعات ورود به Rayburst روی رایانهٔ این نشانی فرستاده می‌شوند. فقط در شبکهٔ مطمئن استفاده کنید. روی آن رایانه، دسترسی از راه دور را در Rayburst مجاز کنید و رمز API تعیین کنید."
+  },
   "options_api_port_label": {
     "message": "API Port",
     "description": "Label for the API port input"
@@ -409,6 +418,12 @@
   "options_duplicate_guard_window_label": {
     "message": "پنجره محافظت",
     "description": "Label for the duplicate download guard time window input."
+  },
+  "notification_desktop_unreachable_title": {
+    "message": "در حال دانلود در مرورگر"
+  },
+  "notification_desktop_unreachable_body": {
+    "message": "Rayburst به‌موقع پاسخ نداد، بنابراین مرورگر این دانلود را ادامه می‌دهد."
   },
   "notification_duplicate_guard_title": {
     "message": "وظیفه ارسال شد",
@@ -930,6 +945,21 @@
   },
   "resources_preserve": {
     "message": "نگه داشتن منابع پس از پیمایش"
+  },
+  "resources_deep_hint": {
+    "message": "یافتن جریان‌های پنهان صفحه"
+  },
+  "resources_cache_hint": {
+    "message": "ذخیرهٔ رسانه هم‌زمان با بافر شدن"
+  },
+  "resources_video_hint": {
+    "message": "ضبط ویدیو هنگام پخش"
+  },
+  "resources_open_file": {
+    "message": "باز کردن فایل"
+  },
+  "resources_no_player": {
+    "message": "هنوز پخش‌کننده‌ای در این صفحه نیست."
   },
   "resources_deep": {
     "message": "جست‌وجوی عمیق"

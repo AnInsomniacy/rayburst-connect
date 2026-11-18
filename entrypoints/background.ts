@@ -43,6 +43,7 @@ import {
 import {
   DEFAULT_DIAGNOSTIC_SETTINGS,
   DEFAULT_DOWNLOAD_SETTINGS,
+  isLocalApiHost,
   parseConnectionConfig,
   parseDownloadSettings,
   parseDiagnosticSettings,
@@ -162,6 +163,8 @@ export default defineBackground(() => {
    */
   async function activateDesktopApp(unattended: boolean): Promise<(() => void) | void> {
     await ensureConfigLoaded();
+    // A Rayburst on another machine cannot be started from here; it is waited for.
+    if (!isLocalApiHost(connectionConfig.host)) return;
     const protocol = (await loadDesktopMemory()).desktop?.protocol ?? null;
     if (settings.desktopUnavailable.openLink) {
       const link = desktopLink(protocol);
@@ -192,6 +195,30 @@ export default defineBackground(() => {
   }
 
   const DESKTOP_LINK_NOTIFICATION = 'desktop-link';
+  const DESKTOP_UNREACHABLE_NOTIFICATION = 'desktop-unreachable';
+
+  /** One notice per burst: a page of downloads falls back together. */
+  let unreachableNotifiedAt = 0;
+  async function notifyDesktopUnreachable(): Promise<void> {
+    const now = Date.now();
+    if (now - unreachableNotifiedAt < 30_000) return;
+    unreachableNotifiedAt = now;
+    try {
+      await browser.notifications.create(DESKTOP_UNREACHABLE_NOTIFICATION, {
+        type: 'basic',
+        iconUrl: NOTIFICATION_ICON,
+        title: bgI18n.t('notification_desktop_unreachable_title', 'Downloading in the browser'),
+        message: bgI18n.t(
+          'notification_desktop_unreachable_body',
+          'Rayburst did not respond in time, so the browser kept this download.',
+        ),
+      });
+    } catch (error) {
+      logWarn('notification_failed', 'Fallback notification could not be shown', {
+        error: errorMessage(error),
+      });
+    }
+  }
 
   async function suggestDesktopLink(): Promise<void> {
     try {
@@ -275,6 +302,7 @@ export default defineBackground(() => {
       pause: (id) => browser.downloads.pause(id),
       resume: resumeDownload,
     },
+    onDesktopUnreachable: () => void notifyDesktopUnreachable(),
     onAdded: () => {
       if (import.meta.env.FIREFOX || !settings.showPopupAfterHandoff) return;
       // Chrome 127+; without a focused window the browser declines.
@@ -324,6 +352,7 @@ export default defineBackground(() => {
       activateDesktopAndWait({
         activate: () => activateDesktopApp(true),
         checkReady: () => desktopClient.checkReady(),
+        isRunning: () => desktopClient.isRunning(),
         isFatalReadinessError: (error) =>
           error instanceof ApiAuthError ||
           error instanceof ApiCompatibilityError ||
@@ -439,6 +468,7 @@ export default defineBackground(() => {
       activateDesktopAndWait({
         activate: () => activateDesktopApp(true),
         checkReady: () => desktopClient.checkReady(),
+        isRunning: () => desktopClient.isRunning(),
         isFatalReadinessError: (error) =>
           error instanceof ApiAuthError ||
           error instanceof ApiCompatibilityError ||

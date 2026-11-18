@@ -303,6 +303,15 @@
     "message": "Szüneteltetve",
     "description": "Label next to the interception toggle when inactive"
   },
+  "options_api_host_label": {
+    "message": "Gazdagép"
+  },
+  "options_api_host_invalid": {
+    "message": "Adjon meg gazdagépnevet vagy IP-címet http:// és port nélkül."
+  },
+  "options_api_host_remote_hint": {
+    "message": "A letöltések a sütikkel és bejelentkezési adatokkal együtt az ezen a címen elérhető számítógép Rayburstjéhez kerülnek. Csak megbízható hálózaton használja. Azon a gépen engedélyezze a távoli hozzáférést a Rayburstben, és állítson be API-titkot."
+  },
   "options_api_port_label": {
     "message": "API Port",
     "description": "Label for the API port input"
@@ -409,6 +418,12 @@
   "options_duplicate_guard_window_label": {
     "message": "Védelmi időablak",
     "description": "Label for the duplicate download guard time window input."
+  },
+  "notification_desktop_unreachable_title": {
+    "message": "Letöltés a böngészőben"
+  },
+  "notification_desktop_unreachable_body": {
+    "message": "A Rayburst nem válaszolt időben, ezért a böngésző folytatja a letöltést."
   },
   "notification_duplicate_guard_title": {
     "message": "Feladat elküldve",
@@ -930,6 +945,21 @@
   },
   "resources_preserve": {
     "message": "Források megőrzése navigáláskor"
+  },
+  "resources_deep_hint": {
+    "message": "Az oldal rejtett streamjeinek felkutatása"
+  },
+  "resources_cache_hint": {
+    "message": "Média mentése az oldal pufferelése közben"
+  },
+  "resources_video_hint": {
+    "message": "A lejátszott videó rögzítése"
+  },
+  "resources_open_file": {
+    "message": "Fájl megnyitása"
+  },
+  "resources_no_player": {
+    "message": "Ezen az oldalon még nincs lejátszó."
   },
   "resources_deep": {
     "message": "Mély keresés"

@@ -40,6 +40,23 @@ describe('createDesktopActivationCoordinator', () => {
     expect(checkReady).toHaveBeenCalledTimes(3);
   });
 
+  it('waits for a running desktop without activating it again (#114)', async () => {
+    const activate = vi.fn().mockResolvedValue(undefined);
+    const checkReady = vi.fn().mockResolvedValueOnce(false).mockResolvedValue(true);
+
+    const pending = createDesktopActivationCoordinator()({
+      activate,
+      checkReady,
+      isRunning: async () => true,
+      maxWaitMs: 1000,
+    });
+
+    await vi.runAllTimersAsync();
+    expect(await pending).toBe(true);
+    expect(activate).not.toHaveBeenCalled();
+    expect(checkReady).toHaveBeenCalledTimes(2);
+  });
+
   it('times out on transient failures and stops immediately on fatal failures', async () => {
     const activate = vi.fn().mockResolvedValue(undefined);
     const checkReady = vi.fn().mockResolvedValue(false);

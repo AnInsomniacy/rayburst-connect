@@ -303,6 +303,15 @@
     "message": "На паузі",
     "description": "Label next to the interception toggle when inactive"
   },
+  "options_api_host_label": {
+    "message": "Хост"
+  },
+  "options_api_host_invalid": {
+    "message": "Введіть ім’я хоста або IP-адресу без http:// і порту."
+  },
+  "options_api_host_remote_hint": {
+    "message": "Завантаження надсилаються до Rayburst на комп’ютері з цією адресою разом із cookies і даними входу. Використовуйте лише в довіреній мережі. На тому комп’ютері дозвольте віддалений доступ у Rayburst і задайте секрет API."
+  },
   "options_api_port_label": {
     "message": "API Port",
     "description": "Label for the API port input"
@@ -409,6 +418,12 @@
   "options_duplicate_guard_window_label": {
     "message": "Вікно захисту",
     "description": "Label for the duplicate download guard time window input."
+  },
+  "notification_desktop_unreachable_title": {
+    "message": "Завантаження в браузері"
+  },
+  "notification_desktop_unreachable_body": {
+    "message": "Rayburst не відповів вчасно, тож завантаження продовжує браузер."
   },
   "notification_duplicate_guard_title": {
     "message": "Завдання надіслано",
@@ -930,6 +945,21 @@
   },
   "resources_preserve": {
     "message": "Зберігати джерела після переходу"
+  },
+  "resources_deep_hint": {
+    "message": "Знайти приховані потоки сторінки"
+  },
+  "resources_cache_hint": {
+    "message": "Зберігати медіа під час буферизації"
+  },
+  "resources_video_hint": {
+    "message": "Записати відео під час відтворення"
+  },
+  "resources_open_file": {
+    "message": "Відкрити файл"
+  },
+  "resources_no_player": {
+    "message": "На цій сторінці поки немає плеєра."
   },
   "resources_deep": {
     "message": "Поглиблений пошук"

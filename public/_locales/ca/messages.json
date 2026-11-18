@@ -303,6 +303,15 @@
     "message": "Pausat",
     "description": "Label next to the interception toggle when inactive"
   },
+  "options_api_host_label": {
+    "message": "Amfitrió"
+  },
+  "options_api_host_invalid": {
+    "message": "Introduïu un nom d’amfitrió o una adreça IP, sense http:// ni port."
+  },
+  "options_api_host_remote_hint": {
+    "message": "Les baixades s’envien al Rayburst de l’ordinador amb aquesta adreça, amb les galetes i les dades d’inici de sessió. Feu-lo servir només en una xarxa de confiança. En aquell ordinador, permeteu l’accés remot al Rayburst i definiu un secret d’API."
+  },
   "options_api_port_label": {
     "message": "API Port",
     "description": "Label for the API port input"
@@ -409,6 +418,12 @@
   "options_duplicate_guard_window_label": {
     "message": "Finestra de protecció",
     "description": "Label for the duplicate download guard time window input."
+  },
+  "notification_desktop_unreachable_title": {
+    "message": "Baixant al navegador"
+  },
+  "notification_desktop_unreachable_body": {
+    "message": "El Rayburst no ha respost a temps; el navegador continua aquesta baixada."
   },
   "notification_duplicate_guard_title": {
     "message": "Tasca enviada",
@@ -930,6 +945,21 @@
   },
   "resources_preserve": {
     "message": "Conserva les fonts en navegar"
+  },
+  "resources_deep_hint": {
+    "message": "Troba els fluxos que amaga la pàgina"
+  },
+  "resources_cache_hint": {
+    "message": "Desa el contingut mentre la pàgina el carrega"
+  },
+  "resources_video_hint": {
+    "message": "Grava el vídeo mentre es reprodueix"
+  },
+  "resources_open_file": {
+    "message": "Obre un fitxer"
+  },
+  "resources_no_player": {
+    "message": "Encara no hi ha cap reproductor en aquesta pàgina."
   },
   "resources_deep": {
     "message": "Cerca profunda"

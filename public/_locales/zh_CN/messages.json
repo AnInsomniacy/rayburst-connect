@@ -303,6 +303,15 @@
     "message": "已暂停",
     "description": "Label next to the interception toggle when inactive"
   },
+  "options_api_host_label": {
+    "message": "主机"
+  },
+  "options_api_host_invalid": {
+    "message": "请输入主机名或 IP 地址，不要包含 http:// 或端口。"
+  },
+  "options_api_host_remote_hint": {
+    "message": "下载会连同 Cookie 和登录信息一起发送到该地址那台电脑上的 Rayburst，请只在可信网络中使用。需在那台电脑的 Rayburst 中开启「允许远程访问」并设置 API 密钥。"
+  },
   "options_api_port_label": {
     "message": "API 端口",
     "description": "Label for the API port input"
@@ -409,6 +418,12 @@
   "options_duplicate_guard_window_label": {
     "message": "拦截间隔",
     "description": "Label for the duplicate download guard time window input."
+  },
+  "notification_desktop_unreachable_title": {
+    "message": "已在浏览器中下载"
+  },
+  "notification_desktop_unreachable_body": {
+    "message": "Rayburst 未及时响应，此下载已交由浏览器完成。"
   },
   "notification_duplicate_guard_title": {
     "message": "任务已提交",
@@ -930,6 +945,21 @@
   },
   "resources_preserve": {
     "message": "跳转后保留资源"
+  },
+  "resources_deep_hint": {
+    "message": "找出页面隐藏的视频流"
+  },
+  "resources_cache_hint": {
+    "message": "边播放边保存页面缓冲的媒体"
+  },
+  "resources_video_hint": {
+    "message": "录下正在播放的画面"
+  },
+  "resources_open_file": {
+    "message": "打开文件"
+  },
+  "resources_no_player": {
+    "message": "此页面暂无播放器。"
   },
   "resources_deep": {
     "message": "深度搜索"

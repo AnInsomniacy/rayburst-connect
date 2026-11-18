@@ -50,6 +50,7 @@ import {
   CheckmarkOutline,
   ChevronDownOutline,
   FilmOutline,
+  GlobeOutline,
 } from '@vicons/ionicons5';
 
 const props = withDefaults(defineProps<{ active?: boolean; expanded?: boolean }>(), {
@@ -71,6 +72,24 @@ const downloadIntent = ref('');
 const preferences = ref(parseMediaSettings({}));
 const loading = ref(true);
 const toolsOpen = ref(false);
+/** The page the workspace reads, named in its header. */
+const page = ref<{ title: string; url: string; icon: string }>();
+const pageHost = computed(() => {
+  try {
+    return page.value ? new URL(page.value.url).hostname : '';
+  } catch {
+    return '';
+  }
+});
+/** A wide workspace keeps its tools in a column beside the list. */
+const split = ref(false);
+let wideQuery: ReturnType<typeof window.matchMedia> | undefined;
+const followWidth = () => (split.value = Boolean(props.expanded && wideQuery?.matches));
+function describe(tab: { title?: string; url?: string; favIconUrl?: string } | undefined) {
+  page.value = tab?.url?.startsWith('http')
+    ? { title: tab.title || tab.url, url: tab.url, icon: tab.favIconUrl ?? '' }
+    : undefined;
+}
 const preview = ref<MediaItem>();
 /** Turns of the rescan icon; each click spins it once. */
 const scanTurns = ref(0);
@@ -472,10 +491,16 @@ const activated: Parameters<typeof browser.tabs.onActivated.addListener>[0] = (i
   if (props.expanded && !new URL(window.location.href).searchParams.has('tab')) {
     tabId.value = info.tabId;
     selectedId.value = '';
+    void browser.tabs.get(info.tabId).then(describe, () => describe(undefined));
     void refresh();
   }
 };
 onMounted(async () => {
+  wideQuery = window.matchMedia('(min-width: 920px)');
+  wideQuery.addEventListener('change', followWidth);
+  followWidth();
+  // The workspace has room to show its tools from the start.
+  if (split.value) toolsOpen.value = true;
   preferences.value = (await loadSnapshot()).settings.mediaDiscovery;
   const supplied = Number(new URL(window.location.href).searchParams.get('tab'));
   const tab =
@@ -484,12 +509,14 @@ onMounted(async () => {
       : (await browser.tabs.query({ active: true, currentWindow: true }))[0];
   if (disposed) return;
   if (tab?.id !== undefined && tab.url?.startsWith('http')) tabId.value = tab.id;
+  describe(tab);
   await refresh();
   loading.value = false;
   browser.storage.onChanged.addListener(changed);
   browser.tabs.onActivated.addListener(activated);
 });
 onUnmounted(() => {
+  wideQuery?.removeEventListener('change', followWidth);
   disposed = true;
   poller.stop();
   browser.storage.onChanged.removeListener(changed);
@@ -507,6 +534,22 @@ onUnmounted(() => {
     <template v-else>
       <div class="resource-head">
         <header class="resource-toolbar">
+          <div v-if="expanded" class="resource-page">
+            <span class="resource-page__icon" aria-hidden="true"
+              ><img
+                v-if="page?.icon && !allTabs"
+                :src="page.icon"
+                alt=""
+                width="20"
+                height="20" /><NIcon v-else :size="18"><GlobeOutline /></NIcon
+            ></span>
+            <div class="resource-page__text">
+              <h1 :title="allTabs ? undefined : page?.title">
+                {{ allTabs ? t('resources_other') : page?.title || t('resources_current') }}
+              </h1>
+              <span v-if="!allTabs && pageHost">{{ pageHost }}</span>
+            </div>
+          </div>
           <NPopselect
             :value="allTabs ? 'all' : 'current'"
             :options="scopes"
@@ -538,7 +581,21 @@ onUnmounted(() => {
             </template>
             {{ t('media_discover') }}
           </NTooltip>
-          <NTooltip
+          <NButton
+            v-if="split"
+            size="small"
+            :secondary="toolsOpen"
+            :quaternary="!toolsOpen"
+            :type="toolsOpen ? 'primary' : 'default'"
+            :aria-expanded="toolsOpen"
+            @click="toolsOpen = !toolsOpen"
+          >
+            <template #icon
+              ><NIcon><OptionsOutline /></NIcon
+            ></template>
+            {{ t('resources_tools') }}
+          </NButton>
+          <NTooltip v-else
             ><template #trigger
               ><NButton
                 size="small"
@@ -552,324 +609,349 @@ onUnmounted(() => {
             >{{ t('resources_tools') }}</NTooltip
           >
         </header>
-        <CollapsePanel :open="toolsOpen"
+        <CollapsePanel v-if="!split" :open="toolsOpen"
           ><div class="resource-tools">
             <MediaTools
               :tab-id="selected?.tabId ?? tabId"
               :source="selected"
+              :active="toolsOpen"
               @created="refresh().then(() => (selectedId = $event))"
             /></div
         ></CollapsePanel>
       </div>
       <NAlert v-if="error" type="error" closable @close="error = ''">{{ t(error) }}</NAlert>
-      <div class="resource-stage">
-        <Transition :name="selected ? 'media-forward' : 'media-back'">
-          <MediaSelection
-            v-if="selected"
-            :key="selected.id"
-            :item="selected"
-            :busy="busy || rowBusy.has(selected.id)"
-            @back="
-              selectedId = '';
-              downloadIntent = '';
-            "
-            @advanced="toolsOpen = true"
-            @inspect="
-              command({ type: 'MEDIA_PROBE', tabId: selected.tabId, candidateId: selected.id })
-            "
-            @refresh="refresh"
-            @cancel="
-              command({ type: 'MEDIA_CANCEL', tabId: selected.tabId, candidateId: selected.id })
-            "
-            @download-file="
-              command({
-                type: 'MEDIA_DOWNLOAD_FILE',
-                tabId: selected.tabId,
-                candidateId: selected.id,
-              })
-            "
-            @submit="
-              command({
-                type: 'MEDIA_SUBMIT',
-                tabId: selected.tabId,
-                candidateId: selected.id,
-                selection: $event,
-              })
-            "
-          />
-          <div v-else key="catalog" class="resource-catalog">
-            <!-- Filters earn their space once the list is long enough to need them. -->
-            <CollapsePanel :open="showFilters">
-              <div class="resource-filters">
-                <NInput
-                  v-model:value="query"
-                  class="resource-search"
-                  size="small"
-                  clearable
-                  :placeholder="t('media_filter')"
-                  :aria-label="t('media_filter')"
-                >
-                  <template #prefix>
-                    <NIcon><SearchOutline /></NIcon>
-                  </template>
-                </NInput>
-                <NPopselect v-model:value="sort" :options="sorts" trigger="click">
-                  <NButton
+      <div
+        :class="[
+          'resource-body',
+          { 'resource-body--split': split, 'resource-body--tools': split && toolsOpen },
+        ]"
+      >
+        <div class="resource-stage">
+          <Transition :name="selected ? 'media-forward' : 'media-back'">
+            <MediaSelection
+              v-if="selected"
+              :key="selected.id"
+              :item="selected"
+              :busy="busy || rowBusy.has(selected.id)"
+              @back="
+                selectedId = '';
+                downloadIntent = '';
+              "
+              @advanced="toolsOpen = true"
+              @inspect="
+                command({ type: 'MEDIA_PROBE', tabId: selected.tabId, candidateId: selected.id })
+              "
+              @refresh="refresh"
+              @cancel="
+                command({ type: 'MEDIA_CANCEL', tabId: selected.tabId, candidateId: selected.id })
+              "
+              @download-file="
+                command({
+                  type: 'MEDIA_DOWNLOAD_FILE',
+                  tabId: selected.tabId,
+                  candidateId: selected.id,
+                })
+              "
+              @submit="
+                command({
+                  type: 'MEDIA_SUBMIT',
+                  tabId: selected.tabId,
+                  candidateId: selected.id,
+                  selection: $event,
+                })
+              "
+            />
+            <div v-else key="catalog" class="resource-catalog">
+              <!-- Filters earn their space once the list is long enough to need them. -->
+              <CollapsePanel :open="showFilters">
+                <div class="resource-filters">
+                  <NInput
+                    v-model:value="query"
+                    class="resource-search"
                     size="small"
-                    quaternary
-                    icon-placement="right"
-                    class="resource-picker"
-                    :aria-label="t('resources_sort')"
+                    clearable
+                    :placeholder="t('media_filter')"
+                    :aria-label="t('media_filter')"
                   >
-                    {{ sorts.find((option) => option.value === sort)?.label }}
-                    <template #icon>
-                      <NIcon><SwapVerticalOutline /></NIcon>
+                    <template #prefix>
+                      <NIcon><SearchOutline /></NIcon>
                     </template>
-                  </NButton>
-                </NPopselect>
-              </div>
+                  </NInput>
+                  <NPopselect v-model:value="sort" :options="sorts" trigger="click">
+                    <NButton
+                      size="small"
+                      quaternary
+                      icon-placement="right"
+                      class="resource-picker"
+                      :aria-label="t('resources_sort')"
+                    >
+                      {{ sorts.find((option) => option.value === sort)?.label }}
+                      <template #icon>
+                        <NIcon><SwapVerticalOutline /></NIcon>
+                      </template>
+                    </NButton>
+                  </NPopselect>
+                </div>
+                <div
+                  v-if="showKinds"
+                  class="resource-kinds"
+                  role="radiogroup"
+                  :aria-label="t('resources_type')"
+                >
+                  <button
+                    v-for="option in kinds"
+                    :key="option.value"
+                    type="button"
+                    role="radio"
+                    :aria-checked="kind === option.value"
+                    :class="['resource-kind', { 'resource-kind--active': kind === option.value }]"
+                    @click="kind = option.value"
+                  >
+                    {{ option.label }}<span class="resource-kind-count">{{ option.count }}</span>
+                  </button>
+                </div>
+              </CollapsePanel>
               <div
-                v-if="showKinds"
-                class="resource-kinds"
-                role="radiogroup"
-                :aria-label="t('resources_type')"
+                v-if="visibleItems.length > 1 || expanded || allTabs || hasFilter"
+                class="resource-list-head"
               >
-                <button
-                  v-for="option in kinds"
-                  :key="option.value"
-                  type="button"
-                  role="radio"
-                  :aria-checked="kind === option.value"
-                  :class="['resource-kind', { 'resource-kind--active': kind === option.value }]"
-                  @click="kind = option.value"
-                >
-                  {{ option.label }}<span class="resource-kind-count">{{ option.count }}</span>
-                </button>
-              </div>
-            </CollapsePanel>
-            <div
-              v-if="visibleItems.length > 1 || expanded || allTabs || hasFilter"
-              class="resource-list-head"
-            >
-              <NCheckbox
-                v-if="visibleItems.length > 1"
-                :checked="allVisibleChecked"
-                :indeterminate="!allVisibleChecked && someVisibleChecked"
-                :aria-label="t('resources_select_all')"
-                @update:checked="toggleVisible"
-              />
-              <span class="resource-summary">{{
-                tSub('sniffer_results', [String(filtered.length), String(resourceCount)])
-              }}</span>
-            </div>
-            <div class="resource-list">
-              <template v-for="row in rows" :key="row.key">
-                <article v-if="row.group" class="resource-row resource-row--tracks">
-                  <span class="resource-tracks-icon" aria-hidden="true"
-                    ><NIcon :size="18"><FilmOutline /></NIcon
-                  ></span>
-                  <button class="resource-title" @click="inspectTracks(row.group)">
-                    <strong :title="row.group[0]!.title">{{
-                      row.group[0]!.title || t('media_complete_video')
-                    }}</strong>
-                    <span
-                      >{{ t('media_complete_video') }} ·
-                      {{ tSub('media_tracks', [String(row.group.length)]) }} ·
-                      {{
-                        mediaSize(groupSize(row.group), effectiveLocale, t('media_size_unknown'))
-                      }}</span
-                    >
-                    <small v-if="allTabs">{{ row.group[0]!.title }}</small>
-                    <small v-if="row.collection?.operation?.error">{{
-                      t(mediaFailureKey(row.collection.operation.error))
-                    }}</small>
-                    <small v-else-if="row.collection && sent(row.collection)">{{
-                      t('media_submitted')
-                    }}</small>
-                  </button>
-                  <div class="row-actions">
-                    <NTooltip trigger="hover">
-                      <template #trigger>
-                        <NButton
-                          size="small"
-                          quaternary
-                          circle
-                          :aria-label="t('media_track_files')"
-                          :aria-expanded="expandedGroups.has(row.key)"
-                          @click="toggleGroup(row.key)"
-                        >
-                          <template #icon
-                            ><NIcon
-                              class="resource-expand"
-                              :class="{ 'resource-expand--open': expandedGroups.has(row.key) }"
-                              ><ChevronDownOutline /></NIcon
-                          ></template>
-                        </NButton>
-                      </template>
-                      {{ t('media_track_files') }}
-                    </NTooltip>
-                    <NTooltip trigger="hover">
-                      <template #trigger>
-                        <NButton
-                          size="small"
-                          quaternary
-                          circle
-                          type="primary"
-                          :aria-label="t('media_download')"
-                          :loading="busy"
-                          @click="inspectTracks(row.group, true)"
-                        >
-                          <template #icon
-                            ><NIcon
-                              ><Transition name="icon-swap"
-                                ><CheckmarkOutline
-                                  v-if="row.collection && sent(row.collection)" /><DownloadOutline
-                                  v-else /></Transition></NIcon
-                          ></template>
-                        </NButton>
-                      </template>
-                      {{ t('media_download') }}
-                    </NTooltip>
-                  </div>
-                </article>
-                <article
-                  v-else-if="row.item"
-                  :class="['resource-row', { 'resource-row--member': row.member }]"
-                >
-                  <NCheckbox
-                    :checked="checked.has(row.item.id)"
-                    :disabled="row.item.method !== 'GET'"
-                    :aria-label="row.item.filename || row.item.title"
-                    @update:checked="toggle(row.item.id, $event)"
-                  />
-                  <button class="resource-title" @click="select(row.item)">
-                    <strong :title="sourceName(row.item).full"
-                      ><span class="name-prefix">{{ sourceName(row.item).prefix }}</span
-                      ><span class="name-suffix">{{ sourceName(row.item).suffix }}</span></strong
-                    >
-                    <span
-                      >{{
-                        ['hls', 'dash'].includes(row.item.kind)
-                          ? row.item.kind.toUpperCase()
-                          : t(`resources_kind_${row.item.kind}`)
-                      }}
-                      <template v-if="!['hls', 'dash'].includes(row.item.kind)">
-                        ·
-                        {{
-                          mediaSize(row.item.size, effectiveLocale, t('media_size_unknown'))
-                        }}</template
-                      ></span
-                    >
-                    <small v-if="allTabs">{{ row.item.title }}</small>
-                    <small v-if="row.item.downloadError || row.item.operation?.error">{{
-                      t(
-                        mediaFailureKey(
-                          row.item.downloadError || row.item.operation?.error || 'operation_failed',
-                        ),
-                      )
-                    }}</small>
-                    <small
-                      v-else-if="
-                        row.item.sentToDesktop || row.item.operation?.state === 'submitted'
-                      "
-                      >{{ t('media_submitted') }}</small
-                    >
-                  </button>
-                  <div class="row-actions">
-                    <NTooltip
-                      v-for="rowAction in rowActions(row.item)"
-                      :key="rowAction.key"
-                      trigger="hover"
-                    >
-                      <template #trigger>
-                        <NButton
-                          size="small"
-                          quaternary
-                          circle
-                          :type="
-                            rowAction.key === 'download' || rowAction.key === 'downloaded'
-                              ? 'primary'
-                              : 'default'
-                          "
-                          :class="{ 'row-action--secondary': rowAction.secondary }"
-                          :aria-label="rowAction.label"
-                          :loading="rowAction.key === 'download' && rowBusy.has(row.item.id)"
-                          :disabled="rowAction.key === 'download' && row.item.method !== 'GET'"
-                          @click="rowAction.run()"
-                        >
-                          <template #icon
-                            ><NIcon
-                              ><Transition name="icon-swap"
-                                ><component
-                                  :is="rowAction.icon"
-                                  :key="rowAction.key" /></Transition></NIcon
-                          ></template>
-                        </NButton>
-                      </template>
-                      {{ rowAction.label }}
-                    </NTooltip>
-                  </div>
-                </article>
-                <MediaPreview
-                  v-if="row.item && preview?.id === row.item.id"
-                  :item="row.item"
-                  @close="preview = undefined"
+                <NCheckbox
+                  v-if="visibleItems.length > 1"
+                  :checked="allVisibleChecked"
+                  :indeterminate="!allVisibleChecked && someVisibleChecked"
+                  :aria-label="t('resources_select_all')"
+                  @update:checked="toggleVisible"
                 />
-              </template>
-              <NEmpty v-if="!filtered.length" :description="t('media_none')" />
-            </div>
-            <footer class="resource-actions">
-              <NDropdown trigger="click" :options="actions" @select="action"
-                ><NButton size="small" quaternary circle :aria-label="t('resources_tools')"
-                  ><template #icon
-                    ><NIcon><EllipsisHorizontalOutline /></NIcon></template></NButton
-              ></NDropdown>
-              <NTooltip v-for="tool in footerTools" :key="tool.key" trigger="hover"
-                ><template #trigger
-                  ><NButton
-                    size="small"
-                    quaternary
-                    circle
-                    :aria-label="tool.label"
-                    @click="tool.run()"
-                    ><template #icon
-                      ><NIcon
-                        :class="{ 'resource-scan': tool.key === 'scan' }"
-                        :style="
-                          tool.key === 'scan'
-                            ? { transform: `rotate(${scanTurns}turn)` }
-                            : undefined
+                <span class="resource-summary">{{
+                  tSub('sniffer_results', [String(filtered.length), String(resourceCount)])
+                }}</span>
+              </div>
+              <div class="resource-list">
+                <template v-for="row in rows" :key="row.key">
+                  <article v-if="row.group" class="resource-row resource-row--tracks">
+                    <span class="resource-tracks-icon" aria-hidden="true"
+                      ><NIcon :size="18"><FilmOutline /></NIcon
+                    ></span>
+                    <button class="resource-title" @click="inspectTracks(row.group)">
+                      <strong :title="row.group[0]!.title">{{
+                        row.group[0]!.title || t('media_complete_video')
+                      }}</strong>
+                      <span
+                        >{{ t('media_complete_video') }} ·
+                        {{ tSub('media_tracks', [String(row.group.length)]) }} ·
+                        {{
+                          mediaSize(groupSize(row.group), effectiveLocale, t('media_size_unknown'))
+                        }}</span
+                      >
+                      <small v-if="allTabs">{{ row.group[0]!.title }}</small>
+                      <small v-if="row.collection?.operation?.error">{{
+                        t(mediaFailureKey(row.collection.operation.error))
+                      }}</small>
+                      <small v-else-if="row.collection && sent(row.collection)">{{
+                        t('media_submitted')
+                      }}</small>
+                    </button>
+                    <div class="row-actions">
+                      <NTooltip trigger="hover">
+                        <template #trigger>
+                          <NButton
+                            size="small"
+                            quaternary
+                            circle
+                            :aria-label="t('media_track_files')"
+                            :aria-expanded="expandedGroups.has(row.key)"
+                            @click="toggleGroup(row.key)"
+                          >
+                            <template #icon
+                              ><NIcon
+                                class="resource-expand"
+                                :class="{ 'resource-expand--open': expandedGroups.has(row.key) }"
+                                ><ChevronDownOutline /></NIcon
+                            ></template>
+                          </NButton>
+                        </template>
+                        {{ t('media_track_files') }}
+                      </NTooltip>
+                      <NTooltip trigger="hover">
+                        <template #trigger>
+                          <NButton
+                            size="small"
+                            quaternary
+                            circle
+                            type="primary"
+                            :aria-label="t('media_download')"
+                            :loading="busy"
+                            @click="inspectTracks(row.group, true)"
+                          >
+                            <template #icon
+                              ><NIcon
+                                ><Transition name="icon-swap"
+                                  ><CheckmarkOutline
+                                    v-if="row.collection && sent(row.collection)" /><DownloadOutline
+                                    v-else /></Transition></NIcon
+                            ></template>
+                          </NButton>
+                        </template>
+                        {{ t('media_download') }}
+                      </NTooltip>
+                    </div>
+                  </article>
+                  <article
+                    v-else-if="row.item"
+                    :class="['resource-row', { 'resource-row--member': row.member }]"
+                  >
+                    <NCheckbox
+                      :checked="checked.has(row.item.id)"
+                      :disabled="row.item.method !== 'GET'"
+                      :aria-label="row.item.filename || row.item.title"
+                      @update:checked="toggle(row.item.id, $event)"
+                    />
+                    <button class="resource-title" @click="select(row.item)">
+                      <strong :title="sourceName(row.item).full"
+                        ><span class="name-prefix">{{ sourceName(row.item).prefix }}</span
+                        ><span class="name-suffix">{{ sourceName(row.item).suffix }}</span></strong
+                      >
+                      <span
+                        >{{
+                          ['hls', 'dash'].includes(row.item.kind)
+                            ? row.item.kind.toUpperCase()
+                            : t(`resources_kind_${row.item.kind}`)
+                        }}
+                        <template v-if="!['hls', 'dash'].includes(row.item.kind)">
+                          ·
+                          {{
+                            mediaSize(row.item.size, effectiveLocale, t('media_size_unknown'))
+                          }}</template
+                        ></span
+                      >
+                      <small v-if="allTabs">{{ row.item.title }}</small>
+                      <small v-if="row.item.downloadError || row.item.operation?.error">{{
+                        t(
+                          mediaFailureKey(
+                            row.item.downloadError ||
+                              row.item.operation?.error ||
+                              'operation_failed',
+                          ),
+                        )
+                      }}</small>
+                      <small
+                        v-else-if="
+                          row.item.sentToDesktop || row.item.operation?.state === 'submitted'
                         "
-                        ><component :is="tool.icon" /></NIcon></template></NButton></template
-                >{{ tool.label }}</NTooltip
-              >
-              <span class="toolbar-space" />
-              <!-- The right side always holds the batch download; checked rows enable it. -->
-              <TransitionGroup tag="div" name="pop" class="resource-batch">
-                <NButton
-                  v-if="mergeable"
-                  key="merge"
-                  size="small"
-                  secondary
-                  type="primary"
-                  :disabled="busy"
-                  @click="merge([...checked], false)"
-                  >{{ t('resources_merge') }}</NButton
+                        >{{ t('media_submitted') }}</small
+                      >
+                    </button>
+                    <div class="row-actions">
+                      <NTooltip
+                        v-for="rowAction in rowActions(row.item)"
+                        :key="rowAction.key"
+                        trigger="hover"
+                      >
+                        <template #trigger>
+                          <NButton
+                            size="small"
+                            quaternary
+                            circle
+                            :type="
+                              rowAction.key === 'download' || rowAction.key === 'downloaded'
+                                ? 'primary'
+                                : 'default'
+                            "
+                            :class="{ 'row-action--secondary': rowAction.secondary }"
+                            :aria-label="rowAction.label"
+                            :loading="rowAction.key === 'download' && rowBusy.has(row.item.id)"
+                            :disabled="rowAction.key === 'download' && row.item.method !== 'GET'"
+                            @click="rowAction.run()"
+                          >
+                            <template #icon
+                              ><NIcon
+                                ><Transition name="icon-swap"
+                                  ><component
+                                    :is="rowAction.icon"
+                                    :key="rowAction.key" /></Transition></NIcon
+                            ></template>
+                          </NButton>
+                        </template>
+                        {{ rowAction.label }}
+                      </NTooltip>
+                    </div>
+                  </article>
+                  <MediaPreview
+                    v-if="row.item && preview?.id === row.item.id"
+                    :item="row.item"
+                    @close="preview = undefined"
+                  />
+                </template>
+                <NEmpty v-if="!filtered.length" :description="t('media_none')" />
+              </div>
+              <footer class="resource-actions">
+                <NDropdown trigger="click" :options="actions" @select="action"
+                  ><NButton size="small" quaternary circle :aria-label="t('resources_tools')"
+                    ><template #icon
+                      ><NIcon><EllipsisHorizontalOutline /></NIcon></template></NButton
+                ></NDropdown>
+                <NTooltip v-for="tool in footerTools" :key="tool.key" trigger="hover"
+                  ><template #trigger
+                    ><NButton
+                      size="small"
+                      quaternary
+                      circle
+                      :aria-label="tool.label"
+                      @click="tool.run()"
+                      ><template #icon
+                        ><NIcon
+                          :class="{ 'resource-scan': tool.key === 'scan' }"
+                          :style="
+                            tool.key === 'scan'
+                              ? { transform: `rotate(${scanTurns}turn)` }
+                              : undefined
+                          "
+                          ><component :is="tool.icon" /></NIcon></template></NButton></template
+                  >{{ tool.label }}</NTooltip
                 >
-                <NButton
-                  v-if="visibleItems.length > 1 || checkedItems.length"
-                  key="download"
-                  size="small"
-                  type="primary"
-                  :loading="busy"
-                  :disabled="!checkedItems.length"
-                  @click="batch('download')"
-                  >{{ t('media_download') }} · {{ checkedItems.length }}</NButton
-                >
-              </TransitionGroup>
-            </footer>
-          </div></Transition
+                <span class="toolbar-space" />
+                <!-- The right side always holds the batch download; checked rows enable it. -->
+                <TransitionGroup tag="div" name="pop" class="resource-batch">
+                  <NButton
+                    v-if="mergeable"
+                    key="merge"
+                    size="small"
+                    secondary
+                    type="primary"
+                    :disabled="busy"
+                    @click="merge([...checked], false)"
+                    >{{ t('resources_merge') }}</NButton
+                  >
+                  <NButton
+                    v-if="visibleItems.length > 1 || checkedItems.length"
+                    key="download"
+                    size="small"
+                    type="primary"
+                    :loading="busy"
+                    :disabled="!checkedItems.length"
+                    @click="batch('download')"
+                    >{{ t('media_download') }} · {{ checkedItems.length }}</NButton
+                  >
+                </TransitionGroup>
+              </footer>
+            </div></Transition
+          >
+        </div>
+        <aside
+          v-if="split"
+          class="resource-rail"
+          :inert="!toolsOpen"
+          :aria-label="t('resources_tools')"
         >
+          <div class="resource-rail__sheet">
+            <MediaTools
+              :tab-id="selected?.tabId ?? tabId"
+              :source="selected"
+              :active="toolsOpen"
+              @created="refresh().then(() => (selectedId = $event))"
+            />
+          </div>
+        </aside>
       </div>
     </template>
   </section>
@@ -942,16 +1024,102 @@ onUnmounted(() => {
   margin: 24px auto;
 }
 .resource-tools {
-  padding-top: 12px;
+  margin-bottom: 4px;
+  padding: 10px 2px 2px;
+  border-bottom: 1px solid var(--color-outline-variant);
 }
 .resource-scan {
   transition: transform 0.5s var(--m3-ease-emphasized);
 }
 .resources.expanded {
   max-height: none;
-  max-width: 1120px;
+  max-width: 1280px;
   margin: auto;
-  padding: 16px 24px;
+  padding: 12px 28px 24px;
+}
+/* The workspace names the page it reads. */
+.resources.expanded .resource-toolbar {
+  gap: 10px;
+  min-height: 52px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+.resources.expanded .resource-toolbar .toolbar-space {
+  display: none;
+}
+.resource-page {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.resource-page__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-low);
+  color: var(--color-on-surface-variant);
+}
+.resource-page__icon img {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+.resource-page__text {
+  display: grid;
+  min-width: 0;
+}
+.resource-page__text h1 {
+  margin: 0;
+  overflow: hidden;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.resource-page__text span {
+  color: var(--color-on-surface-variant);
+  font-size: 12px;
+}
+/* Beside the list, the tools open as a column that the list makes room for. */
+.resource-body--split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 0px;
+  column-gap: 0;
+  padding-top: 8px;
+  transition:
+    grid-template-columns 0.3s var(--m3-ease-emphasized),
+    column-gap 0.3s var(--m3-ease-emphasized);
+}
+.resource-body--tools {
+  grid-template-columns: minmax(0, 1fr) 360px;
+  column-gap: 28px;
+}
+.resource-rail {
+  min-width: 0;
+  overflow: clip;
+  opacity: 0;
+  transition: opacity 0.2s var(--m3-ease-emphasized);
+}
+.resource-body--tools .resource-rail {
+  opacity: 1;
+}
+.resource-rail__sheet {
+  position: sticky;
+  top: 16px;
+  width: 360px;
+  box-sizing: border-box;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  padding: 14px 14px 12px;
+  border-radius: var(--radius-xl);
+  background: var(--color-surface-container-low);
+  scrollbar-width: thin;
 }
 .resource-toolbar {
   display: flex;

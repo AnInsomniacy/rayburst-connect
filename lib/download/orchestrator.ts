@@ -64,6 +64,8 @@ export interface OrchestratorDeps {
   onDuplicateBlocked: () => void;
   /** Rayburst added an intercepted download without asking. */
   onAdded?: () => void;
+  /** Rayburst could not be reached in time, so the browser kept the download. */
+  onDesktopUnreachable?: () => void;
   /** This extension's ID; its own browser fallback downloads are never taken over. */
   extensionId?: string;
 }
@@ -119,6 +121,17 @@ type DeliveryFailureReason =
   | 'desktop-activation-failed'
   | 'desktop-routing-failed'
   | 'desktop-fallback';
+
+/**
+ * Failures the user should hear about: the browser kept a download it was
+ * meant to hand over. A desktop that answered with a fallback explains itself.
+ */
+const UNREACHABLE_REASONS: ReadonlySet<DeliveryFailureReason> = new Set([
+  'desktop-unavailable',
+  'api-unreachable',
+  'desktop-activation-timeout',
+  'desktop-activation-failed',
+]);
 
 type Readiness = { ok: true } | { ok: false; reason: DeliveryFailureReason; error?: string };
 
@@ -288,6 +301,7 @@ export class DownloadOrchestrator {
     if (!readiness.ok) {
       this.deps.duplicateGuard.release(duplicate.reservation);
       this.logBrowserFallback(item, readiness.reason, 'continued', readiness.error);
+      if (UNREACHABLE_REASONS.has(readiness.reason)) this.deps.onDesktopUnreachable?.();
       return false;
     }
     stage('request');
@@ -301,6 +315,7 @@ export class DownloadOrchestrator {
     }
     this.deps.duplicateGuard.release(duplicate.reservation);
     this.logBrowserFallback(item, delivery.reason, 'continued', delivery.error);
+    if (UNREACHABLE_REASONS.has(delivery.reason)) this.deps.onDesktopUnreachable?.();
     return false;
   }
 

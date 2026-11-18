@@ -303,6 +303,15 @@
     "message": "На паузе",
     "description": "Label next to the interception toggle when inactive"
   },
+  "options_api_host_label": {
+    "message": "Хост"
+  },
+  "options_api_host_invalid": {
+    "message": "Введите имя хоста или IP-адрес без http:// и порта."
+  },
+  "options_api_host_remote_hint": {
+    "message": "Загрузки отправляются в Rayburst на компьютере с этим адресом вместе с cookies и данными входа. Используйте только в доверенной сети. На том компьютере разрешите удалённый доступ в Rayburst и задайте секрет API."
+  },
   "options_api_port_label": {
     "message": "API Port",
     "description": "Label for the API port input"
@@ -409,6 +418,12 @@
   "options_duplicate_guard_window_label": {
     "message": "Окно защиты",
     "description": "Label for the duplicate download guard time window input."
+  },
+  "notification_desktop_unreachable_title": {
+    "message": "Загрузка в браузере"
+  },
+  "notification_desktop_unreachable_body": {
+    "message": "Rayburst не ответил вовремя, поэтому загрузку продолжает браузер."
   },
   "notification_duplicate_guard_title": {
     "message": "Задача отправлена",
@@ -930,6 +945,21 @@
   },
   "resources_preserve": {
     "message": "Сохранять источники при переходе"
+  },
+  "resources_deep_hint": {
+    "message": "Найти скрытые потоки страницы"
+  },
+  "resources_cache_hint": {
+    "message": "Сохранять медиа по мере буферизации"
+  },
+  "resources_video_hint": {
+    "message": "Записать видео во время воспроизведения"
+  },
+  "resources_open_file": {
+    "message": "Открыть файл"
+  },
+  "resources_no_player": {
+    "message": "На этой странице пока нет плеера."
   },
   "resources_deep": {
     "message": "Глубокий поиск"

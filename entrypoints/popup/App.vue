@@ -36,6 +36,7 @@ import {
 } from '@/lib/desktop';
 import {
   DEFAULT_CONNECTION_CONFIG,
+  isLocalApiHost,
   parseConnectionConfig,
   parseDesktopMemory,
   parseDownloadSettings,
@@ -76,6 +77,7 @@ const openLink = ref(false);
 /** The last start failed before the desktop could even be reached. */
 const activationFailed = ref(false);
 const connectionPort = ref(DEFAULT_CONNECTION_CONFIG.port);
+const remoteDesktop = ref(false);
 const globalStat = ref<StatResponse | null>(null);
 const tasks = ref<DesktopTask[]>([]);
 const enabled = ref(true);
@@ -300,6 +302,7 @@ function bindStorageChanges(): void {
     if (changes.connection?.newValue) {
       const connection = parseConnectionConfig(changes.connection.newValue);
       connectionPort.value = connection.port;
+      remoteDesktop.value = !isLocalApiHost(connection.host);
       apiClient.updateConfig(connection);
       void fetchData();
     }
@@ -329,6 +332,7 @@ onMounted(async () => {
   theme.setColorScheme(data.uiPrefs.colorScheme);
   i18nCtx.setLocale(data.uiPrefs.locale);
   connectionPort.value = data.connection.port;
+  remoteDesktop.value = !isLocalApiHost(data.connection.host);
   apiClient.updateConfig(data.connection);
   bindStorageChanges();
   settingsReady.value = true;
@@ -359,7 +363,9 @@ onUnmounted(() => {
     inline-theme-disabled
   >
     <div class="popup-root" :dir="['ar', 'fa'].includes(effectiveLocale) ? 'rtl' : 'ltr'">
-      <div class="popup-content">
+      <!-- One animated height for the whole popup: the window follows it from
+           the skeleton to the content, and between tabs, instead of jumping. -->
+      <AutoHeight class="popup-content">
         <div
           v-if="!settingsReady || !navigationReady || !firstCheckDone"
           class="popup-skeleton"
@@ -410,7 +416,7 @@ onUnmounted(() => {
             </NTab>
           </NTabs>
 
-          <AutoHeight>
+          <div class="popup-panes">
             <Transition :name="tabTransition">
               <div v-show="view === 'downloads'">
                 <Transition name="phase-switch" mode="out-in">
@@ -476,6 +482,7 @@ onUnmounted(() => {
                     <TaskList
                       v-if="!legacyDesktop"
                       :tasks="tasks"
+                      :remote="remoteDesktop"
                       @pause="(gid) => controlTask(gid, 'pause')"
                       @resume="(gid) => controlTask(gid, 'resume')"
                       @reveal="(gid) => controlTask(gid, 'reveal')"
@@ -645,9 +652,9 @@ onUnmounted(() => {
                 <MediaPanel :active="view === 'media'" />
               </div>
             </Transition>
-          </AutoHeight>
+          </div>
         </template>
-      </div>
+      </AutoHeight>
     </div>
   </NConfigProvider>
 </template>
@@ -684,6 +691,11 @@ onUnmounted(() => {
 .popup-content {
   min-width: 0;
   width: 100%;
+}
+
+/* The leaving pane floats within the panes, below the header and tabs. */
+.popup-panes {
+  position: relative;
 }
 
 /* The leaving pane floats over the entering one, so the height animates

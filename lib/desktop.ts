@@ -114,6 +114,12 @@ interface DesktopActivationOptions {
   checkReady: () => Promise<boolean>;
   /** Stop waiting when a readiness error cannot recover through polling. */
   isFatalReadinessError?: (error: unknown) => boolean;
+  /**
+   * Whether the desktop app already runs. A running app that is not ready yet
+   * (its engine starting or busy) is waited for, not activated again, which
+   * would only bring its window forward.
+   */
+  isRunning?: () => Promise<boolean>;
   /** Maximum time to wait for readiness. */
   maxWaitMs: number;
 }
@@ -137,7 +143,8 @@ async function checkReadySafely(
 async function activateAndWaitForApi(options: DesktopActivationOptions): Promise<boolean> {
   if (await checkReadySafely(options.checkReady, options.isFatalReadinessError)) return true;
 
-  const cleanup = await options.activate();
+  const running = (await options.isRunning?.().catch(() => false)) ?? false;
+  const cleanup = running ? undefined : await options.activate();
   try {
     const deadline = Date.now() + options.maxWaitMs;
     while (Date.now() < deadline) {

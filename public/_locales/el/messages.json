@@ -303,6 +303,15 @@
     "message": "Σε παύση",
     "description": "Label next to the interception toggle when inactive"
   },
+  "options_api_host_label": {
+    "message": "Κεντρικός υπολογιστής"
+  },
+  "options_api_host_invalid": {
+    "message": "Εισαγάγετε όνομα κεντρικού υπολογιστή ή διεύθυνση IP, χωρίς http:// ή θύρα."
+  },
+  "options_api_host_remote_hint": {
+    "message": "Οι λήψεις αποστέλλονται στο Rayburst του υπολογιστή σε αυτή τη διεύθυνση μαζί με τα cookies και τα στοιχεία σύνδεσης. Χρησιμοποιήστε το μόνο σε αξιόπιστο δίκτυο. Σε εκείνον τον υπολογιστή, επιτρέψτε την απομακρυσμένη πρόσβαση στο Rayburst και ορίστε μυστικό API."
+  },
   "options_api_port_label": {
     "message": "API Port",
     "description": "Label for the API port input"
@@ -409,6 +418,12 @@
   "options_duplicate_guard_window_label": {
     "message": "Παράθυρο προστασίας",
     "description": "Label for the duplicate download guard time window input."
+  },
+  "notification_desktop_unreachable_title": {
+    "message": "Λήψη στο πρόγραμμα περιήγησης"
+  },
+  "notification_desktop_unreachable_body": {
+    "message": "Το Rayburst δεν απάντησε εγκαίρως, οπότε η λήψη συνεχίζεται στο πρόγραμμα περιήγησης."
   },
   "notification_duplicate_guard_title": {
     "message": "Η εργασία υποβλήθηκε",
@@ -930,6 +945,21 @@
   },
   "resources_preserve": {
     "message": "Διατήρηση πηγών κατά την πλοήγηση"
+  },
+  "resources_deep_hint": {
+    "message": "Εύρεση κρυφών ροών της σελίδας"
+  },
+  "resources_cache_hint": {
+    "message": "Αποθήκευση πολυμέσων καθώς η σελίδα τα φορτώνει"
+  },
+  "resources_video_hint": {
+    "message": "Εγγραφή του βίντεο κατά την αναπαραγωγή"
+  },
+  "resources_open_file": {
+    "message": "Άνοιγμα αρχείου"
+  },
+  "resources_no_player": {
+    "message": "Δεν υπάρχει ακόμη πρόγραμμα αναπαραγωγής σε αυτή τη σελίδα."
   },
   "resources_deep": {
     "message": "Βαθιά αναζήτηση"

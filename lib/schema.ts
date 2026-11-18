@@ -42,8 +42,26 @@ function filteredArray<S extends z.ZodType>(schema: S) {
 
 // ─── Connection ─────────────────────────────────────────
 
+/** A host name, IPv4 address or bracketed IPv6 address: no scheme, port or path. */
+export function isValidApiHost(value: string): boolean {
+  return (
+    /^\[[0-9a-f:.]+\]$/i.test(value) ||
+    /^(?=.{1,253}$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/i.test(
+      value,
+    )
+  );
+}
+
+/** This computer; any other host is a Rayburst elsewhere on the network (#109). */
+export function isLocalApiHost(host: string): boolean {
+  return ['127.0.0.1', 'localhost', '[::1]'].includes(host.toLowerCase());
+}
+
+export const DEFAULT_API_HOST = '127.0.0.1';
+
 const ConnectionConfigSchema = lenient(
   z.object({
+    host: z.string().trim().refine(isValidApiHost).catch(DEFAULT_API_HOST),
     port: z.number().int().min(1024).max(65535).catch(29110),
     secret: z.string().catch(''),
   }),

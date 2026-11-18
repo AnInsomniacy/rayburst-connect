@@ -96,7 +96,7 @@ beforeEach(async () => {
     ensureConfig: async () => undefined,
     settings: () => settings,
     siteRules: () => [],
-    connection: () => ({ port: 29110, secret: '' }),
+    connection: () => ({ host: '127.0.0.1', port: 29110, secret: '' }),
     activate: async () => false,
     sendFile: async () => true,
     requestHeaders: new RequestHeaderContextStore(),

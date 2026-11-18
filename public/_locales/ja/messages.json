@@ -303,6 +303,15 @@
     "message": "一時停止中",
     "description": "Label next to the interception toggle when inactive"
   },
+  "options_api_host_label": {
+    "message": "ホスト"
+  },
+  "options_api_host_invalid": {
+    "message": "http:// やポートを含めず、ホスト名または IP アドレスを入力してください。"
+  },
+  "options_api_host_remote_hint": {
+    "message": "ダウンロードは Cookie やログイン情報とともに、このアドレスのコンピューター上の Rayburst に送られます。信頼できるネットワークでのみ使用してください。そのコンピューターの Rayburst でリモートアクセスを許可し、API シークレットを設定してください。"
+  },
   "options_api_port_label": {
     "message": "API ポート",
     "description": "Label for the API port input"
@@ -409,6 +418,12 @@
   "options_duplicate_guard_window_label": {
     "message": "ガード時間",
     "description": "Label for the duplicate download guard time window input."
+  },
+  "notification_desktop_unreachable_title": {
+    "message": "ブラウザーでダウンロード中"
+  },
+  "notification_desktop_unreachable_body": {
+    "message": "Rayburst が時間内に応答しなかったため、このダウンロードはブラウザーで続行します。"
   },
   "notification_duplicate_guard_title": {
     "message": "タスクを送信しました",
@@ -930,6 +945,21 @@
   },
   "resources_preserve": {
     "message": "ページ移動後もソースを保持"
+  },
+  "resources_deep_hint": {
+    "message": "ページが隠しているストリームを探す"
+  },
+  "resources_cache_hint": {
+    "message": "ページがバッファしたメディアを保存"
+  },
+  "resources_video_hint": {
+    "message": "再生中の映像を録画"
+  },
+  "resources_open_file": {
+    "message": "ファイルを開く"
+  },
+  "resources_no_player": {
+    "message": "このページにはまだプレーヤーがありません。"
   },
   "resources_deep": {
     "message": "詳細検索"

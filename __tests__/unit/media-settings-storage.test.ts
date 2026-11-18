@@ -25,12 +25,12 @@ describe('media settings ownership', () => {
     });
   });
   it('resets only media defaults and preserves connection and interception', async () => {
-    await saveConnectionConfig({ port: 29999, secret: 'test-key' });
+    await saveConnectionConfig({ host: '127.0.0.1', port: 29999, secret: 'test-key' });
     await updateSettings({ enabled: false });
     await updateMediaSettings({ enabled: false, excludedHosts: ['example.com'] });
     await updateMediaSettings(parseMediaSettings({}));
     const value = await loadSnapshot();
-    expect(value.connection).toEqual({ port: 29999, secret: 'test-key' });
+    expect(value.connection).toEqual({ host: '127.0.0.1', port: 29999, secret: 'test-key' });
     expect(value.settings.enabled).toBe(false);
     expect(value.settings.mediaDiscovery).toEqual(parseMediaSettings({}));
   });

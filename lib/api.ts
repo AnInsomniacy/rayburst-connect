@@ -1,6 +1,6 @@
 /**
  * HTTP client for the Rayburst desktop app's embedded REST API
- * (Axum server at `127.0.0.1:{port}`), plus the extension's single error
+ * (Axum server at `{host}:{port}`, this computer by default), plus the extension's single error
  * taxonomy and desktop compatibility checks.
  *
  * Endpoints: GET /ping (no auth), GET /stat, POST /add, GET /tasks,
@@ -19,6 +19,7 @@ import ky, {
 import { z } from '@/lib/validation';
 import { browser } from 'wxt/browser';
 import type { ConnectionConfig, DesktopIdentity, DesktopProduct, DesktopProtocol } from './schema';
+import { DEFAULT_API_HOST } from './schema';
 import {
   AddDownloadResponseSchema,
   type AddDownloadRequest,
@@ -128,6 +129,12 @@ const DownloadCapabilitiesSchema = z.object({
   protocolVersion: z.union([z.literal(2), z.literal(3)]),
 });
 
+/** Rayburst 4.0+: the engine phase is the supervisor's, read without the engine. */
+const VersionResponseSchema = z.object({
+  app: z.string(),
+  engine: z.string().optional(),
+});
+
 const StatResponseSchema = z.object({
   downloadSpeed: z.string(),
   uploadSpeed: z.string(),
@@ -163,28 +170,31 @@ type ActionResponse = z.output<typeof ActionResponseSchema>;
 
 // ─── Client ─────────────────────────────────────────────
 
+/** A connection whose host defaults to this computer. */
+export type DesktopConnection = Omit<ConnectionConfig, 'host'> & { host?: string };
+
 export class DesktopApiClient {
   private config: ConnectionConfig;
   private http: KyInstance;
 
   /** `onIdentify` hears every desktop that answered a readiness check or a handoff. */
   constructor(
-    config: ConnectionConfig,
+    config: DesktopConnection,
     private readonly onIdentify?: (desktop: DesktopIdentity) => void,
   ) {
-    this.config = { ...config };
+    this.config = { ...config, host: config.host || DEFAULT_API_HOST };
     this.http = this.createHttpClient();
   }
 
   /** Update config at runtime (e.g. when the user changes the port). */
-  updateConfig(config: ConnectionConfig): void {
-    this.config = { ...config };
+  updateConfig(config: DesktopConnection): void {
+    this.config = { ...config, host: config.host || DEFAULT_API_HOST };
     this.http = this.createHttpClient();
   }
 
   private createHttpClient(): KyInstance {
     return ky.create({
-      prefix: `http://127.0.0.1:${this.config.port}`,
+      prefix: `http://${this.config.host}:${this.config.port}`,
       credentials: 'omit',
       cache: 'no-store',
       timeout: API_REQUEST_TIMEOUT_MS,
@@ -397,7 +407,7 @@ export class DesktopApiClient {
   }
   captureResource(id: string, stream: number) {
     return {
-      url: `http://127.0.0.1:${this.config.port}/${MEDIA_API_PATH}/assets/${id}/${stream}`,
+      url: `http://${this.config.host}:${this.config.port}/${MEDIA_API_PATH}/assets/${id}/${stream}`,
       headers: Object.entries(this.authHeaders()).map(([name, value]) => ({
         name: name.toLowerCase(),
         value,
@@ -478,22 +488,51 @@ export class DesktopApiClient {
     );
   }
 
-  /** Throws permanent failures so activation never retries an incompatible desktop. */
+  /** The engine state the desktop's supervisor holds; never waits on the engine. */
+  async engineState(): Promise<string | undefined> {
+    const version = await this.request(
+      'version',
+      VersionResponseSchema,
+      { timeout: API_CONNECTIVITY_TIMEOUT_MS, retry: 0 },
+      'Check engine',
+    );
+    return version.engine;
+  }
+
+  /**
+   * Whether the desktop can take a download now. Readiness reads the
+   * supervisor's engine state: a busy engine answering slowly must not turn
+   * a running desktop into an unavailable one (#114). Throws permanent
+   * failures so activation never retries an incompatible desktop.
+   */
   async checkReady(): Promise<boolean> {
     const desktop = await this.ping();
-    await this.request(
-      'stat',
-      StatResponseSchema,
-      {
-        method: 'GET',
-        headers: this.authHeaders(),
-        timeout: API_CONNECTIVITY_TIMEOUT_MS,
-        retry: 0,
-      },
-      'Check readiness',
-    );
+    const engine = desktop.product === 'rayburst' ? await this.engineState() : undefined;
+    if (engine !== undefined) {
+      if (engine === 'failed') throw new ApiEngineError('engine_unavailable');
+      if (engine !== 'running') return false;
+    } else {
+      // Motrix Next does not report the engine state.
+      await this.request(
+        'stat',
+        StatResponseSchema,
+        { method: 'GET', headers: this.authHeaders(), retry: 0 },
+        'Check readiness',
+      );
+    }
+    // Authenticates and reads the download contract.
     this.onIdentify?.({ ...desktop, protocol: await this.downloadProtocol(desktop.product) });
     return true;
+  }
+
+  /** Whether the desktop app answers at all, ready or not. */
+  async isRunning(): Promise<boolean> {
+    try {
+      await this.ping();
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async isReady(): Promise<boolean> {

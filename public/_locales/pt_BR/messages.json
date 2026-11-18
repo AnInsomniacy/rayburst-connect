@@ -303,6 +303,15 @@
     "message": "Pausado",
     "description": "Label next to the interception toggle when inactive"
   },
+  "options_api_host_label": {
+    "message": "Host"
+  },
+  "options_api_host_invalid": {
+    "message": "Digite um nome de host ou endereço IP, sem http:// nem porta."
+  },
+  "options_api_host_remote_hint": {
+    "message": "Os downloads vão para o Rayburst do computador neste endereço, com seus cookies e dados de login. Use apenas em uma rede confiável. Nesse computador, permita o acesso remoto no Rayburst e defina um segredo da API."
+  },
   "options_api_port_label": {
     "message": "API Port",
     "description": "Label for the API port input"
@@ -409,6 +418,12 @@
   "options_duplicate_guard_window_label": {
     "message": "Janela de proteção",
     "description": "Label for the duplicate download guard time window input."
+  },
+  "notification_desktop_unreachable_title": {
+    "message": "Baixando no navegador"
+  },
+  "notification_desktop_unreachable_body": {
+    "message": "O Rayburst não respondeu a tempo, então o navegador continua este download."
   },
   "notification_duplicate_guard_title": {
     "message": "Tarefa enviada",
@@ -930,6 +945,21 @@
   },
   "resources_preserve": {
     "message": "Manter fontes ao navegar"
+  },
+  "resources_deep_hint": {
+    "message": "Encontrar streams ocultos da página"
+  },
+  "resources_cache_hint": {
+    "message": "Salvar a mídia enquanto a página a armazena em buffer"
+  },
+  "resources_video_hint": {
+    "message": "Gravar o vídeo enquanto ele toca"
+  },
+  "resources_open_file": {
+    "message": "Abrir arquivo"
+  },
+  "resources_no_player": {
+    "message": "Ainda não há player nesta página."
   },
   "resources_deep": {
     "message": "Busca profunda"

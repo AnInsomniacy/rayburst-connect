@@ -47,6 +47,7 @@ async function jsonBody(request: Request): Promise<unknown> {
 function desktop(routes: Record<string, () => Response | Promise<Response>>) {
   const defaults: Record<string, () => Response> = {
     '/ping': () => new Response(JSON.stringify(RAYBURST)),
+    '/version': () => new Response(JSON.stringify({ app: '4.1.0', engine: 'running' })),
     '/downloads/capabilities': () =>
       new Response(JSON.stringify({ product: 'rayburst', protocolVersion: 3 })),
   };
@@ -91,6 +92,51 @@ describe('DesktopApiClient', () => {
     await expect(client.downloadProtocol('rayburst')).rejects.toMatchObject({
       name: 'ApiEngineStartingError',
     });
+  });
+
+  it('judges readiness by the engine state, not by a slow engine reply (#114)', async () => {
+    const identified = vi.fn();
+    client = new DesktopApiClient({ port: 29110, secret: 'secret' }, identified);
+    desktop({ '/stat': () => new Promise<Response>(() => {}) });
+    await expect(client.checkReady()).resolves.toBe(true);
+    expect(identified).toHaveBeenCalledWith({ product: 'rayburst', version: '4.1.0', protocol: 3 });
+    expect(
+      vi.mocked(fetch).mock.calls.some(([input]) => (input as Request).url.endsWith('/stat')),
+    ).toBe(false);
+  });
+
+  it('waits for a starting engine and gives up on a failed one', async () => {
+    let engine = 'starting';
+    desktop({ '/version': () => new Response(JSON.stringify({ app: '4.1.0', engine })) });
+    await expect(client.checkReady()).resolves.toBe(false);
+    engine = 'failed';
+    await expect(client.checkReady()).rejects.toMatchObject({ name: 'ApiEngineUnavailableError' });
+  });
+
+  it('checks the engine through /stat when /version does not report it', async () => {
+    const stat = vi.fn(
+      () =>
+        new Response(
+          JSON.stringify({
+            downloadSpeed: '0',
+            uploadSpeed: '0',
+            numActive: '0',
+            numWaiting: '0',
+            numStopped: '0',
+            numStoppedTotal: '0',
+          }),
+        ),
+    );
+    desktop({ '/version': () => new Response(JSON.stringify({ app: '4.1.0' })), '/stat': stat });
+    await expect(client.checkReady()).resolves.toBe(true);
+    expect(stat).toHaveBeenCalledOnce();
+  });
+
+  it('reaches Rayburst on another machine through the configured host (#109)', async () => {
+    client = new DesktopApiClient({ host: '192.168.1.20', port: 29110, secret: 'secret' });
+    desktop({});
+    await client.ping();
+    expect(requestAt().url).toBe('http://192.168.1.20:29110/ping');
   });
 
   it('identifies every supported desktop and rejects the rest', async () => {

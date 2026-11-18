@@ -32,6 +32,7 @@ import {
 } from '@/lib/storage';
 import {
   createDefaultSnapshot,
+  isValidApiHost,
   parseConnectionConfig,
   parseDesktopMemory,
   parseDiagnosticSettings,
@@ -294,6 +295,15 @@ async function handleForwardCookiesChange(value: boolean): Promise<void> {
 // ─── Save / Discard ─────────────────────────────────────
 
 async function handleSave(): Promise<void> {
+  if (!isValidApiHost(draft.value.connection.host)) {
+    toast.error(
+      i18n(
+        'options_api_host_invalid',
+        'Enter a host name or IP address, without http:// or a port.',
+      ),
+    );
+    return;
+  }
   try {
     if (staged.value) {
       await saveSnapshot(draft.value);
@@ -593,6 +603,7 @@ onUnmounted(() => {
               <h2 class="section-title">{{ i18n('options_section_connection', 'Connection') }}</h2>
               <div class="card">
                 <ConnectionSection
+                  :host="draft.connection.host"
                   :port="draft.connection.port"
                   :secret="draft.connection.secret"
                   :status="connectionStatus"
@@ -600,6 +611,7 @@ onUnmounted(() => {
                   :desktop="knownDesktop"
                   :error="connectionError"
                   :testing="testingConnection"
+                  @update:host="draft.connection.host = $event"
                   @update:port="draft.connection.port = $event"
                   @update:secret="draft.connection.secret = $event"
                   @test="testConnection"

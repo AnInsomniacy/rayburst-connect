@@ -303,6 +303,15 @@
     "message": "Gepauzeerd",
     "description": "Label next to the interception toggle when inactive"
   },
+  "options_api_host_label": {
+    "message": "Host"
+  },
+  "options_api_host_invalid": {
+    "message": "Voer een hostnaam of IP-adres in, zonder http:// of poort."
+  },
+  "options_api_host_remote_hint": {
+    "message": "Downloads gaan met hun cookies en inloggegevens naar Rayburst op de computer met dit adres. Gebruik dit alleen op een vertrouwd netwerk. Sta op die computer externe toegang toe in Rayburst en stel een API-geheim in."
+  },
   "options_api_port_label": {
     "message": "API Port",
     "description": "Label for the API port input"
@@ -409,6 +418,12 @@
   "options_duplicate_guard_window_label": {
     "message": "Beschermingsvenster",
     "description": "Label for the duplicate download guard time window input."
+  },
+  "notification_desktop_unreachable_title": {
+    "message": "Downloaden in de browser"
+  },
+  "notification_desktop_unreachable_body": {
+    "message": "Rayburst reageerde niet op tijd, dus de browser zet deze download voort."
   },
   "notification_duplicate_guard_title": {
     "message": "Taak ingediend",
@@ -930,6 +945,21 @@
   },
   "resources_preserve": {
     "message": "Bronnen behouden na navigatie"
+  },
+  "resources_deep_hint": {
+    "message": "Verborgen streams van de pagina vinden"
+  },
+  "resources_cache_hint": {
+    "message": "Media opslaan terwijl de pagina buffert"
+  },
+  "resources_video_hint": {
+    "message": "De video opnemen tijdens het afspelen"
+  },
+  "resources_open_file": {
+    "message": "Bestand openen"
+  },
+  "resources_no_player": {
+    "message": "Nog geen speler op deze pagina."
   },
   "resources_deep": {
     "message": "Diep zoeken"

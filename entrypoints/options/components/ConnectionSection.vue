@@ -7,9 +7,15 @@ import type { ConnectionStatus, DesktopIdentity } from '@/lib/api';
 import { legacyDesktopName } from '@/lib/legacy';
 import LegacyDesktopNotice from '@/shared/components/LegacyDesktopNotice.vue';
 import UnsupportedDesktop from '@/shared/components/UnsupportedDesktop.vue';
-import { DEFAULT_CONNECTION_CONFIG } from '@/lib/schema';
+import {
+  DEFAULT_API_HOST,
+  DEFAULT_CONNECTION_CONFIG,
+  isLocalApiHost,
+  isValidApiHost,
+} from '@/lib/schema';
 
 const props = defineProps<{
+  host: string;
   port: number;
   secret: string;
   status: ConnectionStatus;
@@ -21,6 +27,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
+  'update:host': [value: string];
   'update:port': [value: number];
   'update:secret': [value: string];
   test: [];
@@ -31,6 +38,9 @@ import { useI18n } from '@/shared/i18n/engine';
 const { t: i18n } = useI18n();
 
 const isConnected = computed(() => props.status === 'connected');
+/** Downloads carry cookies and sign-in headers to whatever machine this names. */
+const hostValid = computed(() => isValidApiHost(props.host));
+const remote = computed(() => hostValid.value && !isLocalApiHost(props.host));
 const legacyDesktop = computed(() => props.desktop && legacyDesktopName(props.desktop));
 
 /** Map API error names to translated messages. */
@@ -54,6 +64,15 @@ const errorMessage = computed(() => {
   <div class="section">
     <LegacyDesktopNotice v-if="legacyDesktop" :name="legacyDesktop" class="section__notice" />
     <div class="section__grid">
+      <NFormItem :show-feedback="false" :label="i18n('options_api_host_label', 'Host')">
+        <NInput
+          :value="host"
+          :placeholder="DEFAULT_API_HOST"
+          style="width: 200px"
+          :status="hostValid ? undefined : 'error'"
+          @update:value="(v: string) => emit('update:host', v.trim() || DEFAULT_API_HOST)"
+        />
+      </NFormItem>
       <NFormItem :show-feedback="false" :label="i18n('options_api_port_label', 'API Port')">
         <NInputNumber
           :value="port"
@@ -76,6 +95,22 @@ const errorMessage = computed(() => {
         />
       </NFormItem>
     </div>
+    <p v-if="!hostValid" class="section__hint section__hint--error">
+      {{
+        i18n(
+          'options_api_host_invalid',
+          'Enter a host name or IP address, without http:// or a port.',
+        )
+      }}
+    </p>
+    <p v-else-if="remote" class="section__hint">
+      {{
+        i18n(
+          'options_api_host_remote_hint',
+          'Downloads go to Rayburst on this machine, with their cookies and sign-in headers. Use it only on a network you trust. Allow remote access in Rayburst and set an API secret.',
+        )
+      }}
+    </p>
 
     <div class="section__row">
       <NButton type="primary" :loading="testing" @click="emit('test')">
@@ -158,6 +193,18 @@ const errorMessage = computed(() => {
 }
 
 .section__feedback--err {
+  color: var(--color-error);
+}
+
+.section__hint {
+  max-width: 560px;
+  margin: 12px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-on-surface-variant);
+}
+
+.section__hint--error {
   color: var(--color-error);
 }
 </style>

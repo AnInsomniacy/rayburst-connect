@@ -303,6 +303,15 @@
     "message": "रुका हुआ",
     "description": "Label next to the interception toggle when inactive"
   },
+  "options_api_host_label": {
+    "message": "होस्ट"
+  },
+  "options_api_host_invalid": {
+    "message": "http:// या पोर्ट के बिना होस्ट नाम या IP पता दर्ज करें।"
+  },
+  "options_api_host_remote_hint": {
+    "message": "डाउनलोड उनकी कुकीज़ और साइन-इन जानकारी के साथ इस पते वाले कंप्यूटर के Rayburst को भेजे जाते हैं। इसे केवल भरोसेमंद नेटवर्क पर इस्तेमाल करें। उस कंप्यूटर पर Rayburst में रिमोट एक्सेस की अनुमति दें और API सीक्रेट सेट करें।"
+  },
   "options_api_port_label": {
     "message": "API Port",
     "description": "Label for the API port input"
@@ -409,6 +418,12 @@
   "options_duplicate_guard_window_label": {
     "message": "गार्ड विंडो",
     "description": "Label for the duplicate download guard time window input."
+  },
+  "notification_desktop_unreachable_title": {
+    "message": "ब्राउज़र में डाउनलोड हो रहा है"
+  },
+  "notification_desktop_unreachable_body": {
+    "message": "Rayburst ने समय पर जवाब नहीं दिया, इसलिए यह डाउनलोड ब्राउज़र में जारी है।"
   },
   "notification_duplicate_guard_title": {
     "message": "कार्य भेजा गया",
@@ -930,6 +945,21 @@
   },
   "resources_preserve": {
     "message": "नेविगेशन के बाद स्रोत रखें"
+  },
+  "resources_deep_hint": {
+    "message": "पेज में छिपी स्ट्रीम खोजें"
+  },
+  "resources_cache_hint": {
+    "message": "पेज जैसे-जैसे बफ़र करे, मीडिया सहेजें"
+  },
+  "resources_video_hint": {
+    "message": "चलते हुए वीडियो को रिकॉर्ड करें"
+  },
+  "resources_open_file": {
+    "message": "फ़ाइल खोलें"
+  },
+  "resources_no_player": {
+    "message": "इस पेज पर अभी कोई प्लेयर नहीं है।"
   },
   "resources_deep": {
     "message": "गहन खोज"

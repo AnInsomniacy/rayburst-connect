@@ -303,6 +303,15 @@
     "message": "Tạm dừng",
     "description": "Label next to the interception toggle when inactive"
   },
+  "options_api_host_label": {
+    "message": "Máy chủ"
+  },
+  "options_api_host_invalid": {
+    "message": "Nhập tên máy chủ hoặc địa chỉ IP, không kèm http:// hay cổng."
+  },
+  "options_api_host_remote_hint": {
+    "message": "Các lượt tải được gửi tới Rayburst trên máy tính ở địa chỉ này cùng cookie và thông tin đăng nhập. Chỉ dùng trong mạng tin cậy. Trên máy tính đó, hãy cho phép truy cập từ xa trong Rayburst và đặt khóa bí mật API."
+  },
   "options_api_port_label": {
     "message": "API Port",
     "description": "Label for the API port input"
@@ -409,6 +418,12 @@
   "options_duplicate_guard_window_label": {
     "message": "Cửa sổ bảo vệ",
     "description": "Label for the duplicate download guard time window input."
+  },
+  "notification_desktop_unreachable_title": {
+    "message": "Đang tải trong trình duyệt"
+  },
+  "notification_desktop_unreachable_body": {
+    "message": "Rayburst không phản hồi kịp, nên trình duyệt tiếp tục tải xuống này."
   },
   "notification_duplicate_guard_title": {
     "message": "Đã gửi tác vụ",
@@ -930,6 +945,21 @@
   },
   "resources_preserve": {
     "message": "Giữ nguồn sau khi chuyển trang"
+  },
+  "resources_deep_hint": {
+    "message": "Tìm luồng mà trang ẩn đi"
+  },
+  "resources_cache_hint": {
+    "message": "Lưu nội dung khi trang đang đệm"
+  },
+  "resources_video_hint": {
+    "message": "Ghi lại video khi đang phát"
+  },
+  "resources_open_file": {
+    "message": "Mở tệp"
+  },
+  "resources_no_player": {
+    "message": "Trang này chưa có trình phát."
   },
   "resources_deep": {
     "message": "Tìm kiếm sâu"

@@ -15,7 +15,11 @@ import { useI18n } from '@/shared/i18n/engine';
 
 type TaskEvent = 'pause' | 'resume' | 'reveal';
 
-const props = defineProps<{ tasks: DesktopTask[] }>();
+const props = defineProps<{
+  tasks: DesktopTask[];
+  /** Rayburst runs on another machine, whose folders cannot be shown here. */
+  remote?: boolean;
+}>();
 const emit = defineEmits<{ pause: [gid: string]; resume: [gid: string]; reveal: [gid: string] }>();
 const { t: i18n } = useI18n();
 
@@ -36,6 +40,7 @@ function action(task: DesktopTask): { event: TaskEvent; icon: Component; label: 
     case 'paused':
       return { event: 'resume', icon: PlayOutline, label: i18n('popup_task_resume', 'Resume') };
     case 'complete':
+      if (props.remote) return null;
       return {
         event: 'reveal',
         icon: FolderOpenOutline,

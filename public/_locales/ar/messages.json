@@ -303,6 +303,15 @@
     "message": "متوقف مؤقتاً",
     "description": "Label next to the interception toggle when inactive"
   },
+  "options_api_host_label": {
+    "message": "المضيف"
+  },
+  "options_api_host_invalid": {
+    "message": "أدخل اسم مضيف أو عنوان IP بدون http:// أو منفذ."
+  },
+  "options_api_host_remote_hint": {
+    "message": "تُرسل التنزيلات مع ملفات تعريف الارتباط وبيانات تسجيل الدخول إلى Rayburst على الحاسوب ذي هذا العنوان. استخدمه فقط على شبكة موثوقة. على ذلك الحاسوب، اسمح بالوصول عن بُعد في Rayburst وعيّن سر واجهة API."
+  },
   "options_api_port_label": {
     "message": "API Port",
     "description": "Label for the API port input"
@@ -409,6 +418,12 @@
   "options_duplicate_guard_window_label": {
     "message": "نافذة الحماية",
     "description": "Label for the duplicate download guard time window input."
+  },
+  "notification_desktop_unreachable_title": {
+    "message": "التنزيل في المتصفح"
+  },
+  "notification_desktop_unreachable_body": {
+    "message": "لم يستجب Rayburst في الوقت المناسب، لذا يتابع المتصفح هذا التنزيل."
   },
   "notification_duplicate_guard_title": {
     "message": "تم إرسال المهمة",
@@ -930,6 +945,21 @@
   },
   "resources_preserve": {
     "message": "الاحتفاظ بالمصادر بعد التنقل"
+  },
+  "resources_deep_hint": {
+    "message": "العثور على البث المخفي في الصفحة"
+  },
+  "resources_cache_hint": {
+    "message": "حفظ الوسائط أثناء تخزين الصفحة لها مؤقتًا"
+  },
+  "resources_video_hint": {
+    "message": "تسجيل الفيديو أثناء تشغيله"
+  },
+  "resources_open_file": {
+    "message": "فتح ملف"
+  },
+  "resources_no_player": {
+    "message": "لا يوجد مشغّل في هذه الصفحة بعد."
   },
   "resources_deep": {
     "message": "بحث عميق"

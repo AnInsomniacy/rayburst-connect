@@ -303,6 +303,18 @@
     "message": "Paused",
     "description": "Label next to the interception toggle when inactive"
   },
+  "options_api_host_label": {
+    "message": "Host",
+    "description": "Label for the desktop API host input."
+  },
+  "options_api_host_invalid": {
+    "message": "Enter a host name or IP address, without http:// or a port.",
+    "description": "Error when the API host is not a host name or IP address."
+  },
+  "options_api_host_remote_hint": {
+    "message": "Downloads go to Rayburst on the computer at this address, with their cookies and sign-in headers. Use it only on a network you trust. On that computer, allow remote access in Rayburst and set an API secret.",
+    "description": "Warning shown when the API host is another machine."
+  },
   "options_api_port_label": {
     "message": "API Port",
     "description": "Label for the API port input"
@@ -410,6 +422,14 @@
   "options_duplicate_guard_window_label": {
     "message": "Guard Window",
     "description": "Label for the duplicate download guard time window input."
+  },
+  "notification_desktop_unreachable_title": {
+    "message": "Downloading in the browser",
+    "description": "Notification title when Rayburst did not answer and the browser kept a download."
+  },
+  "notification_desktop_unreachable_body": {
+    "message": "Rayburst did not respond in time, so the browser kept this download.",
+    "description": "Notification body when Rayburst did not answer and the browser kept a download."
   },
   "notification_duplicate_guard_title": {
     "message": "Task submitted",
@@ -931,6 +951,26 @@
   },
   "resources_preserve": {
     "message": "Keep sources after navigation"
+  },
+  "resources_deep_hint": {
+    "message": "Find streams the page hides",
+    "description": "Hint under the Deep search capture mode."
+  },
+  "resources_cache_hint": {
+    "message": "Save media as the page buffers it",
+    "description": "Hint under the Capture media buffers mode."
+  },
+  "resources_video_hint": {
+    "message": "Record the video as it plays",
+    "description": "Hint under the Start recording capture mode."
+  },
+  "resources_open_file": {
+    "message": "Open file",
+    "description": "Button that loads a manifest or key from a local file."
+  },
+  "resources_no_player": {
+    "message": "No player on this page yet.",
+    "description": "Shown in Player controls when the page has no audio or video element."
   },
   "resources_deep": {
     "message": "Deep search"

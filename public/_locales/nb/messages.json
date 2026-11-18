@@ -303,6 +303,15 @@
     "message": "Pauset",
     "description": "Label next to the interception toggle when inactive"
   },
+  "options_api_host_label": {
+    "message": "Vert"
+  },
+  "options_api_host_invalid": {
+    "message": "Skriv inn et vertsnavn eller en IP-adresse, uten http:// eller port."
+  },
+  "options_api_host_remote_hint": {
+    "message": "Nedlastinger sendes til Rayburst på datamaskinen med denne adressen, sammen med informasjonskapsler og påloggingsdata. Bruk det bare på et nettverk du stoler på. På den maskinen må du tillate ekstern tilgang i Rayburst og angi en API-hemmelighet."
+  },
   "options_api_port_label": {
     "message": "API Port",
     "description": "Label for the API port input"
@@ -409,6 +418,12 @@
   "options_duplicate_guard_window_label": {
     "message": "Beskyttelsesvindu",
     "description": "Label for the duplicate download guard time window input."
+  },
+  "notification_desktop_unreachable_title": {
+    "message": "Laster ned i nettleseren"
+  },
+  "notification_desktop_unreachable_body": {
+    "message": "Rayburst svarte ikke i tide, så nettleseren fortsetter denne nedlastingen."
   },
   "notification_duplicate_guard_title": {
     "message": "Oppgave sendt",
@@ -930,6 +945,21 @@
   },
   "resources_preserve": {
     "message": "Behold kilder etter navigering"
+  },
+  "resources_deep_hint": {
+    "message": "Finn strømmer siden skjuler"
+  },
+  "resources_cache_hint": {
+    "message": "Lagre media mens siden bufrer dem"
+  },
+  "resources_video_hint": {
+    "message": "Ta opp videoen mens den spilles"
+  },
+  "resources_open_file": {
+    "message": "Åpne fil"
+  },
+  "resources_no_player": {
+    "message": "Ingen avspiller på denne siden ennå."
   },
   "resources_deep": {
     "message": "Dypt søk"

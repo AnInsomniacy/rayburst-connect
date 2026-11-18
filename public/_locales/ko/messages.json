@@ -303,6 +303,15 @@
     "message": "일시정지됨",
     "description": "Label next to the interception toggle when inactive"
   },
+  "options_api_host_label": {
+    "message": "호스트"
+  },
+  "options_api_host_invalid": {
+    "message": "http://나 포트 없이 호스트 이름 또는 IP 주소를 입력하세요."
+  },
+  "options_api_host_remote_hint": {
+    "message": "다운로드는 쿠키와 로그인 정보와 함께 이 주소의 컴퓨터에 있는 Rayburst로 전송됩니다. 신뢰할 수 있는 네트워크에서만 사용하세요. 해당 컴퓨터의 Rayburst에서 원격 접근을 허용하고 API 비밀 키를 설정하세요."
+  },
   "options_api_port_label": {
     "message": "API 포트",
     "description": "Label for the API port input"
@@ -409,6 +418,12 @@
   "options_duplicate_guard_window_label": {
     "message": "보호 시간",
     "description": "Label for the duplicate download guard time window input."
+  },
+  "notification_desktop_unreachable_title": {
+    "message": "브라우저에서 다운로드 중"
+  },
+  "notification_desktop_unreachable_body": {
+    "message": "Rayburst가 제때 응답하지 않아 브라우저가 이 다운로드를 계속합니다."
   },
   "notification_duplicate_guard_title": {
     "message": "작업이 제출됨",
@@ -930,6 +945,21 @@
   },
   "resources_preserve": {
     "message": "페이지 이동 후 소스 유지"
+  },
+  "resources_deep_hint": {
+    "message": "페이지에 숨은 스트림 찾기"
+  },
+  "resources_cache_hint": {
+    "message": "페이지가 버퍼링한 미디어 저장"
+  },
+  "resources_video_hint": {
+    "message": "재생 중인 영상 녹화"
+  },
+  "resources_open_file": {
+    "message": "파일 열기"
+  },
+  "resources_no_player": {
+    "message": "이 페이지에는 아직 플레이어가 없습니다."
   },
   "resources_deep": {
     "message": "심층 검색"

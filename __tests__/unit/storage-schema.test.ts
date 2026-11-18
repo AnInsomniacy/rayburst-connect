@@ -18,13 +18,17 @@ describe('persisted schema repair', () => {
   it('repairs invalid connection fields independently and strips extras', () => {
     expect(parseConnectionConfig(null)).toEqual(DEFAULT_CONNECTION_CONFIG);
     expect(parseConnectionConfig({ port: 9000, secret: 42, extra: true })).toEqual({
+      host: '127.0.0.1',
       port: 9000,
       secret: '',
     });
     expect(parseConnectionConfig({ port: 1, secret: 'kept' })).toEqual({
+      host: '127.0.0.1',
       port: DEFAULT_CONNECTION_CONFIG.port,
       secret: 'kept',
     });
+    expect(parseConnectionConfig({ host: ' 192.168.1.20 ', port: 9000 }).host).toBe('192.168.1.20');
+    expect(parseConnectionConfig({ host: 'http://nas:16800', port: 9000 }).host).toBe('127.0.0.1');
   });
 
   it('defaults settings while preserving valid siblings of corrupt fields', () => {
