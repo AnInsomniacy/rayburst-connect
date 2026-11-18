@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "ダウンロードや検出したメディアを Rayburst に送信。ページ内のメディア検出、プレビュー、キャプチャに対応。",
+    "message": "ダウンロードや検出したメディアをRayburstに送信。ページ内のメディア検出、プレビュー、キャプチャツールに対応。",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {
@@ -55,7 +55,7 @@
     "description": "Settings section for download interception behavior"
   },
   "options_enabled_label": {
-    "message": "ダウンロードの横取りを有効化",
+    "message": "ダウンロードのインターセプトを有効化",
     "description": "Toggle label for enabling/disabling download interception"
   },
   "options_section_rules": {
@@ -99,7 +99,7 @@
     "description": "Options page header subtitle"
   },
   "options_testing_connection": {
-    "message": "テスト中...",
+    "message": "テスト中…",
     "description": "Button text while testing connection"
   },
   "options_connection_success_prefix": {
@@ -127,7 +127,7 @@
     "description": "Placeholder when diagnostic log is empty"
   },
   "options_footer": {
-    "message": "Rayburst 拡張機能 v$version$",
+    "message": "Rayburst Connect v$version$",
     "description": "Footer text with version number",
     "placeholders": {
       "version": {
@@ -144,7 +144,7 @@
     "description": "Discard button in action bar"
   },
   "options_discard_success": {
-    "message": "変更を復元しました",
+    "message": "変更を元に戻しました",
     "description": "Toast after discarding unsaved settings changes"
   },
   "options_save_success": {
@@ -204,7 +204,7 @@
     "description": "Fallback error message"
   },
   "options_rule_always_intercept": {
-    "message": "常に横取り",
+    "message": "常にインターセプト",
     "description": "Site rule action: always intercept downloads"
   },
   "options_rule_always_skip": {
@@ -216,11 +216,11 @@
     "description": "Site rule action: follow the global setting"
   },
   "popup_error_auth": {
-    "message": "API シークレット不一致",
+    "message": "APIシークレット不一致",
     "description": "Popup banner title when API secret is incorrect"
   },
   "popup_error_auth_hint": {
-    "message": "設定の API シークレットが Rayburst の設定と一致しているか確認してください。",
+    "message": "設定のAPIシークレットがRayburstの設定と一致しているか確認してください。",
     "description": "Popup banner hint for API auth error"
   },
   "popup_error_timeout": {
@@ -228,7 +228,7 @@
     "description": "Popup banner title when API connection times out"
   },
   "popup_error_timeout_hint": {
-    "message": "ネットワークまたはファイアウォールの設定を確認してください。API ポート: $1",
+    "message": "ネットワークまたはファイアウォールの設定を確認してください。APIポート: $1",
     "description": "Popup banner hint for timeout error, $1 = port number",
     "placeholders": {
       "1": {
@@ -238,7 +238,7 @@
     }
   },
   "popup_error_unreachable_hint": {
-    "message": "Rayburst が実行中であることを確認してください。API ポート: $1",
+    "message": "Rayburstが実行中であることを確認してください。APIポート: $1",
     "description": "Popup banner hint for unreachable error, $1 = port number",
     "placeholders": {
       "1": {
@@ -260,15 +260,15 @@
     "description": "Description for auto language option"
   },
   "options_desktop_unavailable_label": {
-    "message": "Rayburst が利用できない場合",
+    "message": "Rayburstが利用できない場合",
     "description": "Unavailable desktop behavior label"
   },
   "options_desktop_unavailable_launch": {
-    "message": "Rayburst を起動",
+    "message": "Rayburstを起動",
     "description": "Launch desktop option"
   },
   "options_desktop_unavailable_browser": {
-    "message": "ブラウザーを使用",
+    "message": "ブラウザを使用",
     "description": "Browser fallback option"
   },
   "options_desktop_startup_timeout_label": {
@@ -276,7 +276,7 @@
     "description": "Desktop startup timeout label"
   },
   "options_desktop_open_link_label": {
-    "message": "ブラウザーのリンクで Rayburst を起動（従来の方法）",
+    "message": "ブラウザのリンクでRayburstを起動（従来の方法）",
     "description": "Setting: start the desktop by opening its link in a tab instead of Native Messaging"
   },
   "options_seconds_suffix": {
@@ -307,17 +307,17 @@
     "message": "ホスト"
   },
   "options_api_host_invalid": {
-    "message": "http:// やポートを含めず、ホスト名または IP アドレスを入力してください。"
+    "message": "http://やポート番号を含めず、ホスト名またはIPアドレスを入力してください。"
   },
   "options_api_host_remote_hint": {
-    "message": "ダウンロードは Cookie やログイン情報とともに、このアドレスのコンピューター上の Rayburst に送られます。信頼できるネットワークでのみ使用してください。そのコンピューターの Rayburst でリモートアクセスを許可し、API シークレットを設定してください。"
+    "message": "ダウンロードはCookieやログイン情報とともに、指定したアドレスのコンピュータ上のRayburstに送信されます。信頼できるネットワークでのみ使用してください。接続先のRayburstでリモートアクセスを許可し、APIシークレットを設定してください。"
   },
   "options_api_port_label": {
-    "message": "API ポート",
+    "message": "APIポート",
     "description": "Label for the API port input"
   },
   "options_api_secret_label": {
-    "message": "API シークレット",
+    "message": "APIシークレット",
     "description": "Label for the API secret input"
   },
   "options_api_secret_placeholder": {
@@ -325,11 +325,11 @@
     "description": "Placeholder text for API secret input"
   },
   "error_api_unreachable": {
-    "message": "Rayburst に接続できません",
+    "message": "Rayburstに接続できません",
     "description": "Error when the API endpoint is unreachable"
   },
   "error_api_auth": {
-    "message": "API シークレットが正しくありません",
+    "message": "APIシークレットが正しくありません",
     "description": "Error when the API secret does not match"
   },
   "error_api_timeout": {
@@ -337,42 +337,42 @@
     "description": "Error when the API connection times out"
   },
   "options_hide_download_bar_label": {
-    "message": "ブラウザーのダウンロードバーを非表示",
+    "message": "ブラウザのダウンロードバーを非表示",
     "description": "Label for the optional browser download bar hiding setting."
   },
   "options_show_popup_after_handoff_label": {
-    "message": "Rayburst に送信後にポップアップを表示"
+    "message": "Rayburstに送信した後にポップアップを表示"
   },
   "options_forward_request_headers_label": {
     "message": "リクエストヘッダーを転送",
     "description": "Label for the request header forwarding setting."
   },
   "options_forward_cookies_label": {
-    "message": "Cookie を転送",
+    "message": "Cookieを転送",
     "description": "Label for the cookie forwarding setting."
   },
   "options_permission_download_ui_denied": {
-    "message": "ブラウザーのダウンロードバーを非表示にするには、ダウンロード UI 権限を許可してください。",
+    "message": "ブラウザのダウンロードバーを非表示にするには、ダウンロードUI権限を許可してください。",
     "description": "Toast shown when the optional downloads.ui permission is denied."
   },
   "options_permission_cookies_denied": {
-    "message": "Cookie を Rayburst に転送するには、Cookie とサイトの権限を許可してください。",
+    "message": "CookieをRayburstに転送するには、Cookieとサイトの権限を許可してください。",
     "description": "Toast shown when cookie forwarding permissions are unavailable."
   },
   "options_scope_browser_downloads_label": {
-    "message": "ブラウザーのダウンロード",
+    "message": "通常のダウンロード（HTTP/HTTPS/FTP/トレント）",
     "description": "Label for the browser download interception scope toggle."
   },
   "options_scope_magnet_label": {
-    "message": "Magnet リンク",
+    "message": "マグネットリンク（magnet:）",
     "description": "Label for the magnet link interception scope toggle."
   },
   "options_scope_ed2k_label": {
-    "message": "ED2K リンク",
+    "message": "ED2Kリンク（ed2k:）",
     "description": "Label for the ED2K link interception scope toggle."
   },
   "options_scope_thunder_label": {
-    "message": "Thunder リンク",
+    "message": "Thunderリンク（thunder:）",
     "description": "Label for the Thunder link interception scope toggle."
   },
   "options_scope_incognito_label": {
@@ -380,7 +380,7 @@
     "description": "Label for the private-window download interception toggle."
   },
   "options_scope_incognito_hint": {
-    "message": "プライベートウィンドウのダウンロードは Rayburst に渡され、タスク一覧と履歴に表示されます。ブラウザーでもこの拡張機能をプライベートウィンドウで許可する必要があります。",
+    "message": "プライベートウィンドウのダウンロードはRayburstに渡され、タスク一覧と履歴に表示されます。ブラウザ側でもこの拡張機能をプライベートウィンドウで許可する必要があります。",
     "description": "Hint under the private-window download interception toggle."
   },
   "options_scope_other_extensions_label": {
@@ -388,27 +388,27 @@
     "description": "Label for the toggle that takes over downloads other extensions start."
   },
   "options_scope_other_extensions_hint": {
-    "message": "たとえばリンク解決系の拡張機能が開始したダウンロードです。Rayburst は同じファイルを受け取れることを確認してから引き継ぎます。",
+    "message": "たとえばリンク解除系などの拡張機能が開始したダウンロードです。Rayburstは同じファイルを受信できることを確認してから引き継ぎます。",
     "description": "Hint under the other-extension download interception toggle."
   },
   "options_min_size_label": {
-    "message": "最小ファイルサイズ",
+    "message": "小さいファイルのフィルター",
     "description": "Label for the minimum file size setting."
   },
   "options_min_size_value_label": {
-    "message": "サイズ (MB)",
+    "message": "次のサイズ未満",
     "description": "Label for the minimum file size numeric input."
   },
   "options_min_size_unknown_label": {
-    "message": "不明なサイズ",
+    "message": "サイズが不明な場合",
     "description": "Label for the unknown file size behavior selector."
   },
   "options_min_size_unknown_intercept": {
-    "message": "Rayburst に移す",
+    "message": "Rayburstに転送",
     "description": "Option label for routing unknown-size downloads to Rayburst."
   },
   "options_min_size_unknown_skip": {
-    "message": "ブラウザーに移す",
+    "message": "ブラウザに転送",
     "description": "Option label for leaving unknown-size downloads in the browser."
   },
   "options_duplicate_guard_label": {
@@ -420,10 +420,10 @@
     "description": "Label for the duplicate download guard time window input."
   },
   "notification_desktop_unreachable_title": {
-    "message": "ブラウザーでダウンロード中"
+    "message": "ブラウザでダウンロード中"
   },
   "notification_desktop_unreachable_body": {
-    "message": "Rayburst が時間内に応答しなかったため、このダウンロードはブラウザーで続行します。"
+    "message": "Rayburstが時間内に応答しなかったため、このダウンロードはブラウザ側で保持されました。"
   },
   "notification_duplicate_guard_title": {
     "message": "タスクを送信しました",
@@ -434,7 +434,7 @@
     "description": "Notification body shown when a duplicate download is blocked."
   },
   "notification_desktop_link_body": {
-    "message": "クリックして、ブラウザーのリンクで Rayburst を起動する設定をオンにします。",
+    "message": "クリックして、ブラウザのリンクでRayburstを起動する設定をオンにします。",
     "description": "Notification body after an unattended start failed; clicking opens the settings"
   },
   "options_privacy_section_label": {
@@ -470,11 +470,11 @@
     "description": "Label for the action selector applied when no file extension is detected."
   },
   "options_file_extension_action_intercept": {
-    "message": "Rayburst に送信",
+    "message": "Rayburstに送信",
     "description": "Option label for routing a matched extension to Rayburst."
   },
   "options_file_extension_action_skip": {
-    "message": "ブラウザーを使用",
+    "message": "ブラウザを使用",
     "description": "Option label for leaving a matched extension in the browser."
   },
   "options_factory_reset_button": {
@@ -494,7 +494,7 @@
     "description": "Settings section for maintenance actions."
   },
   "options_settings_backup_title": {
-    "message": "設定バックアップ",
+    "message": "設定のバックアップ",
     "description": "Maintenance section title for settings backup."
   },
   "options_settings_backup_export": {
@@ -554,7 +554,7 @@
     "description": "Popup status while the desktop app is starting"
   },
   "popup_launching_title": {
-    "message": "Rayburst を起動しています",
+    "message": "Rayburstを起動しています",
     "description": "Popup launch progress title"
   },
   "popup_launching_hint": {
@@ -562,15 +562,15 @@
     "description": "Popup launch progress description"
   },
   "popup_launch_failed_title": {
-    "message": "Rayburst を起動できませんでした",
+    "message": "Rayburstを起動できませんでした",
     "description": "Popup launch failure title"
   },
   "popup_launch_failed_hint": {
-    "message": "Rayburst がインストールされ、API 設定が正しいことを確認してください。",
+    "message": "Rayburstがインストールされ、API設定が正しいことを確認してください。",
     "description": "Popup launch failure guidance"
   },
   "popup_launch_link_hint": {
-    "message": "代わりにブラウザーからリンクで Rayburst を起動できます。",
+    "message": "代わりにブラウザからリンクでRayburstを起動できます。",
     "description": "Popup launch failure guidance when the desktop could not be started at all"
   },
   "popup_action_retry": {
@@ -598,7 +598,7 @@
     "description": "Diagnostic table column heading for event message"
   },
   "options_diagnostics_pagination": {
-    "message": "$TOTAL$件中$RANGE$ · 最大$MAX$件",
+    "message": "$TOTAL$件中$RANGE$・最大$MAX$件",
     "description": "Diagnostic table pagination summary with visible range, filtered total, and retention limit",
     "placeholders": {
       "RANGE": {
@@ -780,7 +780,7 @@
     "description": "Media discovery: loading"
   },
   "media_submitted": {
-    "message": "Rayburst にダウンロードを作成しました。",
+    "message": "Rayburstにダウンロードを作成しました。",
     "description": "Media discovery: submitted"
   },
   "media_cancelled": {
@@ -800,7 +800,7 @@
     "description": "Media discovery: invalid"
   },
   "media_unavailable": {
-    "message": "このデスクトップ版ではストリームをダウンロードできません。最新版の Rayburst をインストールしてください。",
+    "message": "このデスクトップ版ではストリームをダウンロードできません。最新版のRayburstをインストールしてください。",
     "description": "Media discovery: unavailable"
   },
   "media_expired": {
@@ -808,11 +808,11 @@
     "description": "Media discovery: expired"
   },
   "media_auth": {
-    "message": "ログイン状態、リクエスト転送、デスクトップ API シークレットを確認してください。",
+    "message": "ログイン状態、リクエスト転送、またはデスクトップAPIシークレットを確認してください。",
     "description": "Media discovery: auth"
   },
   "media_connection": {
-    "message": "Rayburst を起動し、接続設定を確認してください。",
+    "message": "Rayburstを起動し、接続設定を確認してください。",
     "description": "Media discovery: connection"
   },
   "media_size_unknown": {
@@ -828,7 +828,7 @@
     "description": "Media discovery: includes audio"
   },
   "media_record_hint": {
-    "message": "ゼロの場合、Rayburst で停止するまで録画します。",
+    "message": "0を指定すると、Rayburstで停止するまで録画します。",
     "description": "Media discovery: record hint"
   },
   "media_inspect_hint": {
@@ -859,7 +859,7 @@
     "message": "Rayburst"
   },
   "brand_tagline": {
-    "message": "連携ブラウザー拡張機能を再定義する",
+    "message": "連携ブラウザ拡張機能を再定義する",
     "description": "Localized Rayburst Connect brand slogan"
   },
   "resources_current": {
@@ -884,7 +884,7 @@
     "message": "選択を反転"
   },
   "resources_key": {
-    "message": "AES-128 キー"
+    "message": "AES-128キー"
   },
   "resources_kind_collection": {
     "message": "結合メディア"
@@ -896,7 +896,7 @@
     "message": "繰り返し"
   },
   "resources_manifest": {
-    "message": "マニフェストまたはセグメントの URL"
+    "message": "マニフェストまたはセグメントのURL"
   },
   "resources_merge": {
     "message": "音声と映像を結合"
@@ -929,7 +929,7 @@
     "message": "開始位置（秒）"
   },
   "resources_end_time": {
-    "message": "終了位置（0：末尾）"
+    "message": "終了位置（0: 末尾）"
   },
   "resources_stop": {
     "message": "停止"
@@ -1028,7 +1028,7 @@
     "message": "新しく見つかったリソースを自動ダウンロード"
   },
   "resources_mobile": {
-    "message": "モバイルの User-Agent を使用"
+    "message": "モバイルのUser-Agentを使用"
   },
   "media_settings_title": {
     "message": "検出設定"
@@ -1076,7 +1076,7 @@
     "message": "正規表現フラグ"
   },
   "media_settings_group": {
-    "message": "URL取得グループ（0：元のURL）"
+    "message": "URL取得グループ（0: 元のURL）"
   },
   "media_settings_test_url": {
     "message": "テストURL"
@@ -1097,13 +1097,13 @@
     "message": "クイックダウンロード"
   },
   "media_settings_quick_hint": {
-    "message": "選択肢がある場合はトラックを選びます。"
+    "message": "選択肢がある場合はトラックの選択を求めます。"
   },
   "media_settings_deep": {
     "message": "詳細検索を常に有効にする"
   },
   "media_settings_deep_hint": {
-    "message": "再読み込みで反映します。再生に影響する場合があります。"
+    "message": "ページの再読み込み後に反映されます。再生に影響する場合があります。"
   },
   "media_settings_name_from": {
     "message": "検出したファイルの名前"
@@ -1137,7 +1137,7 @@
     "description": "Resource count for the current browser tab; $1 is the full count"
   },
   "sniffer_results": {
-    "message": "$2 件中 $1 件のリソースを表示",
+    "message": "$2件中$1件のリソースを表示",
     "description": "Filtered resources in the selected scope; $1 is visible, $2 is total"
   },
   "popup_status_checking": {
@@ -1148,14 +1148,14 @@
     "message": "未対応のデスクトップ版です"
   },
   "connection_upgrade_hint": {
-    "message": "最新版の Rayburst をインストールして再接続してください。"
+    "message": "最新版のRayburstをインストールして再接続してください。"
   },
   "connection_legacy_title": {
-    "message": "最新版の Rayburst に更新してください",
+    "message": "最新版のRayburstに更新してください",
     "description": "Title of the update notice shown while connected to an older desktop"
   },
   "connection_legacy_hint": {
-    "message": "$1 は古いバージョンのため、一部の機能を利用できません。",
+    "message": "$1は古いバージョンのため、一部の機能を利用できません。",
     "description": "Shown while connected to an older desktop, $1 = its name and version",
     "placeholders": {
       "1": {
@@ -1169,19 +1169,19 @@
     "description": "Accessible label of the button that closes the popup update notice"
   },
   "connection_get_rayburst": {
-    "message": "Rayburst を入手"
+    "message": "Rayburstを入手"
   },
   "connection_check_again": {
     "message": "再確認"
   },
   "error_engine_starting": {
-    "message": "Rayburst エンジンを起動中"
+    "message": "Rayburstエンジンを起動中"
   },
   "error_engine_unavailable": {
-    "message": "Rayburst エンジンを利用できません"
+    "message": "Rayburstエンジンを利用できません"
   },
   "error_engine_hint": {
-    "message": "Rayburst を開いてエンジンを確認し、再接続してください。"
+    "message": "Rayburstを開いてエンジンを確認し、再接続してください。"
   },
   "popup_site_rules": {
     "message": "現在のサイト"
@@ -1213,7 +1213,7 @@
     "description": "Popup task list: resume button"
   },
   "popup_task_reveal": {
-    "message": "フォルダーに表示",
+    "message": "フォルダで表示",
     "description": "Popup task list: show the finished file in its folder"
   },
   "popup_tasks_empty": {
@@ -1221,7 +1221,7 @@
     "description": "Popup task list: nothing to show"
   },
   "options_alt_click_bypass_label": {
-    "message": "Alt を押しながらクリックでブラウザーにダウンロードさせる",
+    "message": "Alt+クリックでブラウザにダウンロードさせる",
     "description": "Setting: holding Alt while clicking a link lets the browser download it"
   },
   "media_complete_video": {
@@ -1229,7 +1229,7 @@
     "description": "Media discovery: separate video and audio track files listed as one video"
   },
   "media_tracks": {
-    "message": "$1 トラック",
+    "message": "$1トラック",
     "description": "Media discovery: number of track files in a complete video; $1 is the count"
   },
   "media_track_files": {
