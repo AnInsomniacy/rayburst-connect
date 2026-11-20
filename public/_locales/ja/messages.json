@@ -228,7 +228,7 @@
     "description": "Popup banner title when API connection times out"
   },
   "popup_error_timeout_hint": {
-    "message": "ネットワークまたはファイアウォールの設定を確認してください。APIポート: $1",
+    "message": "ネットワークまたはファイアウォールの設定を確認してください。APIポート：$1",
     "description": "Popup banner hint for timeout error, $1 = port number",
     "placeholders": {
       "1": {
@@ -238,7 +238,7 @@
     }
   },
   "popup_error_unreachable_hint": {
-    "message": "Rayburstが実行中であることを確認してください。APIポート: $1",
+    "message": "Rayburstが実行中であることを確認してください。APIポート：$1",
     "description": "Popup banner hint for unreachable error, $1 = port number",
     "placeholders": {
       "1": {
@@ -310,7 +310,7 @@
     "message": "http://やポート番号を含めず、ホスト名またはIPアドレスを入力してください。"
   },
   "options_api_host_remote_hint": {
-    "message": "ダウンロードはCookieやログイン情報とともに、指定したアドレスのコンピュータ上のRayburstに送信されます。信頼できるネットワークでのみ使用してください。接続先のRayburstでリモートアクセスを許可し、APIシークレットを設定してください。"
+    "message": "ダウンロードはCookieやログイン情報とともに、このアドレスのコンピューター上のRayburstに送信されます。信頼できるネットワークでのみ使用してください。そのコンピューターのRayburstでリモートアクセスを許可し、APIシークレットを設定してください。"
   },
   "options_api_port_label": {
     "message": "APIポート",
@@ -486,7 +486,7 @@
     "description": "Second-click confirmation label for the reset button."
   },
   "options_factory_reset_ready": {
-    "message": "デフォルトを保存できます",
+    "message": "デフォルト設定を保存できます",
     "description": "Toast shown after default settings are staged for saving."
   },
   "options_section_maintenance": {
@@ -808,7 +808,7 @@
     "description": "Media discovery: expired"
   },
   "media_auth": {
-    "message": "ログイン状態、リクエスト転送、またはデスクトップAPIシークレットを確認してください。",
+    "message": "ソースのログイン状態、リクエスト転送、またはデスクトップAPIシークレットを確認してください。",
     "description": "Media discovery: auth"
   },
   "media_connection": {
@@ -929,7 +929,7 @@
     "message": "開始位置（秒）"
   },
   "resources_end_time": {
-    "message": "終了位置（0: 末尾）"
+    "message": "終了位置（0：末尾）"
   },
   "resources_stop": {
     "message": "停止"
@@ -1076,7 +1076,7 @@
     "message": "正規表現フラグ"
   },
   "media_settings_group": {
-    "message": "URL取得グループ（0: 元のURL）"
+    "message": "URL取得グループ（0：元のURL）"
   },
   "media_settings_test_url": {
     "message": "テストURL"
@@ -1133,7 +1133,7 @@
     "message": "プレビューを閉じる"
   },
   "sniffer_page_count": {
-    "message": "このページのリソース数: $1",
+    "message": "このページのリソース数：$1",
     "description": "Resource count for the current browser tab; $1 is the full count"
   },
   "sniffer_results": {
