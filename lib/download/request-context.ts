@@ -11,6 +11,8 @@ interface RawRequestHeader {
 export interface RequestHeaderContext {
   url: string;
   originalUrl?: string;
+  /** Method of the request's first hop; a redirect may change it to GET. */
+  originalMethod?: string;
   method?: string;
   cookieStoreId?: string;
   tabId?: number;
@@ -28,6 +30,11 @@ export type RequestHeaderMatchReason = 'matched' | 'not-found' | 'expired' | 'am
 
 export interface RequestHeaderMatchResult {
   originalUrl?: string;
+  /**
+   * The request method, also when the match is ambiguous: a non-GET there
+   * means one of the candidates is, and the browser keeps the download.
+   */
+  method?: string;
   matched: boolean;
   reason: RequestHeaderMatchReason;
   context?: RequestHeaderContext;
@@ -75,6 +82,10 @@ function canonicalUrl(url: string): string {
   } catch {
     return url;
   }
+}
+
+function isNonGet(method: string | undefined): method is string {
+  return Boolean(method) && method!.toUpperCase() !== 'GET';
 }
 
 function sanitizeHeaderValue(value: string): string {
@@ -158,7 +169,10 @@ export function captureRequestHeaderContext(
 
 export class RequestHeaderContextStore {
   private readonly byUrl = new Map<string, RequestHeaderContext>();
-  private readonly requests = new Map<string, { url: string; createdAt: number }>();
+  private readonly requests = new Map<
+    string,
+    { url: string; method?: string; createdAt: number }
+  >();
 
   constructor(
     private readonly now: () => number = () => Date.now(),
@@ -170,8 +184,16 @@ export class RequestHeaderContextStore {
     this.prune();
     if (requestId) {
       const first = this.requests.get(requestId);
-      context = { ...context, originalUrl: first?.url ?? context.url };
-      this.requests.set(requestId, { url: context.originalUrl!, createdAt: context.createdAt });
+      context = {
+        ...context,
+        originalUrl: first?.url ?? context.url,
+        originalMethod: first ? first.method : context.method,
+      };
+      this.requests.set(requestId, {
+        url: context.originalUrl!,
+        method: context.originalMethod,
+        createdAt: context.createdAt,
+      });
       while (this.requests.size > this.maxEntries)
         this.requests.delete(this.requests.keys().next().value!);
     }
@@ -201,7 +223,21 @@ export class RequestHeaderContextStore {
    * download (#711).
    */
   download(item: { url: string; finalUrl?: string }): RequestHeaderMatchResult {
-    const fetched = this.peek({ url: item.finalUrl || item.url }).context;
+    const landed = item.finalUrl || item.url;
+    const final = this.peek({ url: landed });
+    const fetched = final.context;
+    // A form POST answered with a redirect that the browser followed with a
+    // GET: the GET serves the file and can be repeated, while the POST cannot
+    // without its body (#110, #117). A 307 or 308 keeps the POST and stays in
+    // the browser.
+    if (
+      fetched?.originalUrl &&
+      canonicalUrl(fetched.originalUrl) !== canonicalUrl(fetched.url) &&
+      isNonGet(fetched.originalMethod) &&
+      fetched.method?.toUpperCase() === 'GET'
+    ) {
+      return { ...final, originalUrl: landed };
+    }
     let originalUrl = fetched?.originalUrl ?? item.url;
     if (item.finalUrl && item.url !== item.finalUrl) {
       const direct =
@@ -237,7 +273,12 @@ export class RequestHeaderContextStore {
         sawExpiredCandidate = true;
         return false;
       });
-      if (fresh.length > 1) return { matched: false, reason: 'ambiguous' };
+      if (fresh.length > 1) {
+        // The credentials cannot be told apart, but a candidate that was not
+        // a GET is reason enough to leave the download to the browser.
+        const method = fresh.map(([, context]) => context.method).find(isNonGet);
+        return { matched: false, reason: 'ambiguous', ...(method ? { method } : {}) };
+      }
       const match = fresh[0];
       if (!match) continue;
       const [entryKey, context] = match;
@@ -245,6 +286,7 @@ export class RequestHeaderContextStore {
       return {
         matched: true,
         reason: 'matched',
+        ...(context.method ? { method: context.method } : {}),
         context: cloneContext(context),
         source,
       };

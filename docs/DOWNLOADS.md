@@ -48,6 +48,10 @@ Promise-based blocking callback; its downloads fallback pauses and resumes the
 original item the same way.
 Preflight failures release the original request, never a synthetic replacement GET.
 HTML/page-save and known non-GET requests stay in the browser before site rules run.
+A form POST that the server redirects and the browser follows with a GET is the
+exception: the redirected GET becomes the task source with its own headers, since
+it can be repeated and the POST cannot without its body. A 307 or 308 keeps the
+POST in the browser, and an ambiguous match with any non-GET candidate does too.
 Site rules normalize pasted HTTP(S) URLs to hostnames and use the existing picomatch
 matcher. Firefox defers extension exclusions until a native filename or known MIME
 type is available instead of treating unknown response metadata as a final name.

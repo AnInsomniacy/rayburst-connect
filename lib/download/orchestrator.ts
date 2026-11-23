@@ -84,6 +84,8 @@ export interface DownloadCandidate {
   referrer?: string;
   requestHeaderContext?: RequestHeaderContext;
   requestHeaderMatchReason?: RequestHeaderMatchReason | 'disabled';
+  /** Method of the request that delivers the file, when it is known. */
+  requestMethod?: string;
 }
 
 /** Shape of a browser DownloadItem as received from chrome.downloads events. */
@@ -401,7 +403,7 @@ export class DownloadOrchestrator {
       mimeType: item.mime,
       tabUrl,
       byExtensionId: item.byExtensionId,
-      requestMethod: item.requestHeaderContext?.method,
+      requestMethod: item.requestMethod ?? item.requestHeaderContext?.method,
       incognito: item.incognito,
     };
     const { verdict, stageName } = evaluateFilterPipeline(

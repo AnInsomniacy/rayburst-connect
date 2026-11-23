@@ -114,6 +114,64 @@ describe('request header context', () => {
     ).toMatchObject({ originalUrl: 'https://other.example/a', matched: false });
   });
 
+  it('hands over the GET a form POST redirected to, never the POST itself', () => {
+    const store = new RequestHeaderContextStore(() => 1000);
+    const form = 'https://host.example/download';
+    const file = 'https://cdn.example/f/signed';
+    // Two submissions of the same form within the TTL make the POST ambiguous.
+    for (const [id, tabId] of [
+      ['one', 1],
+      ['two', 2],
+    ] as const) {
+      store.remember({ url: form, method: 'POST', tabId, createdAt: 1000, requestHeaders: [] }, id);
+    }
+    store.remember(
+      { url: file, method: 'GET', tabId: 2, createdAt: 1000, cookie: 'cdn=1', requestHeaders: [] },
+      'two',
+    );
+    expect(store.download({ url: form, finalUrl: file })).toMatchObject({
+      originalUrl: file,
+      method: 'GET',
+      matched: true,
+      context: { url: file, originalUrl: form, originalMethod: 'POST', cookie: 'cdn=1' },
+    });
+    // Firefox reports the response that arrived, without a final URL.
+    expect(store.download({ url: file })).toMatchObject({ originalUrl: file, method: 'GET' });
+  });
+
+  it('keeps a POST in the browser when its match is ambiguous or the redirect keeps it', () => {
+    const store = new RequestHeaderContextStore(() => 1000);
+    const form = 'https://host.example/download';
+    for (const tabId of [1, 2]) {
+      store.remember({ url: form, method: 'POST', tabId, createdAt: 1000, requestHeaders: [] });
+    }
+    // The final hop was not captured: the ambiguous POST still names its method.
+    expect(store.download({ url: form, finalUrl: 'https://cdn.example/other' })).toMatchObject({
+      originalUrl: form,
+      matched: false,
+      reason: 'ambiguous',
+      method: 'POST',
+    });
+
+    const kept = new RequestHeaderContextStore(() => 1000);
+    kept.remember({ url: form, method: 'POST', createdAt: 1000, requestHeaders: [] }, 'r');
+    kept.remember(
+      { url: 'https://cdn.example/f', method: 'POST', createdAt: 1000, requestHeaders: [] },
+      'r',
+    );
+    // A 307 or 308 repeats the POST: the original request stays the source.
+    expect(kept.download({ url: form, finalUrl: 'https://cdn.example/f' })).toMatchObject({
+      originalUrl: form,
+      method: 'POST',
+    });
+
+    const plain = new RequestHeaderContextStore(() => 1000);
+    for (const tabId of [1, 2]) {
+      plain.remember({ url: form, method: 'GET', tabId, createdAt: 1000, requestHeaders: [] });
+    }
+    expect(plain.peek({ url: form })).toEqual({ matched: false, reason: 'ambiguous' });
+  });
+
   it('distinguishes expired and missing contexts without exposing values', () => {
     let now = 1000;
     const store = new RequestHeaderContextStore(() => now, 100, 16);

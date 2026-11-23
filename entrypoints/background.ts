@@ -391,6 +391,7 @@ export default defineBackground(() => {
       ...candidate,
       url: match.originalUrl ?? candidate.url,
       requestHeaderContext: match.context,
+      requestMethod: match.method,
       requestHeaderMatchReason: settings.forwardRequestHeaders
         ? match.reason
         : ('disabled' as const),
@@ -499,6 +500,7 @@ export default defineBackground(() => {
       state: item.state || 'in_progress',
       referrer: item.referrer || '',
       requestHeaderContext: match.context,
+      requestMethod: match.method,
       requestHeaderMatchReason: settings.forwardRequestHeaders
         ? match.reason
         : ('disabled' as const),
