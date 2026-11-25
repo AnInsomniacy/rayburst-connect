@@ -7,7 +7,7 @@
     "description": "Extension display name"
   },
   "ext_description": {
-    "message": "ダウンロードや検出したメディアをRayburstに送信。ページ内のメディア検出、プレビュー、キャプチャツールに対応。",
+    "message": "ダウンロードやメディアをRayburstへ送信。ページ内の検出、プレビュー、キャプチャに対応。",
     "description": "Extension description shown in browser and web store"
   },
   "popup_status_connected": {
@@ -55,7 +55,7 @@
     "description": "Settings section for download interception behavior"
   },
   "options_enabled_label": {
-    "message": "ダウンロードのインターセプトを有効化",
+    "message": "ダウンロードの引き継ぎを有効にする",
     "description": "Toggle label for enabling/disabling download interception"
   },
   "options_section_rules": {
@@ -196,7 +196,7 @@
     "description": "Graphite Grey color scheme"
   },
   "options_color_scheme_sakura": {
-    "message": "桜ピンク",
+    "message": "サクラピンク",
     "description": "Sakura Pink color scheme"
   },
   "error_unknown": {
@@ -204,7 +204,7 @@
     "description": "Fallback error message"
   },
   "options_rule_always_intercept": {
-    "message": "常にインターセプト",
+    "message": "常に引き継ぐ",
     "description": "Site rule action: always intercept downloads"
   },
   "options_rule_always_skip": {
@@ -212,15 +212,15 @@
     "description": "Site rule action: never intercept downloads"
   },
   "options_rule_use_global": {
-    "message": "グローバル設定に従う",
+    "message": "全体設定に従う",
     "description": "Site rule action: follow the global setting"
   },
   "popup_error_auth": {
-    "message": "APIシークレット不一致",
+    "message": "APIキーが一致しません",
     "description": "Popup banner title when API secret is incorrect"
   },
   "popup_error_auth_hint": {
-    "message": "設定のAPIシークレットがRayburstの設定と一致しているか確認してください。",
+    "message": "拡張機能側のAPIキーがRayburst側の設定と一致しているか確認してください。",
     "description": "Popup banner hint for API auth error"
   },
   "popup_error_timeout": {
@@ -276,7 +276,7 @@
     "description": "Desktop startup timeout label"
   },
   "options_desktop_open_link_label": {
-    "message": "ブラウザのリンクでRayburstを起動（従来の方法）",
+    "message": "ブラウザのリンクでRayburstを起動（旧方式）",
     "description": "Setting: start the desktop by opening its link in a tab instead of Native Messaging"
   },
   "options_seconds_suffix": {
@@ -284,7 +284,7 @@
     "description": "Seconds unit suffix"
   },
   "popup_stat_active": {
-    "message": "アクティブ",
+    "message": "進行中",
     "description": "Task count label: currently downloading"
   },
   "popup_stat_waiting": {
@@ -296,7 +296,7 @@
     "description": "Task count label: completed or stopped"
   },
   "popup_toggle_enabled": {
-    "message": "インターセプト中",
+    "message": "引き継ぎ中",
     "description": "Label next to the interception toggle when active"
   },
   "popup_toggle_disabled": {
@@ -310,18 +310,18 @@
     "message": "http://やポート番号を含めず、ホスト名またはIPアドレスを入力してください。"
   },
   "options_api_host_remote_hint": {
-    "message": "ダウンロードはCookieやログイン情報とともに、このアドレスのコンピューター上のRayburstに送信されます。信頼できるネットワークでのみ使用してください。そのコンピューターのRayburstでリモートアクセスを許可し、APIシークレットを設定してください。"
+    "message": "ダウンロードはCookieやログイン情報とともに、指定先PC上のRayburstへ送信されます。信頼できるネットワークでのみ使用し、接続先のRayburstでリモートアクセスを許可してAPIキーを設定してください。"
   },
   "options_api_port_label": {
     "message": "APIポート",
     "description": "Label for the API port input"
   },
   "options_api_secret_label": {
-    "message": "APIシークレット",
+    "message": "APIキー",
     "description": "Label for the API secret input"
   },
   "options_api_secret_placeholder": {
-    "message": "デスクトップアプリから貼り付け",
+    "message": "Rayburstから貼り付け",
     "description": "Placeholder text for API secret input"
   },
   "error_api_unreachable": {
@@ -329,7 +329,7 @@
     "description": "Error when the API endpoint is unreachable"
   },
   "error_api_auth": {
-    "message": "APIシークレットが正しくありません",
+    "message": "APIキーが正しくありません",
     "description": "Error when the API secret does not match"
   },
   "error_api_timeout": {
@@ -341,7 +341,7 @@
     "description": "Label for the optional browser download bar hiding setting."
   },
   "options_show_popup_after_handoff_label": {
-    "message": "Rayburstに送信した後にポップアップを表示"
+    "message": "Rayburstに送信後、ポップアップを表示"
   },
   "options_forward_request_headers_label": {
     "message": "リクエストヘッダーを転送",
@@ -380,7 +380,7 @@
     "description": "Label for the private-window download interception toggle."
   },
   "options_scope_incognito_hint": {
-    "message": "プライベートウィンドウのダウンロードはRayburstに渡され、タスク一覧と履歴に表示されます。ブラウザ側でもこの拡張機能をプライベートウィンドウで許可する必要があります。",
+    "message": "プライベートウィンドウでのダウンロードはRayburstに渡され、タスク一覧と履歴に表示されます。ブラウザ側でもこの拡張機能をプライベートウィンドウで許可する必要があります。",
     "description": "Hint under the private-window download interception toggle."
   },
   "options_scope_other_extensions_label": {
@@ -388,7 +388,7 @@
     "description": "Label for the toggle that takes over downloads other extensions start."
   },
   "options_scope_other_extensions_hint": {
-    "message": "たとえばリンク解除系などの拡張機能が開始したダウンロードです。Rayburstは同じファイルを受信できることを確認してから引き継ぎます。",
+    "message": "たとえばリンク解析・取得系などの拡張機能が開始したダウンロードです。Rayburstは同じファイルを取得できることを確認してから引き継ぎます。",
     "description": "Hint under the other-extension download interception toggle."
   },
   "options_min_size_label": {
@@ -404,11 +404,11 @@
     "description": "Label for the unknown file size behavior selector."
   },
   "options_min_size_unknown_intercept": {
-    "message": "Rayburstに転送",
+    "message": "Rayburstに送信",
     "description": "Option label for routing unknown-size downloads to Rayburst."
   },
   "options_min_size_unknown_skip": {
-    "message": "ブラウザに転送",
+    "message": "ブラウザを使用",
     "description": "Option label for leaving unknown-size downloads in the browser."
   },
   "options_duplicate_guard_label": {
@@ -434,7 +434,7 @@
     "description": "Notification body shown when a duplicate download is blocked."
   },
   "notification_desktop_link_body": {
-    "message": "クリックして、ブラウザのリンクでRayburstを起動する設定をオンにします。",
+    "message": "クリックして、ブラウザのリンクでRayburstを起動する設定を有効にします。",
     "description": "Notification body after an unattended start failed; clicking opens the settings"
   },
   "options_privacy_section_label": {
@@ -478,15 +478,15 @@
     "description": "Option label for leaving a matched extension in the browser."
   },
   "options_factory_reset_button": {
-    "message": "設定をリセット",
+    "message": "初期設定に戻す",
     "description": "Button to stage a full settings reset."
   },
   "options_factory_reset_confirm": {
-    "message": "もう一度クリックしてリセット",
+    "message": "もう一度クリックして戻す",
     "description": "Second-click confirmation label for the reset button."
   },
   "options_factory_reset_ready": {
-    "message": "デフォルト設定を保存できます",
+    "message": "初期設定を保存できます",
     "description": "Toast shown after default settings are staged for saving."
   },
   "options_section_maintenance": {
@@ -598,7 +598,7 @@
     "description": "Diagnostic table column heading for event message"
   },
   "options_diagnostics_pagination": {
-    "message": "$TOTAL$件中$RANGE$・最大$MAX$件",
+    "message": "$TOTAL$件中$RANGE$件・最大$MAX$件",
     "description": "Diagnostic table pagination summary with visible range, filtered total, and retention limit",
     "placeholders": {
       "RANGE": {
@@ -800,7 +800,7 @@
     "description": "Media discovery: invalid"
   },
   "media_unavailable": {
-    "message": "このデスクトップ版ではストリームをダウンロードできません。最新版のRayburstをインストールしてください。",
+    "message": "このバージョンのRayburstではストリームをダウンロードできません。最新版のRayburstをインストールしてください。",
     "description": "Media discovery: unavailable"
   },
   "media_expired": {
@@ -808,7 +808,7 @@
     "description": "Media discovery: expired"
   },
   "media_auth": {
-    "message": "ソースのログイン状態、リクエスト転送、またはデスクトップAPIシークレットを確認してください。",
+    "message": "ソースのログイン状態、リクエスト転送、またはRayburstのAPIキーを確認してください。",
     "description": "Media discovery: auth"
   },
   "media_connection": {
@@ -859,7 +859,7 @@
     "message": "Rayburst"
   },
   "brand_tagline": {
-    "message": "連携ブラウザ拡張機能を再定義する",
+    "message": "連携ブラウザ拡張機能を再定義",
     "description": "Localized Rayburst Connect brand slogan"
   },
   "resources_current": {
@@ -929,7 +929,7 @@
     "message": "開始位置（秒）"
   },
   "resources_end_time": {
-    "message": "終了位置（0：末尾）"
+    "message": "終了位置（0：最後まで）"
   },
   "resources_stop": {
     "message": "停止"
@@ -1025,7 +1025,7 @@
     "message": "並べ替え"
   },
   "resources_auto": {
-    "message": "新しく見つかったリソースを自動ダウンロード"
+    "message": "新しいリソースを自動ダウンロード"
   },
   "resources_mobile": {
     "message": "モバイルのUser-Agentを使用"
@@ -1124,10 +1124,10 @@
     "message": "変更は自動保存されます。"
   },
   "media_settings_restore": {
-    "message": "メディア設定を初期化"
+    "message": "メディア設定を初期設定に戻す"
   },
   "media_settings_restore_hint": {
-    "message": "メディア設定のみ初期化しますか？接続設定は変わりません。"
+    "message": "メディア設定のみ初期設定に戻しますか？接続設定は変わりません。"
   },
   "media_settings_close_preview": {
     "message": "プレビューを閉じる"
@@ -1137,7 +1137,7 @@
     "description": "Resource count for the current browser tab; $1 is the full count"
   },
   "sniffer_results": {
-    "message": "$2件中$1件のリソースを表示",
+    "message": "$2件中$1件を表示",
     "description": "Filtered resources in the selected scope; $1 is visible, $2 is total"
   },
   "popup_status_checking": {
@@ -1145,7 +1145,7 @@
     "description": "Connection status while the desktop check is pending"
   },
   "connection_unsupported_title": {
-    "message": "未対応のデスクトップ版です"
+    "message": "未対応のRayburstです"
   },
   "connection_upgrade_hint": {
     "message": "最新版のRayburstをインストールして再接続してください。"
@@ -1221,11 +1221,11 @@
     "description": "Popup task list: nothing to show"
   },
   "options_alt_click_bypass_label": {
-    "message": "Alt+クリックでブラウザにダウンロードさせる",
+    "message": "Alt+クリック時はブラウザでダウンロード",
     "description": "Setting: holding Alt while clicking a link lets the browser download it"
   },
   "media_complete_video": {
-    "message": "完全な動画",
+    "message": "統合動画",
     "description": "Media discovery: separate video and audio track files listed as one video"
   },
   "media_tracks": {
